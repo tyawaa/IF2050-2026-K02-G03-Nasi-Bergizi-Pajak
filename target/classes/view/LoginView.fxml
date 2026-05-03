@@ -7,7 +7,7 @@
 
 <HBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="nasi_bergizi_pajak.controller.LoginController"
-      stylesheets="@../styles/auth.css"
+      stylesheets="@../auth.css"
       styleClass="auth-root">
 
     <VBox prefWidth="590" HBox.hgrow="ALWAYS" styleClass="left-panel">
