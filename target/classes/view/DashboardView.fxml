@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="nasi_bergizi_pajak.controller.DashboardController"
+            stylesheets="@../styles/auth.css"
+            styleClass="dashboard-root">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dashboard-header">
+            <padding>
+                <Insets top="18" right="28" bottom="18" left="28"/>
+            </padding>
+            <StackPane styleClass="logo-box-small"><Label text="🍲" styleClass="logo-icon-small"/></StackPane>
+            <VBox spacing="0">
+                <Label text="Nasi Bergizi Pajak" styleClass="dashboard-brand"/>
+                <Label text="Dashboard sementara untuk validasi login" styleClass="dashboard-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Logout" onAction="#handleLogout" styleClass="outline-button"/>
+        </HBox>
+    </top>
+    <center>
+        <StackPane>
+            <VBox alignment="CENTER" spacing="16" maxWidth="520" styleClass="dashboard-card">
+                <Label fx:id="welcomeLabel" text="Halo!" styleClass="dashboard-title"/>
+                <Label fx:id="emailLabel" text="" styleClass="dashboard-email"/>
+                <Separator/>
+                <Label text="Login berhasil. Halaman ini hanya placeholder sampai Person 5 mengintegrasikan dashboard utama." wrapText="true" styleClass="dashboard-note"/>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>
