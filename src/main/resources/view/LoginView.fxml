@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<HBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="nasi_bergizi_pajak.controller.LoginController"
+      stylesheets="@../styles/auth.css"
+      styleClass="auth-root">
+
+    <VBox prefWidth="590" HBox.hgrow="ALWAYS" styleClass="left-panel">
+        <padding>
+            <Insets top="48" right="42" bottom="42" left="42"/>
+        </padding>
+
+        <VBox spacing="12">
+            <HBox alignment="CENTER_LEFT" spacing="14">
+                <StackPane styleClass="logo-box">
+                    <Label text="🍲" styleClass="logo-icon"/>
+                </StackPane>
+                <VBox spacing="0">
+                    <Label text="Nasi Bergizi" styleClass="brand-title"/>
+                    <Label text="Pajak" styleClass="brand-subtitle"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <VBox spacing="26">
+            <VBox spacing="14">
+                <Label text="Rencanakan Menu Sehat,&#10;Kelola Anggaran Dapur" styleClass="hero-title" wrapText="true"/>
+                <Label text="Aplikasi lengkap untuk perencanaan menu makanan keluarga, pengelolaan stok dapur, dan anggaran belanja yang cerdas."
+                       styleClass="hero-subtitle" wrapText="true"/>
+            </VBox>
+
+            <HBox spacing="16">
+                <VBox spacing="8" styleClass="feature-card" HBox.hgrow="ALWAYS">
+                    <StackPane styleClass="feature-icon-orange"><Label text="🍴" styleClass="feature-emoji"/></StackPane>
+                    <Label text="Menu Mingguan" styleClass="feature-title"/>
+                    <Label text="Rencana makan terstruktur" styleClass="feature-desc" wrapText="true"/>
+                </VBox>
+                <VBox spacing="8" styleClass="feature-card" HBox.hgrow="ALWAYS">
+                    <StackPane styleClass="feature-icon-green"><Label text="🌿" styleClass="feature-emoji"/></StackPane>
+                    <Label text="Gizi Seimbang" styleClass="feature-title"/>
+                    <Label text="Pantau nutrisi keluarga" styleClass="feature-desc" wrapText="true"/>
+                </VBox>
+                <VBox spacing="8" styleClass="feature-card" HBox.hgrow="ALWAYS">
+                    <StackPane styleClass="feature-icon-yellow"><Label text="💳" styleClass="feature-emoji"/></StackPane>
+                    <Label text="Hemat Budget" styleClass="feature-title"/>
+                    <Label text="Kontrol pengeluaran" styleClass="feature-desc" wrapText="true"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <Region VBox.vgrow="ALWAYS"/>
+        <Label text="© 2024 Nasi Bergizi Pajak. Semua hak dilindungi." styleClass="footer-text"/>
+    </VBox>
+
+    <StackPane prefWidth="590" HBox.hgrow="ALWAYS" styleClass="right-panel">
+        <VBox maxWidth="420" spacing="18" styleClass="form-card">
+            <VBox spacing="8">
+                <Label text="Selamat Datang" styleClass="form-title"/>
+                <Label text="Masuk ke akun Anda untuk melanjutkan" styleClass="form-subtitle"/>
+            </VBox>
+
+            <VBox spacing="8">
+                <Label text="Email" styleClass="input-label"/>
+                <TextField fx:id="emailField" promptText="nama@email.com" styleClass="auth-input"/>
+            </VBox>
+
+            <VBox spacing="8">
+                <Label text="Password" styleClass="input-label"/>
+                <StackPane>
+                    <PasswordField fx:id="passwordField" promptText="Masukkan password" styleClass="auth-input"/>
+                    <TextField fx:id="visiblePasswordField" promptText="Masukkan password" styleClass="auth-input"/>
+                </StackPane>
+                <CheckBox fx:id="showPasswordCheckBox" text="Tampilkan password" onAction="#handleTogglePassword" styleClass="small-check"/>
+            </VBox>
+
+            <Label fx:id="errorLabel" styleClass="error-box" wrapText="true"/>
+
+            <Button text="Masuk" onAction="#handleLogin" maxWidth="Infinity" styleClass="primary-button"/>
+
+            <HBox alignment="CENTER" spacing="4">
+                <Label text="Belum punya akun?" styleClass="muted-text"/>
+                <Hyperlink text="Daftar sekarang" onAction="#goToRegister" styleClass="auth-link"/>
+            </HBox>
+
+            <VBox spacing="6" styleClass="demo-box">
+                <Label text="Catatan Demo:" styleClass="demo-title"/>
+                <Label text="Buat akun dulu lewat halaman registrasi, lalu login dengan email dan password yang sama." styleClass="demo-text" wrapText="true"/>
+            </VBox>
+        </VBox>
+    </StackPane>
+</HBox>
