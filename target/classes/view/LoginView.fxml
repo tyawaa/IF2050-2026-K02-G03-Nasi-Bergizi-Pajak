@@ -1,31 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.geometry.Rectangle2D?>
+<?import java.lang.String?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
 <HBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="nasi_bergizi_pajak.controller.LoginController"
       stylesheets="@../auth.css"
       styleClass="auth-root">
 
-    <VBox prefWidth="590" HBox.hgrow="ALWAYS" styleClass="left-panel">
+    <VBox prefWidth="590" HBox.hgrow="ALWAYS">
+        <styleClass>
+            <String fx:value="auth-side"/>
+            <String fx:value="auth-side-login"/>
+        </styleClass>
         <padding>
             <Insets top="48" right="42" bottom="42" left="42"/>
         </padding>
 
-        <VBox spacing="12">
-            <HBox alignment="CENTER_LEFT" spacing="14">
-                <StackPane styleClass="logo-box">
-                    <Label text="🍲" styleClass="logo-icon"/>
-                </StackPane>
-                <VBox spacing="0">
-                    <Label text="Nasi Bergizi" styleClass="brand-title"/>
-                    <Label text="Pajak" styleClass="brand-subtitle"/>
-                </VBox>
-            </HBox>
-        </VBox>
+        <HBox alignment="CENTER_LEFT" spacing="14">
+            <StackPane>
+                <styleClass>
+                    <String fx:value="brand-image-mark"/>
+                </styleClass>
+                <ImageView fitWidth="56" fitHeight="56" preserveRatio="true" styleClass="brand-logo-image">
+                    <viewport>
+                        <Rectangle2D minX="33" minY="30" width="86" height="86"/>
+                    </viewport>
+                    <image>
+                        <Image url="@../img/logo_nasibergizipajak.png"/>
+                    </image>
+                </ImageView>
+            </StackPane>
+            <VBox spacing="0">
+                <Label text="Nasi Bergizi" styleClass="brand-title"/>
+                <Label text="Pajak" styleClass="brand-subtitle"/>
+            </VBox>
+        </HBox>
 
         <Region VBox.vgrow="ALWAYS"/>
 
@@ -38,17 +53,56 @@
 
             <HBox spacing="16">
                 <VBox spacing="8" styleClass="feature-card" HBox.hgrow="ALWAYS">
-                    <StackPane styleClass="feature-icon-orange"><Label text="🍴" styleClass="feature-emoji"/></StackPane>
+                    <StackPane>
+                        <styleClass>
+                            <String fx:value="feature-icon"/>
+                            <String fx:value="feature-icon-orange"/>
+                        </styleClass>
+                        <ImageView fitWidth="40" fitHeight="40" preserveRatio="true" styleClass="feature-image">
+                            <viewport>
+                                <Rectangle2D minX="0" minY="0" width="260" height="260"/>
+                            </viewport>
+                            <image>
+                                <Image url="@../img/logo_menu_mingguan.png"/>
+                            </image>
+                        </ImageView>
+                    </StackPane>
                     <Label text="Menu Mingguan" styleClass="feature-title"/>
                     <Label text="Rencana makan terstruktur" styleClass="feature-desc" wrapText="true"/>
                 </VBox>
                 <VBox spacing="8" styleClass="feature-card" HBox.hgrow="ALWAYS">
-                    <StackPane styleClass="feature-icon-green"><Label text="🌿" styleClass="feature-emoji"/></StackPane>
+                    <StackPane>
+                        <styleClass>
+                            <String fx:value="feature-icon"/>
+                            <String fx:value="feature-icon-green"/>
+                        </styleClass>
+                        <ImageView fitWidth="40" fitHeight="40" preserveRatio="true" styleClass="feature-image">
+                            <viewport>
+                                <Rectangle2D minX="0" minY="0" width="260" height="260"/>
+                            </viewport>
+                            <image>
+                                <Image url="@../img/logo_gizi_seimbang.png"/>
+                            </image>
+                        </ImageView>
+                    </StackPane>
                     <Label text="Gizi Seimbang" styleClass="feature-title"/>
                     <Label text="Pantau nutrisi keluarga" styleClass="feature-desc" wrapText="true"/>
                 </VBox>
                 <VBox spacing="8" styleClass="feature-card" HBox.hgrow="ALWAYS">
-                    <StackPane styleClass="feature-icon-yellow"><Label text="💳" styleClass="feature-emoji"/></StackPane>
+                    <StackPane>
+                        <styleClass>
+                            <String fx:value="feature-icon"/>
+                            <String fx:value="feature-icon-yellow"/>
+                        </styleClass>
+                        <ImageView fitWidth="40" fitHeight="40" preserveRatio="true" styleClass="feature-image">
+                            <viewport>
+                                <Rectangle2D minX="0" minY="0" width="271" height="271"/>
+                            </viewport>
+                            <image>
+                                <Image url="@../img/logo_hemat_budget.png"/>
+                            </image>
+                        </ImageView>
+                    </StackPane>
                     <Label text="Hemat Budget" styleClass="feature-title"/>
                     <Label text="Kontrol pengeluaran" styleClass="feature-desc" wrapText="true"/>
                 </VBox>
@@ -56,15 +110,17 @@
         </VBox>
 
         <Region VBox.vgrow="ALWAYS"/>
-        <Label text="© 2024 Nasi Bergizi Pajak. Semua hak dilindungi." styleClass="footer-text"/>
+        <Label text="&#169; 2026 Nasi Bergizi Pajak. Semua hak dilindungi." styleClass="footer-text"/>
     </VBox>
 
-    <StackPane prefWidth="590" HBox.hgrow="ALWAYS" styleClass="right-panel">
-        <VBox maxWidth="420" spacing="18" styleClass="form-card">
+    <StackPane prefWidth="590" HBox.hgrow="ALWAYS" styleClass="auth-form-panel">
+        <VBox maxWidth="420" spacing="20" styleClass="auth-form-card">
             <VBox spacing="8">
                 <Label text="Selamat Datang" styleClass="form-title"/>
                 <Label text="Masuk ke akun Anda untuk melanjutkan" styleClass="form-subtitle"/>
             </VBox>
+
+            <Label fx:id="errorLabel" styleClass="message-box" wrapText="true"/>
 
             <VBox spacing="8">
                 <Label text="Email" styleClass="input-label"/>
@@ -80,18 +136,21 @@
                 <CheckBox fx:id="showPasswordCheckBox" text="Tampilkan password" onAction="#handleTogglePassword" styleClass="small-check"/>
             </VBox>
 
-            <Label fx:id="errorLabel" styleClass="error-box" wrapText="true"/>
-
-            <Button text="Masuk" onAction="#handleLogin" maxWidth="Infinity" styleClass="primary-button"/>
+            <Button fx:id="loginButton" text="Masuk" onAction="#handleLogin" maxWidth="Infinity" styleClass="button-primary"/>
 
             <HBox alignment="CENTER" spacing="4">
                 <Label text="Belum punya akun?" styleClass="muted-text"/>
-                <Hyperlink text="Daftar sekarang" onAction="#goToRegister" styleClass="auth-link"/>
+                <Hyperlink text="Daftar sekarang" onAction="#goToRegister">
+                    <styleClass>
+                        <String fx:value="auth-link"/>
+                        <String fx:value="auth-link-orange"/>
+                    </styleClass>
+                </Hyperlink>
             </HBox>
 
-            <VBox spacing="6" styleClass="demo-box">
-                <Label text="Catatan Demo:" styleClass="demo-title"/>
-                <Label text="Buat akun dulu lewat halaman registrasi, lalu login dengan email dan password yang sama." styleClass="demo-text" wrapText="true"/>
+            <VBox spacing="6" styleClass="helper-box">
+                <Label text="Catatan Login" styleClass="helper-title"/>
+                <Label text="Daftar akun terlebih dahulu, lalu masuk menggunakan email dan password yang sama." styleClass="helper-text" wrapText="true"/>
             </VBox>
         </VBox>
     </StackPane>

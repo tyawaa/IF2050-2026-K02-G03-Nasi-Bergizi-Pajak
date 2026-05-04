@@ -25,7 +25,8 @@ CREATE TABLE user_account (
     last_name           TEXT,
     active              INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
     signup_datetime     TEXT NOT NULL DEFAULT (datetime('now')),
-    profile_image_name  TEXT
+    profile_image_name  TEXT,
+    tipe_admin          INTEGER NOT NULL DEFAULT 0 CHECK (tipe_admin IN (0, 1))
 );
 
 -- Family member

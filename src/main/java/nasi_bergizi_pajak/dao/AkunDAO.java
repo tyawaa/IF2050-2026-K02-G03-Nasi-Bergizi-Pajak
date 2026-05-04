@@ -12,8 +12,8 @@ import nasi_bergizi_pajak.model.Akun;
 public class AkunDAO {
     public Akun simpanAkun(Akun akun) throws SQLException {
         String sql = """
-                INSERT INTO user_account (email, password, first_name, last_name, active, profile_image_name)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO user_account (email, password, first_name, last_name, active, profile_image_name, tipe_admin)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection connection = DatabaseConnection.getConnection();
@@ -24,6 +24,7 @@ public class AkunDAO {
             statement.setString(4, akun.getLastName());
             statement.setInt(5, akun.isActive() ? 1 : 0);
             statement.setString(6, akun.getProfileImageName());
+            statement.setInt(7, akun.isAdmin() ? 1 : 0);
             statement.executeUpdate();
 
             try (ResultSet keys = statement.getGeneratedKeys()) {
@@ -42,7 +43,7 @@ public class AkunDAO {
 
     public Akun cariAkunByEmail(String email) throws SQLException {
         String sql = """
-                SELECT user_id, email, password, first_name, last_name, active, signup_datetime, profile_image_name
+                SELECT user_id, email, password, first_name, last_name, active, signup_datetime, profile_image_name, tipe_admin
                 FROM user_account
                 WHERE email = ?
                 """;
@@ -63,7 +64,7 @@ public class AkunDAO {
 
     public Akun cariAkunById(int userId) throws SQLException {
         String sql = """
-                SELECT user_id, email, password, first_name, last_name, active, signup_datetime, profile_image_name
+                SELECT user_id, email, password, first_name, last_name, active, signup_datetime, profile_image_name, tipe_admin
                 FROM user_account
                 WHERE user_id = ?
                 """;
@@ -91,7 +92,8 @@ public class AkunDAO {
                 resultSet.getString("last_name"),
                 resultSet.getInt("active") == 1,
                 resultSet.getString("signup_datetime"),
-                resultSet.getString("profile_image_name")
+                resultSet.getString("profile_image_name"),
+                resultSet.getInt("tipe_admin") == 1
         );
     }
 }
