@@ -1,6 +1,6 @@
 package nasi_bergizi_pajak.dao;
 
-import nasi_bergizi_pajak.config.DatabaseConfig;
+import nasi_bergizi_pajak.config.DatabaseConnection;
 import nasi_bergizi_pajak.model.IngredientPrice;
 
 import java.sql.*;
@@ -9,16 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IngredientPriceDAO {
-    private final DatabaseConfig dbConfig;
-
-    public IngredientPriceDAO(DatabaseConfig dbConfig) {
-        this.dbConfig = dbConfig;
+    public IngredientPriceDAO() {
     }
 
     public boolean addPrice(IngredientPrice price) throws SQLException {
         String sql = "INSERT INTO ingredient_price (ingredient_id, price, effective_date) VALUES (?, ?, ?)";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             pstmt.setInt(1, price.getIngredientId());
@@ -41,7 +38,7 @@ public class IngredientPriceDAO {
     public boolean updatePrice(IngredientPrice price) throws SQLException {
         String sql = "UPDATE ingredient_price SET price = ?, effective_date = ? WHERE price_id = ?";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setDouble(1, price.getPrice());
@@ -55,7 +52,7 @@ public class IngredientPriceDAO {
     public boolean deletePrice(int priceId) throws SQLException {
         String sql = "DELETE FROM ingredient_price WHERE price_id = ?";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, priceId);
@@ -70,7 +67,7 @@ public class IngredientPriceDAO {
                     "JOIN ingredient i ON ip.ingredient_id = i.ingredient_id " +
                     "WHERE ip.price_id = ?";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, priceId);
@@ -91,7 +88,7 @@ public class IngredientPriceDAO {
                     "ORDER BY ip.effective_date DESC " +
                     "LIMIT 1";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, ingredientId);
@@ -113,7 +110,7 @@ public class IngredientPriceDAO {
         
         List<IngredientPrice> prices = new ArrayList<>();
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, ingredientId);
@@ -134,7 +131,7 @@ public class IngredientPriceDAO {
         
         List<IngredientPrice> prices = new ArrayList<>();
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             ResultSet rs = pstmt.executeQuery();
@@ -154,7 +151,7 @@ public class IngredientPriceDAO {
         
         List<IngredientPrice> prices = new ArrayList<>();
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, startDate.toString());

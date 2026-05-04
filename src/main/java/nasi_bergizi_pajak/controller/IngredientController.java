@@ -1,6 +1,5 @@
 package nasi_bergizi_pajak.controller;
 
-import nasi_bergizi_pajak.config.DatabaseConfig;
 import nasi_bergizi_pajak.model.Ingredient;
 import nasi_bergizi_pajak.model.IngredientPrice;
 import nasi_bergizi_pajak.service.IngredientService;
@@ -12,8 +11,13 @@ import java.util.List;
 public class IngredientController {
     private final IngredientService ingredientService;
 
-    public IngredientController(DatabaseConfig dbConfig) {
-        this.ingredientService = new IngredientService(dbConfig);
+    public IngredientController() {
+        this.ingredientService = new IngredientService();
+    }
+
+    @Deprecated
+    public IngredientController(Object dbConfig) {
+        this();
     }
 
     public boolean addIngredient(Ingredient ingredient) throws SQLException {

@@ -1,6 +1,5 @@
 package nasi_bergizi_pajak.controller;
 
-import nasi_bergizi_pajak.config.DatabaseConfig;
 import nasi_bergizi_pajak.model.KitchenStock;
 import nasi_bergizi_pajak.service.KitchenStockService;
 
@@ -10,8 +9,13 @@ import java.util.List;
 public class KitchenStockController {
     private final KitchenStockService stockService;
 
-    public KitchenStockController(DatabaseConfig dbConfig) {
-        this.stockService = new KitchenStockService(dbConfig);
+    public KitchenStockController() {
+        this.stockService = new KitchenStockService();
+    }
+
+    @Deprecated
+    public KitchenStockController(Object dbConfig) {
+        this();
     }
 
     public boolean addStock(KitchenStock stock) throws SQLException {

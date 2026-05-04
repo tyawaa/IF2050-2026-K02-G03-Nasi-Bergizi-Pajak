@@ -1,6 +1,5 @@
 package nasi_bergizi_pajak.service;
 
-import nasi_bergizi_pajak.config.DatabaseConfig;
 import nasi_bergizi_pajak.dao.KitchenStockDAO;
 import nasi_bergizi_pajak.model.KitchenStock;
 
@@ -11,8 +10,8 @@ import java.util.List;
 public class KitchenStockService {
     private final KitchenStockDAO stockDAO;
 
-    public KitchenStockService(DatabaseConfig dbConfig) {
-        this.stockDAO = new KitchenStockDAO(dbConfig);
+    public KitchenStockService() {
+        this.stockDAO = new KitchenStockDAO();
     }
 
     public boolean addStock(KitchenStock stock) throws SQLException {

@@ -1,6 +1,5 @@
 package nasi_bergizi_pajak.service;
 
-import nasi_bergizi_pajak.config.DatabaseConfig;
 import nasi_bergizi_pajak.dao.IngredientDAO;
 import nasi_bergizi_pajak.dao.IngredientPriceDAO;
 import nasi_bergizi_pajak.model.Ingredient;
@@ -14,9 +13,9 @@ public class IngredientService {
     private final IngredientDAO ingredientDAO;
     private final IngredientPriceDAO priceDAO;
 
-    public IngredientService(DatabaseConfig dbConfig) {
-        this.ingredientDAO = new IngredientDAO(dbConfig);
-        this.priceDAO = new IngredientPriceDAO(dbConfig);
+    public IngredientService() {
+        this.ingredientDAO = new IngredientDAO();
+        this.priceDAO = new IngredientPriceDAO();
     }
 
     public boolean addIngredient(Ingredient ingredient) throws SQLException {
@@ -73,6 +72,9 @@ public class IngredientService {
         if (price.getPrice() < 0) {
             throw new IllegalArgumentException("Price cannot be negative");
         }
+        if (price.getEffectiveDate() == null) {
+            throw new IllegalArgumentException("Effective date cannot be null");
+        }
         if (price.getEffectiveDate().isAfter(LocalDate.now().plusDays(30))) {
             throw new IllegalArgumentException("Effective date cannot be more than 30 days in the future");
         }
@@ -83,6 +85,9 @@ public class IngredientService {
     public boolean updatePrice(IngredientPrice price) throws SQLException {
         if (price.getPrice() < 0) {
             throw new IllegalArgumentException("Price cannot be negative");
+        }
+        if (price.getEffectiveDate() == null) {
+            throw new IllegalArgumentException("Effective date cannot be null");
         }
         if (price.getEffectiveDate().isAfter(LocalDate.now().plusDays(30))) {
             throw new IllegalArgumentException("Effective date cannot be more than 30 days in the future");

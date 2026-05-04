@@ -1,6 +1,6 @@
 package nasi_bergizi_pajak.dao;
 
-import nasi_bergizi_pajak.config.DatabaseConfig;
+import nasi_bergizi_pajak.config.DatabaseConnection;
 import nasi_bergizi_pajak.model.KitchenStock;
 
 import java.sql.*;
@@ -9,17 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KitchenStockDAO {
-    private final DatabaseConfig dbConfig;
-
-    public KitchenStockDAO(DatabaseConfig dbConfig) {
-        this.dbConfig = dbConfig;
+    public KitchenStockDAO() {
     }
 
     public boolean addStock(KitchenStock stock) throws SQLException {
         String sql = "INSERT INTO kitchen_stock (user_id, ingredient_id, quantity, unit, storage_location, expiry_date) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, stock.getUserId());
@@ -37,7 +34,7 @@ public class KitchenStockDAO {
         String sql = "UPDATE kitchen_stock SET quantity = ?, unit = ?, storage_location = ?, expiry_date = ? " +
                     "WHERE stock_id = ? AND user_id = ?";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setDouble(1, stock.getQuantity());
@@ -54,7 +51,7 @@ public class KitchenStockDAO {
     public boolean deleteStock(int stockId, int userId) throws SQLException {
         String sql = "DELETE FROM kitchen_stock WHERE stock_id = ? AND user_id = ?";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, stockId);
@@ -70,7 +67,7 @@ public class KitchenStockDAO {
                     "JOIN ingredient i ON ks.ingredient_id = i.ingredient_id " +
                     "WHERE ks.stock_id = ? AND ks.user_id = ?";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, stockId);
@@ -93,7 +90,7 @@ public class KitchenStockDAO {
         
         List<KitchenStock> stocks = new ArrayList<>();
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, userId);
@@ -112,12 +109,13 @@ public class KitchenStockDAO {
                     "JOIN ingredient i ON ks.ingredient_id = i.ingredient_id " +
                     "WHERE ks.user_id = ? " +
                     "AND ks.expiry_date IS NOT NULL " +
+                    "AND ks.expiry_date >= date('now') " +
                     "AND ks.expiry_date <= date('now', '+' || ? || ' days') " +
                     "ORDER BY ks.expiry_date ASC";
         
         List<KitchenStock> stocks = new ArrayList<>();
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, userId);
@@ -142,7 +140,7 @@ public class KitchenStockDAO {
         
         List<KitchenStock> stocks = new ArrayList<>();
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, userId);
@@ -165,7 +163,7 @@ public class KitchenStockDAO {
         
         List<KitchenStock> stocks = new ArrayList<>();
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, userId);
@@ -182,7 +180,7 @@ public class KitchenStockDAO {
     public boolean updateQuantity(int stockId, int userId, double newQuantity) throws SQLException {
         String sql = "UPDATE kitchen_stock SET quantity = ? WHERE stock_id = ? AND user_id = ?";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setDouble(1, newQuantity);

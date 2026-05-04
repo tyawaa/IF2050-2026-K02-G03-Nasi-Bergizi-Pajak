@@ -1,6 +1,6 @@
 package nasi_bergizi_pajak.dao;
 
-import nasi_bergizi_pajak.config.DatabaseConfig;
+import nasi_bergizi_pajak.config.DatabaseConnection;
 import nasi_bergizi_pajak.model.Ingredient;
 
 import java.sql.*;
@@ -8,16 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IngredientDAO {
-    private final DatabaseConfig dbConfig;
-
-    public IngredientDAO(DatabaseConfig dbConfig) {
-        this.dbConfig = dbConfig;
+    public IngredientDAO() {
     }
 
     public boolean addIngredient(Ingredient ingredient) throws SQLException {
         String sql = "INSERT INTO ingredient (name, unit) VALUES (?, ?)";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             pstmt.setString(1, ingredient.getName());
@@ -39,7 +36,7 @@ public class IngredientDAO {
     public boolean updateIngredient(Ingredient ingredient) throws SQLException {
         String sql = "UPDATE ingredient SET name = ?, unit = ? WHERE ingredient_id = ?";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, ingredient.getName());
@@ -53,7 +50,7 @@ public class IngredientDAO {
     public boolean deleteIngredient(int ingredientId) throws SQLException {
         String sql = "DELETE FROM ingredient WHERE ingredient_id = ?";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, ingredientId);
@@ -70,7 +67,7 @@ public class IngredientDAO {
                     "ORDER BY ip.effective_date DESC " +
                     "LIMIT 1";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, ingredientId);
@@ -91,7 +88,7 @@ public class IngredientDAO {
                     "ORDER BY ip.effective_date DESC " +
                     "LIMIT 1";
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, name);
@@ -108,16 +105,18 @@ public class IngredientDAO {
         String sql = "SELECT i.*, ip.price as current_price, ip.effective_date " +
                     "FROM ingredient i " +
                     "LEFT JOIN ingredient_price ip ON i.ingredient_id = ip.ingredient_id " +
-                    "WHERE ip.effective_date = (" +
-                    "    SELECT MAX(effective_date) " +
+                    "WHERE ip.price_id = (" +
+                    "    SELECT ip2.price_id " +
                     "    FROM ingredient_price ip2 " +
-                    "    WHERE ip2.ingredient_id = i.ingredient_id" +
-                    ") OR ip.effective_date IS NULL " +
+                    "    WHERE ip2.ingredient_id = i.ingredient_id " +
+                    "    ORDER BY ip2.effective_date DESC, ip2.price_id DESC " +
+                    "    LIMIT 1" +
+                    ") OR ip.price_id IS NULL " +
                     "ORDER BY i.name ASC";
         
         List<Ingredient> ingredients = new ArrayList<>();
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             ResultSet rs = pstmt.executeQuery();
@@ -133,16 +132,18 @@ public class IngredientDAO {
                     "FROM ingredient i " +
                     "LEFT JOIN ingredient_price ip ON i.ingredient_id = ip.ingredient_id " +
                     "WHERE i.name LIKE ? " +
-                    "AND (ip.effective_date = (" +
-                    "    SELECT MAX(effective_date) " +
+                    "AND (ip.price_id = (" +
+                    "    SELECT ip2.price_id " +
                     "    FROM ingredient_price ip2 " +
-                    "    WHERE ip2.ingredient_id = i.ingredient_id" +
-                    ") OR ip.effective_date IS NULL) " +
+                    "    WHERE ip2.ingredient_id = i.ingredient_id " +
+                    "    ORDER BY ip2.effective_date DESC, ip2.price_id DESC " +
+                    "    LIMIT 1" +
+                    ") OR ip.price_id IS NULL) " +
                     "ORDER BY i.name ASC";
         
         List<Ingredient> ingredients = new ArrayList<>();
         
-        try (Connection conn = dbConfig.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, "%" + searchTerm + "%");

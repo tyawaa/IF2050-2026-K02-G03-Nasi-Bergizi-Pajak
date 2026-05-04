@@ -105,6 +105,19 @@ public class KitchenStock {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        KitchenStock that = (KitchenStock) o;
+        return stockId == that.stockId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(stockId);
+    }
+
+    @Override
     public String toString() {
         return "KitchenStock{" +
                 "stockId=" + stockId +
