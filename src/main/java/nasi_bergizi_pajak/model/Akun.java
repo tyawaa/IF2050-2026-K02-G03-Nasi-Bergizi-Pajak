@@ -9,6 +9,7 @@ public class Akun {
     private boolean active;
     private String signupDatetime;
     private String profileImageName;
+    private boolean admin;
 
     public Akun(String email, String password, String firstName, String lastName, boolean active, String profileImageName) {
         this.email = email;
@@ -17,10 +18,11 @@ public class Akun {
         this.lastName = lastName;
         this.active = active;
         this.profileImageName = profileImageName;
+        this.admin = false;
     }
 
     public Akun(int userId, String email, String password, String firstName, String lastName,
-                boolean active, String signupDatetime, String profileImageName) {
+                boolean active, String signupDatetime, String profileImageName, boolean admin) {
         this.userId = userId;
         this.email = email;
         this.password = password;
@@ -29,6 +31,7 @@ public class Akun {
         this.active = active;
         this.signupDatetime = signupDatetime;
         this.profileImageName = profileImageName;
+        this.admin = admin;
     }
 
     public int getUserId() {
@@ -95,6 +98,14 @@ public class Akun {
         this.profileImageName = profileImageName;
     }
 
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
+    }
+
     @Override
     public String toString() {
         return "Akun{" +
@@ -103,6 +114,7 @@ public class Akun {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", active=" + active +
+                ", admin=" + admin +
                 '}';
     }
 }

@@ -38,6 +38,11 @@ public final class AppNavigator {
 
     public static void showDashboard(Akun akun) {
         currentUser = akun;
+        if (akun != null && akun.isAdmin()) {
+            loadScene("/view/AdminDashboardView.fxml", "Nasi Bergizi Pajak - Dashboard Admin");
+            return;
+        }
+
         loadScene("/view/DashboardView.fxml", "Nasi Bergizi Pajak - Dashboard");
     }
 

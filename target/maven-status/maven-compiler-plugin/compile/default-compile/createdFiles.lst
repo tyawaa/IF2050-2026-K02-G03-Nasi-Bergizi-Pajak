@@ -9,3 +9,4 @@ nasi_bergizi_pajak\controller\RegistrasiController.class
 nasi_bergizi_pajak\controller\LoginController.class
 nasi_bergizi_pajak\Main.class
 nasi_bergizi_pajak\dao\AkunDAO.class
+nasi_bergizi_pajak\controller\AdminDashboardController.class
