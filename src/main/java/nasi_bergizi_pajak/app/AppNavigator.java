@@ -29,16 +29,16 @@ public final class AppNavigator {
 
     public static void showLogin() {
         currentUser = null;
-        loadScene("/nasi_bergizi_pajak/view/LoginView.fxml", "Nasi Bergizi Pajak - Login");
+        loadScene("/view/LoginView.fxml", "Nasi Bergizi Pajak - Login");
     }
 
     public static void showRegister() {
-        loadScene("/nasi_bergizi_pajak/view/RegisterView.fxml", "Nasi Bergizi Pajak - Registrasi");
+        loadScene("/view/RegisterView.fxml", "Nasi Bergizi Pajak - Registrasi");
     }
 
     public static void showDashboard(Akun akun) {
         currentUser = akun;
-        loadScene("/nasi_bergizi_pajak/view/DashboardView.fxml", "Nasi Bergizi Pajak - Dashboard");
+        loadScene("/view/DashboardView.fxml", "Nasi Bergizi Pajak - Dashboard");
     }
 
     private static void loadScene(String fxmlPath, String title) {
