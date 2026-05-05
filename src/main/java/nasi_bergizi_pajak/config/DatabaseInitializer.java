@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,7 +14,6 @@ import nasi_bergizi_pajak.util.PasswordUtil;
 
 public class DatabaseInitializer {
     private static final Path DATABASE_DIR = Path.of("database");
-    private static final Path DATABASE_FILE = DATABASE_DIR.resolve("nasi_bergizi_pajak.db");
     private static final Path INIT_SQL = DATABASE_DIR.resolve("init.sql");
     private static final String DEFAULT_ADMIN_EMAIL = "admin@nasibergizipajak.com";
     private static final String DEFAULT_ADMIN_PASSWORD = "Admin12345";
@@ -24,13 +24,10 @@ public class DatabaseInitializer {
     public static void initializeIfNeeded() throws IOException, SQLException {
         Files.createDirectories(DATABASE_DIR);
 
-        if (Files.exists(DATABASE_FILE)) {
-            ensureAdminColumnExists();
-            ensureDefaultAdminExists();
-            return;
+        if (!tableExists("user_account")) {
+            runInitScript();
         }
 
-        runInitScript();
         ensureAdminColumnExists();
         ensureDefaultAdminExists();
     }
@@ -53,28 +50,49 @@ public class DatabaseInitializer {
         }
     }
 
-    private static void ensureAdminColumnExists() throws SQLException {
-        try (Connection connection = DatabaseConnection.getConnection();
-             Statement statement = connection.createStatement()) {
-            if (!columnExists(statement, "user_account", "tipe_admin")) {
-                statement.execute("""
-                        ALTER TABLE user_account
-                        ADD COLUMN tipe_admin INTEGER NOT NULL DEFAULT 0 CHECK (tipe_admin IN (0, 1))
-                        """);
+    private static boolean tableExists(String tableName) throws SQLException {
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            DatabaseMetaData metaData = connection.getMetaData();
+            String catalog = connection.getCatalog();
+
+            try (ResultSet resultSet = metaData.getTables(catalog, null, tableName, new String[]{"TABLE"})) {
+                return resultSet.next();
             }
         }
     }
 
-    private static boolean columnExists(Statement statement, String tableName, String columnName) throws SQLException {
-        try (ResultSet resultSet = statement.executeQuery("PRAGMA table_info(" + tableName + ")")) {
-            while (resultSet.next()) {
-                if (columnName.equals(resultSet.getString("name"))) {
-                    return true;
+    private static void ensureAdminColumnExists() throws SQLException {
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            if (!columnExists(connection, "user_account", "tipe_admin")) {
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute("""
+                            ALTER TABLE user_account
+                            ADD COLUMN tipe_admin TINYINT(1) NOT NULL DEFAULT 0
+                            """);
                 }
             }
         }
+    }
 
-        return false;
+    private static boolean columnExists(Connection connection, String tableName, String columnName) throws SQLException {
+        DatabaseMetaData metaData = connection.getMetaData();
+        String catalog = connection.getCatalog();
+
+        try (ResultSet resultSet = metaData.getColumns(catalog, null, tableName, columnName)) {
+            if (resultSet.next()) {
+                return true;
+            }
+        }
+
+        try (ResultSet resultSet = metaData.getColumns(catalog, null, tableName, columnName.toUpperCase())) {
+            if (resultSet.next()) {
+                return true;
+            }
+        }
+
+        try (ResultSet resultSet = metaData.getColumns(catalog, null, tableName, columnName.toLowerCase())) {
+            return resultSet.next();
+        }
     }
 
     private static void ensureDefaultAdminExists() throws SQLException {

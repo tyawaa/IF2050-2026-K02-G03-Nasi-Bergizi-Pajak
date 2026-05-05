@@ -7,7 +7,7 @@ Sebelum menjalankan aplikasi ini, pastikan lingkungan Anda memenuhi hal berikut:
 - Java JDK 17 atau lebih baru
 - Apache Maven terpasang dan dapat diakses melalui terminal
 - Sistem operasi Windows, macOS, atau Linux
-- Akses ke database yang dibutuhkan (jika aplikasi menggunakan database lokal atau server)
+- MySQL Server aktif dan dapat diakses
 
 ## Instalasi
 
@@ -24,6 +24,29 @@ Sebelum menjalankan aplikasi ini, pastikan lingkungan Anda memenuhi hal berikut:
    .\mvnw.cmd clean install
    ```
 3. Pastikan tidak ada error pada proses build sebelum melanjutkan.
+
+## Database MySQL
+
+Aplikasi memakai database MySQL `nasi_bergizi_pajak` secara default.
+
+Konfigurasi default:
+
+```text
+host: localhost
+port: 3306
+database: nasi_bergizi_pajak
+user: root
+password: kosong
+```
+
+Jika password atau user MySQL berbeda, set environment variable sebelum menjalankan aplikasi:
+
+```powershell
+$env:DB_USER="root"
+$env:DB_PASSWORD="password_mysql_kamu"
+```
+
+Database akan dibuat otomatis saat aplikasi berjalan jika user MySQL punya izin `CREATE DATABASE`. Untuk import data dummy, jalankan file `database/nasi_bergizi_pajak.sql` lewat MySQL.
 
 ## Cara Menjalankan Aplikasi
 
