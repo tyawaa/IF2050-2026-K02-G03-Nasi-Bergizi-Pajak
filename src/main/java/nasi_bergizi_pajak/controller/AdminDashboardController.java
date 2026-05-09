@@ -23,6 +23,7 @@ import nasi_bergizi_pajak.model.RecipeIngredient;
 import nasi_bergizi_pajak.controller.RecipeFormController;
 import java.io.IOException;
 import java.util.List;
+import javafx.collections.transformation.FilteredList;
 
 public class AdminDashboardController {
     @FXML private Label welcomeLabel;
@@ -40,6 +41,7 @@ public class AdminDashboardController {
 
     // Recipe Table
     @FXML private TableView<Recipe> recipeTable;
+    @FXML private TextField txtSearchRecipe;
     @FXML private TableColumn<Recipe, Integer> colRecipeId;
     @FXML private TableColumn<Recipe, String> colRecipeName;
     @FXML private TableColumn<Recipe, String> colRecipeDescription;
@@ -110,7 +112,26 @@ public class AdminDashboardController {
         colServingSize.setCellValueFactory(new PropertyValueFactory<>("servingSize"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         setupActionColumn();
-        recipeTable.setItems(recipeList);
+        FilteredList<Recipe> filteredData =
+            new FilteredList<>(recipeList, b -> true);
+
+        txtSearchRecipe.textProperty().addListener((obs, oldValue, newValue) -> {
+
+            filteredData.setPredicate(recipe -> {
+
+                if (newValue == null || newValue.isBlank()) {
+                    return true;
+                }
+
+                String keyword = newValue.toLowerCase();
+
+                return recipe.getName()
+                    .toLowerCase()
+                    .contains(keyword);
+            });
+        });
+
+        recipeTable.setItems(filteredData);
         recipeTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 updateDetailCard(newSelection);
