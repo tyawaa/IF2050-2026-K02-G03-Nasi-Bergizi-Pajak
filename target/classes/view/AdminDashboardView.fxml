@@ -16,7 +16,6 @@
             <padding>
                 <Insets top="20" right="20" bottom="20" left="20"/>
             </padding>
-            <Button fx:id="btnDashboard" text="Dashboard" onAction="#handleDashboard" styleClass="sidebar-button"/>
             <Button fx:id="btnResep" text="Resep" onAction="#handleResep" styleClass="sidebar-button"/>
             <Button fx:id="btnBahanHarga" text="Bahan &amp; Harga" onAction="#handleBahanHarga" styleClass="sidebar-button"/>
             <Region VBox.vgrow="ALWAYS"/>
@@ -48,98 +47,236 @@
         </HBox>
     </top>
     <center>
-        <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE">
-            <Tab fx:id="tabResep" text="Resep">
-                <VBox spacing="10">
-                    <padding>
-                        <Insets top="20" right="20" bottom="20" left="20"/>
-                    </padding>
-                    <HBox spacing="10">
-                        <VBox spacing="10" HBox.hgrow="ALWAYS">
-                            <Label text="Daftar Resep" styleClass="form-title"/>
-                            <TableView fx:id="recipeTable" VBox.vgrow="ALWAYS">
+    <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" styleClass="modern-tabpane">
+
+        <!-- =========================
+             TAB RESEP
+             ========================= -->
+        <Tab fx:id="tabResep" text="Kelola Resep">
+
+            <BorderPane styleClass="content-background">
+
+                <!-- MAIN CONTENT -->
+                <center>
+                    <HBox spacing="18">
+                        <padding>
+                            <Insets top="20" right="20" bottom="20" left="20"/>
+                        </padding>
+
+                        <!-- LEFT -->
+                        <VBox spacing="16" HBox.hgrow="ALWAYS" styleClass="dashboard-panel">
+
+                            <!-- HEADER -->
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox spacing="2">
+                                    <Label text="Daftar Resep" styleClass="section-title"/>
+                                    <Label text="6 resep terdaftar" styleClass="section-subtitle"/>
+                                </VBox>
+
+                                <Region HBox.hgrow="ALWAYS"/>
+
+                                <TextField promptText="Cari resep..."
+                                           styleClass="search-input"/>
+
+                                <Button text="+ Tambah Resep"
+                                onAction="#handleOpenRecipeForm"
+                                styleClass="button-primary"/>
+                            </HBox>
+
+                            <!-- TABLE -->
+                            <TableView fx:id="recipeTable"
+                                       VBox.vgrow="ALWAYS"
+                                       styleClass="modern-table">
+
                                 <columns>
-                                    <TableColumn fx:id="colRecipeId" text="ID" prefWidth="50"/>
-                                    <TableColumn fx:id="colRecipeName" text="Nama" prefWidth="150"/>
-                                    <TableColumn fx:id="colRecipeDescription" text="Deskripsi" prefWidth="200"/>
-                                    <TableColumn fx:id="colServingSize" text="Porsi" prefWidth="80"/>
-                                    <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+                                    <TableColumn fx:id="colRecipeId"
+                                                 text="ID"
+                                                 prefWidth="60"/>
+
+                                    <TableColumn fx:id="colRecipeName"
+                                                 text="Nama Resep"
+                                                 prefWidth="180"/>
+
+                                    <TableColumn fx:id="colRecipeDescription"
+                                                 text="Deskripsi"
+                                                 prefWidth="260"/>
+
+                                    <TableColumn fx:id="colServingSize"
+                                                 text="Porsi"
+                                                 prefWidth="80"/>
+
+                                    <TableColumn fx:id="colStatus"
+                                                 text="Status"
+                                                 prefWidth="120"/>
+
+                                    <TableColumn fx:id="colActions"
+                                                 text="Aksi"
+                                                 prefWidth="180"/>
                                 </columns>
                             </TableView>
+
+                            
+
+                            
                         </VBox>
-                        <VBox fx:id="detailCard" spacing="10" prefWidth="300" styleClass="detail-card">
-                            <Label text="Detail Resep" styleClass="form-title"/>
-                            <Label fx:id="lblDetailRecipeName" text="" styleClass="detail-label"/>
-                            <Label fx:id="lblDetailDescription" text="" styleClass="detail-label"/>
-                            <Label fx:id="lblDetailServingSize" text="" styleClass="detail-label"/>
-                            <Label fx:id="lblDetailStatus" text="" styleClass="detail-label"/>
-                            <Label text="Bahan:" styleClass="detail-label"/>
-                            <Label fx:id="lblDetailIngredients" text="" styleClass="detail-label"/>
+
+
+                        <!-- RIGHT DETAIL -->
+                        <VBox fx:id="detailCard"
+                              spacing="14"
+                              prefWidth="260"
+                              styleClass="detail-modern-card">
+
+                            <Label text="Detail Resep"
+                                   styleClass="mini-section-title"/>
+
+                            <VBox spacing="4">
+                                <Label fx:id="lblDetailRecipeName"
+                                       styleClass="detail-title"/>
+
+                                <Label fx:id="lblDetailDescription"
+                                       wrapText="true"
+                                       styleClass="detail-subtitle"/>
+                            </VBox>
+
+                            <HBox spacing="10">
+
+                                <VBox spacing="6"
+                                       HBox.hgrow="ALWAYS"
+                                       styleClass="stat-box">
+
+                                    <Label text="Porsi"
+                                           styleClass="stat-label"/>
+
+                                    <Label fx:id="lblDetailServingSize"
+                                           styleClass="stat-value"/>
+                                </VBox>
+
+                                <VBox spacing="6"
+                                       HBox.hgrow="ALWAYS"
+                                       styleClass="stat-box">
+
+                                    <Label text="Status"
+                                           styleClass="stat-label"/>
+
+                                    <Label fx:id="lblDetailStatus"
+                                           styleClass="status-badge"/>
+                                </VBox>
+                            </HBox>
+
+                            <VBox spacing="8">
+                                <Label text="Bahan-bahan"
+                                       styleClass="mini-subtitle"/>
+
+                                <Label fx:id="lblDetailIngredients"
+                                       wrapText="true"
+                                       styleClass="detail-subtitle"/>
+                            </VBox>
                         </VBox>
                     </HBox>
-                    <VBox spacing="10">
-                        <Label text="Form Resep" styleClass="form-title"/>
-                        <GridPane hgap="10" vgap="10">
-                            <Label text="Nama:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                            <TextField fx:id="txtRecipeName" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
-                            <Label text="Deskripsi:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                            <TextArea fx:id="txtRecipeDescription" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" prefRowCount="3"/>
-                            <Label text="Porsi:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                            <TextField fx:id="txtServingSize" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                            <Label text="Status:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                            <ComboBox fx:id="cbStatus" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
-                        </GridPane>
-                        <HBox spacing="10">
-                            <Button fx:id="btnSaveRecipe" text="Simpan" onAction="#handleSaveRecipe" styleClass="button-primary"/>
-                            <Button fx:id="btnDeleteRecipe" text="Hapus" onAction="#handleDeleteRecipe" styleClass="button-danger"/>
-                            <Button fx:id="btnClearRecipe" text="Bersihkan" onAction="#handleClearRecipe" styleClass="button-secondary"/>
-                        </HBox>
-                    </VBox>
-                    <VBox spacing="10">
-                        <Label text="Kelola Bahan Resep" styleClass="form-title"/>
-                        <HBox spacing="10">
-                            <ComboBox fx:id="cbRecipeForIngredient" promptText="Pilih Resep" prefWidth="150"/>
-                            <ComboBox fx:id="cbIngredientForRecipe" promptText="Pilih Bahan" prefWidth="150"/>
-                            <TextField fx:id="txtQuantity" promptText="Jumlah" prefWidth="100"/>
-                            <Button fx:id="btnAddIngredientToRecipe" text="Tambah" onAction="#handleAddIngredientToRecipe" styleClass="button-primary"/>
-                        </HBox>
-                    </VBox>
+                </center>
+            </BorderPane>
+        </Tab>
+
+        <!-- =========================
+             TAB BAHAN
+             ========================= -->
+        <Tab fx:id="tabBahanHarga" text="Bahan &amp; Harga">
+
+            <VBox spacing="16" styleClass="content-background">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+
+                <VBox spacing="12" styleClass="dashboard-panel">
+
+                    <Label text="Daftar Bahan"
+                           styleClass="section-title"/>
+
+                    <TableView fx:id="ingredientTable"
+                               VBox.vgrow="ALWAYS"
+                               styleClass="modern-table">
+
+                        <columns>
+                            <TableColumn fx:id="colIngredientId"
+                                         text="ID"
+                                         prefWidth="60"/>
+
+                            <TableColumn fx:id="colIngredientName"
+                                         text="Nama"
+                                         prefWidth="220"/>
+
+                            <TableColumn fx:id="colUnit"
+                                         text="Satuan"
+                                         prefWidth="150"/>
+
+                            <TableColumn fx:id="colPricePerUnit"
+                                         text="Harga per Satuan"
+                                         prefWidth="220"/>
+                        </columns>
+                    </TableView>
                 </VBox>
-            </Tab>
-            <Tab fx:id="tabBahanHarga" text="Bahan &amp; Harga">
-                <VBox spacing="10">
-                    <padding>
-                        <Insets top="20" right="20" bottom="20" left="20"/>
-                    </padding>
-                    <VBox spacing="10" VBox.vgrow="ALWAYS">
-                        <Label text="Daftar Bahan" styleClass="form-title"/>
-                        <TableView fx:id="ingredientTable" VBox.vgrow="ALWAYS">
-                            <columns>
-                                <TableColumn fx:id="colIngredientId" text="ID" prefWidth="50"/>
-                                <TableColumn fx:id="colIngredientName" text="Nama" prefWidth="150"/>
-                                <TableColumn fx:id="colUnit" text="Satuan" prefWidth="100"/>
-                                <TableColumn fx:id="colPricePerUnit" text="Harga per Satuan" prefWidth="150"/>
-                            </columns>
-                        </TableView>
-                    </VBox>
-                    <VBox spacing="10">
-                        <Label text="Form Bahan" styleClass="form-title"/>
-                        <GridPane hgap="10" vgap="10">
-                            <Label text="Nama:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                            <TextField fx:id="txtIngredientName" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
-                            <Label text="Satuan:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                            <TextField fx:id="txtUnit" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                            <Label text="Harga per Satuan:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                            <TextField fx:id="txtPricePerUnit" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                        </GridPane>
-                        <HBox spacing="10">
-                            <Button fx:id="btnSaveIngredient" text="Simpan" onAction="#handleSaveIngredient" styleClass="button-primary"/>
-                            <Button fx:id="btnDeleteIngredient" text="Hapus" onAction="#handleDeleteIngredient" styleClass="button-danger"/>
-                            <Button fx:id="btnClearIngredient" text="Bersihkan" onAction="#handleClearIngredient" styleClass="button-secondary"/>
-                        </HBox>
-                    </VBox>
+
+                <VBox spacing="14"
+                       styleClass="inner-card">
+
+                    <Label text="Form Bahan"
+                           styleClass="mini-section-title"/>
+
+                    <GridPane hgap="14" vgap="12">
+
+                        <columnConstraints>
+                            <ColumnConstraints prefWidth="140"/>
+                            <ColumnConstraints halignment="LEFT" hgrow="ALWAYS"/>
+                        </columnConstraints>
+
+                        <Label text="Nama"
+                               GridPane.rowIndex="0"
+                               GridPane.columnIndex="0"/>
+
+                        <TextField fx:id="txtIngredientName"
+                                   styleClass="modern-input"
+                                   GridPane.rowIndex="0"
+                                   GridPane.columnIndex="1"/>
+
+                        <Label text="Satuan"
+                               GridPane.rowIndex="1"
+                               GridPane.columnIndex="0"/>
+
+                        <TextField fx:id="txtUnit"
+                                   styleClass="modern-input"
+                                   GridPane.rowIndex="1"
+                                   GridPane.columnIndex="1"/>
+
+                        <Label text="Harga per Satuan"
+                               GridPane.rowIndex="2"
+                               GridPane.columnIndex="0"/>
+
+                        <TextField fx:id="txtPricePerUnit"
+                                   styleClass="modern-input"
+                                   GridPane.rowIndex="2"
+                                   GridPane.columnIndex="1"/>
+                    </GridPane>
+
+                    <HBox spacing="10">
+                        <Button fx:id="btnSaveIngredient"
+                                text="Simpan"
+                                onAction="#handleSaveIngredient"
+                                styleClass="button-primary"/>
+
+                        <Button fx:id="btnDeleteIngredient"
+                                text="Hapus"
+                                onAction="#handleDeleteIngredient"
+                                styleClass="button-danger"/>
+
+                        <Button fx:id="btnClearIngredient"
+                                text="Reset"
+                                onAction="#handleClearIngredient"
+                                styleClass="button-outline"/>
+                    </HBox>
                 </VBox>
-            </Tab>
-        </TabPane>
-    </center>
+            </VBox>
+        </Tab>
+    </TabPane>
+</center>
 </BorderPane>

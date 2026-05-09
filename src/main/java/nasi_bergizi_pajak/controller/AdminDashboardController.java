@@ -3,9 +3,15 @@ package nasi_bergizi_pajak.controller;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import nasi_bergizi_pajak.app.AppNavigator;
 import nasi_bergizi_pajak.dao.IngredientDAO;
 import nasi_bergizi_pajak.dao.RecipeDAO;
@@ -14,7 +20,8 @@ import nasi_bergizi_pajak.model.Akun;
 import nasi_bergizi_pajak.model.Ingredient;
 import nasi_bergizi_pajak.model.Recipe;
 import nasi_bergizi_pajak.model.RecipeIngredient;
-
+import nasi_bergizi_pajak.controller.RecipeFormController;
+import java.io.IOException;
 import java.util.List;
 
 public class AdminDashboardController {
@@ -22,7 +29,6 @@ public class AdminDashboardController {
     @FXML private Label emailLabel;
 
     // Sidebar buttons
-    @FXML private Button btnDashboard;
     @FXML private Button btnResep;
     @FXML private Button btnBahanHarga;
     @FXML private Button btnLogout;
@@ -32,7 +38,7 @@ public class AdminDashboardController {
     @FXML private Tab tabResep;
     @FXML private Tab tabBahanHarga;
 
-    // Recipe Table and Form
+    // Recipe Table
     @FXML private TableView<Recipe> recipeTable;
     @FXML private TableColumn<Recipe, Integer> colRecipeId;
     @FXML private TableColumn<Recipe, String> colRecipeName;
@@ -40,15 +46,7 @@ public class AdminDashboardController {
     @FXML private TableColumn<Recipe, Integer> colServingSize;
     @FXML private TableColumn<Recipe, String> colStatus;
 
-    @FXML private TextField txtRecipeName;
-    @FXML private TextArea txtRecipeDescription;
-    @FXML private TextField txtServingSize;
-    @FXML private ComboBox<String> cbStatus;
-    @FXML private Button btnSaveRecipe;
-    @FXML private Button btnDeleteRecipe;
-    @FXML private Button btnClearRecipe;
-
-    // Ingredient Table and Form
+    // Ingredient Table
     @FXML private TableView<Ingredient> ingredientTable;
     @FXML private TableColumn<Ingredient, Integer> colIngredientId;
     @FXML private TableColumn<Ingredient, String> colIngredientName;
@@ -62,13 +60,6 @@ public class AdminDashboardController {
     @FXML private Button btnDeleteIngredient;
     @FXML private Button btnClearIngredient;
 
-    // Recipe Ingredient Management
-    @FXML private ComboBox<Recipe> cbRecipeForIngredient;
-    @FXML private ComboBox<Ingredient> cbIngredientForRecipe;
-    @FXML private TextField txtQuantity;
-    @FXML private Button btnAddIngredientToRecipe;
-    @FXML private Button btnRemoveIngredientFromRecipe;
-    @FXML private ListView<String> lvRecipeIngredients;
 
     // Detail Card
     @FXML private VBox detailCard;
@@ -86,7 +77,7 @@ public class AdminDashboardController {
     // ObservableLists
     private ObservableList<Recipe> recipeList = FXCollections.observableArrayList();
     private ObservableList<Ingredient> ingredientList = FXCollections.observableArrayList();
-
+    
     @FXML
     private void initialize() {
         Akun akun = AppNavigator.getCurrentUser();
@@ -106,8 +97,10 @@ public class AdminDashboardController {
 
         setupRecipeTable();
         setupIngredientTable();
-        setupComboBoxes();
         loadData();
+        if (!recipeList.isEmpty()) {
+            recipeTable.getSelectionModel().selectFirst();
+        }
     }
 
     private void setupRecipeTable() {
@@ -116,13 +109,12 @@ public class AdminDashboardController {
         colRecipeDescription.setCellValueFactory(new PropertyValueFactory<>("description"));
         colServingSize.setCellValueFactory(new PropertyValueFactory<>("servingSize"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-
+        setupActionColumn();
         recipeTable.setItems(recipeList);
         recipeTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
-                populateRecipeForm(newSelection);
                 updateDetailCard(newSelection);
-            }
+                }
         });
     }
 
@@ -140,11 +132,6 @@ public class AdminDashboardController {
         });
     }
 
-    private void setupComboBoxes() {
-        cbStatus.setItems(FXCollections.observableArrayList("Active", "Inactive"));
-        cbRecipeForIngredient.setItems(recipeList);
-        cbIngredientForRecipe.setItems(ingredientList);
-    }
 
     private void loadData() {
         recipeList.clear();
@@ -154,12 +141,6 @@ public class AdminDashboardController {
         ingredientList.addAll(ingredientDAO.listAllIngredients());
     }
 
-    private void populateRecipeForm(Recipe recipe) {
-        txtRecipeName.setText(recipe.getName());
-        txtRecipeDescription.setText(recipe.getDescription());
-        txtServingSize.setText(String.valueOf(recipe.getServingSize()));
-        cbStatus.setValue(recipe.getStatus());
-    }
 
     private void populateIngredientForm(Ingredient ingredient) {
         txtIngredientName.setText(ingredient.getName());
@@ -170,8 +151,8 @@ public class AdminDashboardController {
     private void updateDetailCard(Recipe recipe) {
         lblDetailRecipeName.setText(recipe.getName());
         lblDetailDescription.setText(recipe.getDescription());
-        lblDetailServingSize.setText("Porsi: " + recipe.getServingSize());
-        lblDetailStatus.setText("Status: " + recipe.getStatus());
+        lblDetailServingSize.setText(String.valueOf(recipe.getServingSize()));
+        lblDetailStatus.setText(recipe.getStatus());
 
         List<RecipeIngredient> ingredients = recipeIngredientDAO.getRecipeIngredientsByRecipeId(recipe.getRecipeId());
         StringBuilder sb = new StringBuilder();
@@ -184,57 +165,7 @@ public class AdminDashboardController {
         lblDetailIngredients.setText(sb.toString());
     }
 
-    @FXML
-    private void handleSaveRecipe() {
-        try {
-            String name = txtRecipeName.getText();
-            String description = txtRecipeDescription.getText();
-            int servingSize = Integer.parseInt(txtServingSize.getText());
-            String status = cbStatus.getValue();
 
-            Recipe selectedRecipe = recipeTable.getSelectionModel().getSelectedItem();
-            if (selectedRecipe != null) {
-                // Update
-                selectedRecipe.setName(name);
-                selectedRecipe.setDescription(description);
-                selectedRecipe.setServingSize(servingSize);
-                selectedRecipe.setStatus(status);
-                recipeDAO.updateRecipe(selectedRecipe);
-            } else {
-                // Insert
-                Recipe newRecipe = new Recipe(0, name, description, servingSize, status);
-                recipeDAO.insertRecipe(newRecipe);
-            }
-
-            loadData();
-            clearRecipeForm();
-        } catch (NumberFormatException e) {
-            showAlert("Error", "Serving size must be a number");
-        }
-    }
-
-    @FXML
-    private void handleDeleteRecipe() {
-        Recipe selectedRecipe = recipeTable.getSelectionModel().getSelectedItem();
-        if (selectedRecipe != null) {
-            recipeDAO.deleteRecipe(selectedRecipe.getRecipeId());
-            loadData();
-            clearRecipeForm();
-        }
-    }
-
-    @FXML
-    private void handleClearRecipe() {
-        clearRecipeForm();
-        recipeTable.getSelectionModel().clearSelection();
-    }
-
-    private void clearRecipeForm() {
-        txtRecipeName.clear();
-        txtRecipeDescription.clear();
-        txtServingSize.clear();
-        cbStatus.setValue(null);
-    }
 
     @FXML
     private void handleSaveIngredient() {
@@ -286,32 +217,6 @@ public class AdminDashboardController {
     }
 
     @FXML
-    private void handleAddIngredientToRecipe() {
-        Recipe selectedRecipe = cbRecipeForIngredient.getValue();
-        Ingredient selectedIngredient = cbIngredientForRecipe.getValue();
-        try {
-            double quantity = Double.parseDouble(txtQuantity.getText());
-            if (selectedRecipe != null && selectedIngredient != null) {
-                RecipeIngredient ri = new RecipeIngredient(0, selectedRecipe.getRecipeId(), selectedIngredient.getIngredientId(), quantity);
-                recipeIngredientDAO.insertRecipeIngredient(ri);
-                updateDetailCard(selectedRecipe);
-            }
-        } catch (NumberFormatException e) {
-            showAlert("Error", "Quantity must be a number");
-        }
-    }
-
-    @FXML
-    private void handleRemoveIngredientFromRecipe() {
-        // Implement removal logic if needed
-    }
-
-    @FXML
-    private void handleDashboard() {
-        // Already on dashboard
-    }
-
-    @FXML
     private void handleResep() {
         tabPane.getSelectionModel().select(tabResep);
     }
@@ -333,4 +238,165 @@ public class AdminDashboardController {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    @FXML
+    private void handleOpenRecipeForm() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/view/RecipeFormView.fxml")
+            );
+
+            Parent root = loader.load();
+
+            Stage dialog = new Stage();
+            dialog.setTitle("Form Resep");
+
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.initOwner(recipeTable.getScene().getWindow());
+
+            Scene scene = new Scene(root);
+            dialog.setScene(scene);
+
+            dialog.setResizable(false);
+            dialog.showAndWait();
+            loadData();
+
+        } catch (IOException e) {
+            AppNavigator.showFatalError(
+                "Gagal membuka form",
+                e.getMessage()
+            );
+        }
+    }
+
+    @FXML
+    private TableColumn<Recipe, Void> colActions;
+
+    private void setupActionColumn() {
+
+    colActions.setCellFactory(param -> new TableCell<>() {
+
+        private final Button btnEdit =
+            new Button("✏");
+
+        private final Button btnToggle =
+            new Button("Nonaktifkan");
+
+        private final HBox pane =
+            new HBox(8, btnToggle, btnEdit);
+
+        {
+
+            btnEdit.getStyleClass()
+                .add("table-edit-button");
+
+            btnToggle.getStyleClass()
+                .add("table-danger-button");
+            
+            btnEdit.setFocusTraversable(false);
+            btnToggle.setFocusTraversable(false);
+            
+            btnEdit.setOnAction(event -> {
+
+                Recipe recipe =
+                    getTableView().getItems().get(getIndex());
+
+                openEditRecipe(recipe);
+            });
+
+            btnToggle.setOnAction(event -> {
+
+                Recipe recipe =
+                    getTableView().getItems().get(getIndex());
+
+                toggleRecipeStatus(recipe);
+            });
+        }
+
+        @Override
+    protected void updateItem(Void item, boolean empty) {
+
+        super.updateItem(item, empty);
+
+        if (empty) {
+
+            setGraphic(null);
+
+        } else {
+
+            Recipe recipe =
+                getTableView().getItems().get(getIndex());
+
+            if (recipe.getStatus()
+                    .equalsIgnoreCase("ACTIVE")) {
+
+                btnToggle.setText("Nonaktifkan");
+
+            } else {
+
+                btnToggle.setText("Aktifkan");
+            }
+
+            setGraphic(pane);
+        }
+    }
+    });
+    }
+    private void openEditRecipe(Recipe recipe) {
+
+    try {
+
+        FXMLLoader loader = new FXMLLoader(
+            getClass().getResource("/view/RecipeFormView.fxml")
+        );
+
+        Parent root = loader.load();
+
+        RecipeFormController controller =
+            loader.getController();
+
+        controller.setRecipe(recipe);
+
+        Stage dialog = new Stage();
+
+        dialog.setTitle("Edit Resep");
+
+        dialog.initModality(Modality.APPLICATION_MODAL);
+
+        dialog.initOwner(
+            recipeTable.getScene().getWindow()
+        );
+
+        Scene scene = new Scene(root);
+
+        dialog.setScene(scene);
+
+        dialog.setResizable(false);
+
+        dialog.showAndWait();
+
+        loadData();
+
+    } catch (IOException e) {
+
+        AppNavigator.showFatalError(
+            "Gagal membuka form edit",
+            e.getMessage()
+        );
+    }
+    }
+    private void toggleRecipeStatus(Recipe recipe) {
+
+        if (recipe.getStatus().equalsIgnoreCase("ACTIVE")) {
+            recipe.setStatus("INACTIVE");
+        } else {
+            recipe.setStatus("ACTIVE");
+        }
+
+        recipeDAO.updateRecipe(recipe);
+
+        recipeTable.refresh();
+        updateDetailCard(recipe);
+    }
+    
 }

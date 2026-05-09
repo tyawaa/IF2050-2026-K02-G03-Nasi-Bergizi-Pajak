@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="nasi_bergizi_pajak.controller.RecipeFormController"
+      spacing="18"
+      prefWidth="520"
+      styleClass="dialog-root"
+      stylesheets="@../auth.css">
+
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+
+    <VBox spacing="4">
+        <Label text="Form Resep"
+               styleClass="section-title"/>
+
+        <Label text="Tambah atau edit data resep"
+               styleClass="section-subtitle"/>
+    </VBox>
+
+    <GridPane hgap="14" vgap="14">
+
+        <columnConstraints>
+            <ColumnConstraints prefWidth="120"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+
+        <Label text="Nama"
+               GridPane.rowIndex="0"
+               GridPane.columnIndex="0"/>
+
+        <TextField fx:id="txtRecipeName"
+                   promptText="Masukkan nama resep"
+                   styleClass="modern-input"
+                   GridPane.rowIndex="0"
+                   GridPane.columnIndex="1"/>
+
+        <Label text="Deskripsi"
+               GridPane.rowIndex="1"
+               GridPane.columnIndex="0"/>
+
+        <TextArea fx:id="txtRecipeDescription"
+                  prefRowCount="4"
+                  promptText="Deskripsi resep"
+                  styleClass="modern-textarea"
+                  GridPane.rowIndex="1"
+                  GridPane.columnIndex="1"/>
+
+        <Label text="Porsi"
+               GridPane.rowIndex="2"
+               GridPane.columnIndex="0"/>
+
+        <TextField fx:id="txtServingSize"
+                   promptText="Jumlah porsi"
+                   styleClass="modern-input"
+                   GridPane.rowIndex="2"
+                   GridPane.columnIndex="1"/>
+
+        <Label text="Status"
+               GridPane.rowIndex="3"
+               GridPane.columnIndex="0"/>
+
+        <ComboBox fx:id="cbStatus"
+                  styleClass="modern-combo"
+                  GridPane.rowIndex="3"
+                  GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <HBox spacing="10"
+           alignment="CENTER_RIGHT">
+
+        <Button text="Batal"
+                onAction="#handleCancel"
+                styleClass="button-outline"/>
+
+        <Button text="Simpan"
+                onAction="#handleSaveRecipe"
+                styleClass="button-primary"/>
+    </HBox>
+</VBox>
