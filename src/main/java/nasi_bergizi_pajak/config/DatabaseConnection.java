@@ -11,7 +11,7 @@ public class DatabaseConnection {
             + "&allowPublicKeyRetrieval=true"
             + "&serverTimezone=Asia/Jakarta";
     private static final String DEFAULT_DB_USER = "root";
-    private static final String DEFAULT_DB_PASSWORD = "";
+    private static final String DEFAULT_DB_PASSWORD = "javatikus";
 
     public static Connection getConnection() throws SQLException {
         String dbUrl = getConfig("DB_URL", "db.url", DEFAULT_DB_URL);
