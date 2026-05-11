@@ -51,6 +51,7 @@ import nasi_bergizi_pajak.model.IngredientNutrition;
 import nasi_bergizi_pajak.model.IngredientPrice;
 import nasi_bergizi_pajak.model.Recipe;
 import nasi_bergizi_pajak.model.RecipeIngredient;
+import nasi_bergizi_pajak.util.UnitOptions;
 
 public class AdminDashboardController {
     @FXML private StackPane contentPane;
@@ -240,11 +241,13 @@ public class AdminDashboardController {
         statusCol.setMaxWidth(1f * Integer.MAX_VALUE * 0.12);
 
         TableColumn<AdminRecipe, String> actionCol = new TableColumn<>("Aksi");
+        styleActionColumn(actionCol);
         actionCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().status()));
         actionCol.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String status, boolean empty) {
                 super.updateItem(status, empty);
+                styleActionCell(this);
                 if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                     return;
@@ -266,7 +269,7 @@ public class AdminDashboardController {
                 Button edit = tableActionButton("Edit", false);
                 edit.setOnAction(event -> openEditRecipeDialog(recipe));
                 HBox actions = new HBox(8, toggle, edit);
-                actions.setAlignment(Pos.CENTER_RIGHT);
+                actions.setAlignment(Pos.CENTER);
                 setGraphic(actions);
             }
         });
@@ -423,12 +426,13 @@ public class AdminDashboardController {
 
     private TableColumn<AdminIngredient, String> ingredientActionColumn() {
         TableColumn<AdminIngredient, String> actionCol = new TableColumn<>("Aksi");
+        styleActionColumn(actionCol);
         actionCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().name()));
         actionCol.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                setAlignment(Pos.CENTER_RIGHT);
+                styleActionCell(this);
                 if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                     return;
@@ -437,7 +441,7 @@ public class AdminDashboardController {
                 Button edit = tableActionButton("Edit", false);
                 edit.setOnAction(event -> openEditIngredientDialog(ingredient));
                 HBox box = new HBox(edit);
-                box.setAlignment(Pos.CENTER_RIGHT);
+                box.setAlignment(Pos.CENTER);
                 setGraphic(box);
             }
         });
@@ -533,12 +537,13 @@ public class AdminDashboardController {
 
     private TableColumn<AdminNutrition, String> nutritionActionColumn() {
         TableColumn<AdminNutrition, String> actionCol = new TableColumn<>("Aksi");
+        styleActionColumn(actionCol);
         actionCol.setCellValueFactory(data -> new SimpleStringProperty(ingredientName(data.getValue().ingredientId())));
         actionCol.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                setAlignment(Pos.CENTER_RIGHT);
+                styleActionCell(this);
                 if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                     return;
@@ -550,7 +555,7 @@ public class AdminDashboardController {
                     openEditNutritionDialog(nutrition);
                 });
                 HBox box = new HBox(edit);
-                box.setAlignment(Pos.CENTER_RIGHT);
+                box.setAlignment(Pos.CENTER);
                 setGraphic(box);
             }
         });
@@ -641,12 +646,13 @@ public class AdminDashboardController {
 
     private TableColumn<AdminIngredient, String> updateActionColumn() {
         TableColumn<AdminIngredient, String> actionCol = new TableColumn<>("Aksi");
+        styleActionColumn(actionCol);
         actionCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().name()));
         actionCol.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                setAlignment(Pos.CENTER_RIGHT);
+                styleActionCell(this);
                 if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                     return;
@@ -655,7 +661,7 @@ public class AdminDashboardController {
                 Button update = tableActionButton("Update", true);
                 update.setOnAction(event -> openUpdatePriceDialog(ingredient));
                 HBox box = new HBox(update);
-                box.setAlignment(Pos.CENTER_RIGHT);
+                box.setAlignment(Pos.CENTER);
                 setGraphic(box);
             }
         });
@@ -944,10 +950,15 @@ public class AdminDashboardController {
         ComboBox<AdminIngredient> ingredientSelect = new ComboBox<>(ingredients);
         ingredientSelect.setPromptText("Pilih bahan");
         TextField quantity = new TextField("100");
-        TextField unit = new TextField("gram");
+        ComboBox<String> unit = new ComboBox<>();
+        unit.setPromptText("Pilih unit");
+        unit.setMaxWidth(Double.MAX_VALUE);
         ingredientSelect.valueProperty().addListener((obs, oldValue, newValue) -> {
+            unit.getItems().clear();
+            unit.getSelectionModel().clearSelection();
             if (newValue != null) {
-                unit.setText(defaultRecipeUnit(newValue.unit()));
+                unit.getItems().setAll(UnitOptions.recipeUnitsFor(newValue.unit()));
+                unit.setValue(UnitOptions.defaultRecipeUnit(newValue.unit()));
             }
         });
 
@@ -972,6 +983,11 @@ public class AdminDashboardController {
                 event.consume();
                 return;
             }
+            if (unit.getValue() == null || unit.getValue().isBlank()) {
+                showInfo("Data belum lengkap", "Pilih unit bahan.");
+                event.consume();
+                return;
+            }
             try {
                 if (Double.parseDouble(quantity.getText().trim()) <= 0) {
                     showInfo("Data belum valid", "Jumlah harus lebih dari 0.");
@@ -990,9 +1006,19 @@ public class AdminDashboardController {
             AdminIngredient ingredient = ingredientSelect.getValue();
             return new AdminRecipeIngredient(0, ingredient.id(),
                     Double.parseDouble(quantity.getText().trim()),
-                    unit.getText().trim());
+                    unit.getValue());
         });
         return dialog.showAndWait();
+    }
+
+    private ComboBox<String> createMasterUnitComboBox(String selectedUnit) {
+        ComboBox<String> unit = new ComboBox<>(FXCollections.observableArrayList(UnitOptions.masterUnitsWith(selectedUnit)));
+        unit.setPromptText("Pilih unit");
+        unit.setMaxWidth(Double.MAX_VALUE);
+        if (selectedUnit != null && !selectedUnit.isBlank()) {
+            unit.setValue(selectedUnit.trim());
+        }
+        return unit;
     }
 
     private void openAddIngredientDialog() {
@@ -1003,7 +1029,7 @@ public class AdminDashboardController {
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, addType);
 
         TextField name = new TextField();
-        TextField unit = new TextField();
+        ComboBox<String> unit = createMasterUnitComboBox(null);
         TextField price = new TextField();
         GridPane form = new GridPane();
         form.setHgap(12);
@@ -1019,7 +1045,7 @@ public class AdminDashboardController {
         Node addNode = dialog.getDialogPane().lookupButton(addType);
         addNode.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             try {
-                if (name.getText().trim().isBlank() || unit.getText().trim().isBlank()
+                if (name.getText().trim().isBlank() || unit.getValue() == null || unit.getValue().isBlank()
                         || Double.parseDouble(price.getText().trim()) < 0) {
                     showInfo("Data belum valid", "Isi nama, unit, dan harga dengan benar.");
                     event.consume();
@@ -1034,7 +1060,7 @@ public class AdminDashboardController {
             if (button != addType) {
                 return null;
             }
-            return new AdminIngredient(0, name.getText().trim(), unit.getText().trim(),
+            return new AdminIngredient(0, name.getText().trim(), unit.getValue(),
                     Double.parseDouble(price.getText().trim()));
         });
 
@@ -1071,7 +1097,7 @@ public class AdminDashboardController {
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, saveType);
 
         TextField name = new TextField(ingredient.name());
-        TextField unit = new TextField(ingredient.unit());
+        ComboBox<String> unit = createMasterUnitComboBox(ingredient.unit());
         GridPane form = new GridPane();
         form.setHgap(12);
         form.setVgap(12);
@@ -1083,14 +1109,14 @@ public class AdminDashboardController {
 
         Node saveNode = dialog.getDialogPane().lookupButton(saveType);
         saveNode.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
-            if (name.getText().trim().isBlank() || unit.getText().trim().isBlank()) {
+            if (name.getText().trim().isBlank() || unit.getValue() == null || unit.getValue().isBlank()) {
                 showInfo("Data belum valid", "Nama dan unit bahan wajib diisi.");
                 event.consume();
             }
         });
 
         dialog.setResultConverter(button -> button == saveType
-                ? new AdminIngredientEdit(name.getText().trim(), unit.getText().trim())
+                ? new AdminIngredientEdit(name.getText().trim(), unit.getValue())
                 : null);
 
         dialog.showAndWait().ifPresent(edit -> {
@@ -1361,7 +1387,22 @@ public class AdminDashboardController {
         Button button = outlineButton(text);
         button.getStyleClass().add("admin-table-action-button");
         button.getStyleClass().add(wide ? "admin-table-action-wide" : "admin-table-action-compact");
+        button.setFocusTraversable(false);
         return button;
+    }
+
+    private void styleActionCell(TableCell<?, ?> cell) {
+        cell.setAlignment(Pos.CENTER);
+        if (!cell.getStyleClass().contains("admin-table-action-cell")) {
+            cell.getStyleClass().add("admin-table-action-cell");
+        }
+    }
+
+    private void styleActionColumn(TableColumn<?, ?> column) {
+        if (!column.getStyleClass().contains("admin-action-column")) {
+            column.getStyleClass().add("admin-action-column");
+        }
+        column.setStyle("-fx-alignment: CENTER;");
     }
 
     private Button iconButton(String text) {
@@ -1592,23 +1633,11 @@ public class AdminDashboardController {
     }
 
     private double estimateIngredientCost(AdminIngredient ingredient, AdminRecipeIngredient item) {
-        String ingredientUnit = ingredient.unit().toLowerCase();
-        String itemUnit = item.unit().toLowerCase();
-        if ("kg".equals(ingredientUnit) && "gram".equals(itemUnit)) {
-            return ingredient.currentPrice() * item.quantity() / 1000;
+        double convertedQuantity = UnitOptions.convertQuantity(item.quantity(), item.unit(), ingredient.unit());
+        if (Double.isNaN(convertedQuantity)) {
+            return ingredient.currentPrice() * item.quantity();
         }
-        if ("liter".equals(ingredientUnit) && "ml".equals(itemUnit)) {
-            return ingredient.currentPrice() * item.quantity() / 1000;
-        }
-        return ingredient.currentPrice() * item.quantity();
-    }
-
-    private String defaultRecipeUnit(String ingredientUnit) {
-        return switch (ingredientUnit.toLowerCase()) {
-            case "kg" -> "gram";
-            case "liter", "botol" -> "ml";
-            default -> ingredientUnit;
-        };
+        return ingredient.currentPrice() * convertedQuantity;
     }
 
     private String formatCurrency(double amount) {

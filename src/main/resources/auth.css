@@ -1091,16 +1091,6 @@
     -fx-text-fill: #1F1D1B;
 }
 
-.admin-budget-badge {
-    -fx-background-color: #EEF7EA;
-    -fx-border-color: #CFE6C7;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
-    -fx-padding: 4px 10px;
-    -fx-text-fill: #2F6B2D;
-    -fx-font-size: 14px;
-}
-
 .admin-top-icon,
 .admin-avatar {
     -fx-text-fill: #5F564F;
@@ -1252,6 +1242,7 @@
     -fx-pref-height: 34px;
     -fx-min-height: 34px;
     -fx-max-height: 34px;
+    -fx-alignment: CENTER;
     -fx-background-color: #FFFFFF;
     -fx-border-color: #E8DFD2;
     -fx-border-width: 1px;
@@ -1326,6 +1317,11 @@
     -fx-alignment: CENTER_LEFT;
 }
 
+.admin-table .admin-action-column,
+.admin-table .column-header.admin-action-column .label {
+    -fx-alignment: CENTER;
+}
+
 .admin-table .table-row-cell {
     -fx-background-color: white;
     -fx-border-color: transparent transparent #EFE5D8 transparent;
@@ -1340,6 +1336,11 @@
     -fx-font-size: 15px;
     -fx-padding: 12px 10px;
     -fx-text-fill: #1F1D1B;
+}
+
+.admin-table .admin-table-action-cell {
+    -fx-alignment: CENTER;
+    -fx-padding: 0 10px;
 }
 
 .admin-status-badge {

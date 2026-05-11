@@ -79,6 +79,7 @@
             <columnConstraints>
                 <ColumnConstraints hgrow="ALWAYS"/>
                 <ColumnConstraints prefWidth="120"/>
+                <ColumnConstraints prefWidth="120"/>
                 <ColumnConstraints prefWidth="92"/>
                 <ColumnConstraints prefWidth="92"/>
             </columnConstraints>
@@ -96,17 +97,24 @@
                        GridPane.rowIndex="0"
                        GridPane.columnIndex="1"/>
 
+            <ComboBox fx:id="cbIngredientUnit"
+                      promptText="Unit"
+                      styleClass="modern-combo"
+                      maxWidth="Infinity"
+                      GridPane.rowIndex="0"
+                      GridPane.columnIndex="2"/>
+
             <Button text="Tambah"
                     onAction="#handleAddIngredient"
                     styleClass="button-secondary"
                     GridPane.rowIndex="0"
-                    GridPane.columnIndex="2"/>
+                    GridPane.columnIndex="3"/>
 
             <Button text="Hapus"
                     onAction="#handleRemoveIngredient"
                     styleClass="button-danger"
                     GridPane.rowIndex="0"
-                    GridPane.columnIndex="3"/>
+                    GridPane.columnIndex="4"/>
         </GridPane>
 
         <TableView fx:id="recipeIngredientTable"

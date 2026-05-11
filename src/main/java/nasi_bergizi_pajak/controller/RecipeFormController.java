@@ -22,6 +22,7 @@ import nasi_bergizi_pajak.dao.RecipeIngredientDAO;
 import nasi_bergizi_pajak.model.Ingredient;
 import nasi_bergizi_pajak.model.Recipe;
 import nasi_bergizi_pajak.model.RecipeIngredient;
+import nasi_bergizi_pajak.util.UnitOptions;
 
 public class RecipeFormController {
 
@@ -32,6 +33,7 @@ public class RecipeFormController {
 
     @FXML private ComboBox<Ingredient> cbIngredient;
     @FXML private TextField txtIngredientQuantity;
+    @FXML private ComboBox<String> cbIngredientUnit;
     @FXML private TableView<RecipeIngredient> recipeIngredientTable;
     @FXML private TableColumn<RecipeIngredient, String> colFormIngredientName;
     @FXML private TableColumn<RecipeIngredient, Double> colFormIngredientQuantity;
@@ -53,6 +55,7 @@ public class RecipeFormController {
 
         loadIngredientOptions();
         setupRecipeIngredientTable();
+        setupIngredientUnitOptions();
     }
 
     private void loadIngredientOptions() {
@@ -76,11 +79,28 @@ public class RecipeFormController {
         recipeIngredientTable.setItems(recipeIngredients);
     }
 
+    private void setupIngredientUnitOptions() {
+        cbIngredient.valueProperty().addListener((obs, oldValue, newValue) -> {
+            cbIngredientUnit.getItems().clear();
+            cbIngredientUnit.getSelectionModel().clearSelection();
+            if (newValue != null) {
+                cbIngredientUnit.getItems().setAll(UnitOptions.recipeUnitsFor(newValue.getUnit()));
+                cbIngredientUnit.setValue(UnitOptions.defaultRecipeUnit(newValue.getUnit()));
+            }
+        });
+    }
+
     @FXML
     private void handleAddIngredient() {
         Ingredient ingredient = cbIngredient.getValue();
         if (ingredient == null) {
             showAlert("Data belum lengkap", "Pilih bahan terlebih dahulu.");
+            return;
+        }
+
+        String unit = cbIngredientUnit.getValue();
+        if (unit == null || unit.isBlank()) {
+            showAlert("Data belum lengkap", "Pilih unit bahan terlebih dahulu.");
             return;
         }
 
@@ -100,14 +120,15 @@ public class RecipeFormController {
         RecipeIngredient existing = findRecipeIngredient(ingredient.getIngredientId());
         if (existing != null) {
             existing.setQuantity(quantity);
-            existing.setUnit(ingredient.getUnit());
+            existing.setUnit(unit);
             recipeIngredientTable.refresh();
         } else {
             int recipeId = currentRecipe == null ? 0 : currentRecipe.getRecipeId();
-            recipeIngredients.add(new RecipeIngredient(0, recipeId, ingredient.getIngredientId(), quantity, ingredient.getUnit()));
+            recipeIngredients.add(new RecipeIngredient(0, recipeId, ingredient.getIngredientId(), quantity, unit));
         }
 
         cbIngredient.getSelectionModel().clearSelection();
+        cbIngredientUnit.getItems().clear();
         txtIngredientQuantity.clear();
     }
 

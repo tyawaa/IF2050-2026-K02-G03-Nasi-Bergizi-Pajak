@@ -16,6 +16,7 @@ nasi_bergizi_pajak\controller\RegistrasiController.class
 nasi_bergizi_pajak\controller\AdminDashboardController$5.class
 nasi_bergizi_pajak\Main.class
 nasi_bergizi_pajak\dao\AkunDAO.class
+nasi_bergizi_pajak\util\UnitOptions.class
 nasi_bergizi_pajak\controller\AdminDashboardController.class
 nasi_bergizi_pajak\util\ValidationUtil.class
 nasi_bergizi_pajak\util\PasswordUtil.class
