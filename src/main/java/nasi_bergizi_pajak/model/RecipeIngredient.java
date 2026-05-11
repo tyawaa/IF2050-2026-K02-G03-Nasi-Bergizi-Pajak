@@ -5,15 +5,21 @@ public class RecipeIngredient {
     private int recipeId;
     private int ingredientId;
     private double quantity;
+    private String unit;
 
     // Constructors
     public RecipeIngredient() {}
 
     public RecipeIngredient(int recipeIngredientId, int recipeId, int ingredientId, double quantity) {
+        this(recipeIngredientId, recipeId, ingredientId, quantity, "");
+    }
+
+    public RecipeIngredient(int recipeIngredientId, int recipeId, int ingredientId, double quantity, String unit) {
         this.recipeIngredientId = recipeIngredientId;
         this.recipeId = recipeId;
         this.ingredientId = ingredientId;
         this.quantity = quantity;
+        this.unit = unit;
     }
 
     // Getters and Setters
@@ -47,5 +53,13 @@ public class RecipeIngredient {
 
     public void setQuantity(double quantity) {
         this.quantity = quantity;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 }

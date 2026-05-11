@@ -25,23 +25,32 @@ public class RecipeDAO {
                 recipes.add(recipe);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Gagal memuat daftar resep.", e);
         }
         return recipes;
     }
 
-    public void insertRecipe(Recipe recipe) {
+    public int insertRecipe(Recipe recipe) {
         String query = "INSERT INTO recipe (name, description, serving_size, status) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, recipe.getName());
             stmt.setString(2, recipe.getDescription());
             stmt.setInt(3, recipe.getServingSize());
             stmt.setString(4, recipe.getStatus());
             stmt.executeUpdate();
+
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int recipeId = generatedKeys.getInt(1);
+                    recipe.setRecipeId(recipeId);
+                    return recipeId;
+                }
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Gagal menyimpan resep.", e);
         }
+        throw new IllegalStateException("Gagal mengambil ID resep baru.");
     }
 
     public void updateRecipe(Recipe recipe) {
@@ -55,7 +64,7 @@ public class RecipeDAO {
             stmt.setInt(5, recipe.getRecipeId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Gagal memperbarui resep.", e);
         }
     }
 
@@ -66,7 +75,7 @@ public class RecipeDAO {
             stmt.setInt(1, recipeId);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Gagal menghapus resep.", e);
         }
     }
 
@@ -87,7 +96,7 @@ public class RecipeDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Gagal memuat resep.", e);
         }
         return null;
     }

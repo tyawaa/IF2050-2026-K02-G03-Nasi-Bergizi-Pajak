@@ -2,282 +2,80 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.geometry.Rectangle2D?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
+<BorderPane fx:id="adminRoot"
+            xmlns:fx="http://javafx.com/fxml"
             fx:controller="nasi_bergizi_pajak.controller.AdminDashboardController"
             stylesheets="@../auth.css"
-            styleClass="dashboard-root">
+            styleClass="admin-shell">
     <left>
-        <VBox spacing="10" styleClass="sidebar">
+        <VBox spacing="18" styleClass="admin-sidebar">
             <padding>
-                <Insets top="20" right="20" bottom="20" left="20"/>
+                <Insets top="12" right="10" bottom="14" left="10"/>
             </padding>
-            <Button fx:id="btnResep" text="Resep" onAction="#handleResep" styleClass="sidebar-button"/>
-            <Button fx:id="btnBahanHarga" text="Bahan &amp; Harga" onAction="#handleBahanHarga" styleClass="sidebar-button"/>
+            <HBox spacing="10" styleClass="admin-brand-row">
+                <StackPane styleClass="admin-logo-box">
+                    <ImageView fitWidth="36" fitHeight="36" preserveRatio="true">
+                        <viewport>
+                            <Rectangle2D minX="33" minY="30" width="86" height="86"/>
+                        </viewport>
+                        <image>
+                            <Image url="@../img/logo_nasibergizipajak.png"/>
+                        </image>
+                    </ImageView>
+                </StackPane>
+                <VBox spacing="0">
+                    <Label text="Nasi Bergizi" styleClass="admin-brand-title"/>
+                    <Label text="Pajak" styleClass="admin-brand-subtitle"/>
+                </VBox>
+            </HBox>
+
+            <VBox spacing="8">
+                <Label text="ADMIN" styleClass="admin-sidebar-label"/>
+                <Button fx:id="btnResep"
+                        text="Kelola Resep"
+                        onAction="#handleResep"
+                        styleClass="admin-nav-button"/>
+                <Button fx:id="btnBahanHarga"
+                        text="Bahan &amp; Harga"
+                        onAction="#handleBahanHarga"
+                        styleClass="admin-nav-button"/>
+            </VBox>
+
             <Region VBox.vgrow="ALWAYS"/>
-            <Button fx:id="btnLogout" text="Logout" onAction="#handleLogout" styleClass="sidebar-button"/>
+
+            <Button fx:id="btnLogout"
+                    text="Logout"
+                    onAction="#handleLogout"
+                    styleClass="admin-logout-button"/>
         </VBox>
     </left>
+
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dashboard-header">
+        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="admin-topbar">
             <padding>
-                <Insets top="18" right="28" bottom="18" left="28"/>
+                <Insets top="10" right="18" bottom="10" left="18"/>
             </padding>
-            <StackPane styleClass="brand-image-mark-small">
-                <ImageView fitWidth="44" fitHeight="44" preserveRatio="true" styleClass="brand-logo-image">
-                    <viewport>
-                        <Rectangle2D minX="33" minY="30" width="86" height="86"/>
-                    </viewport>
-                    <image>
-                        <Image url="@../img/logo_nasibergizipajak.png"/>
-                    </image>
-                </ImageView>
-            </StackPane>
-            <VBox spacing="0">
-                <Label text="Nasi Bergizi Pajak" styleClass="dashboard-brand"/>
-                <Label text="Dashboard Admin" styleClass="dashboard-subtitle"/>
-            </VBox>
+            <Label fx:id="headerTitle" text="Admin: Kelola Resep" styleClass="admin-page-title"/>
+            <Label text="Budget: 22 Apr - 28 Apr" styleClass="admin-budget-badge"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="welcomeLabel" text="Dashboard Admin" styleClass="dashboard-title"/>
-            <Label fx:id="emailLabel" text="" styleClass="dashboard-email"/>
+            <Label text="!" styleClass="admin-top-icon"/>
+            <Label text="3" styleClass="admin-notif-badge"/>
+            <Label text="B" styleClass="admin-avatar"/>
+            <Label fx:id="userLabel" text="Budi" styleClass="admin-user-name"/>
         </HBox>
     </top>
+
     <center>
-    <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" styleClass="modern-tabpane">
-
-        <!-- =========================
-             TAB RESEP
-             ========================= -->
-        <Tab fx:id="tabResep" text="Kelola Resep">
-
-            <BorderPane styleClass="content-background">
-
-                <!-- MAIN CONTENT -->
-                <center>
-                    <HBox spacing="18">
-                        <padding>
-                            <Insets top="20" right="20" bottom="20" left="20"/>
-                        </padding>
-
-                        <!-- LEFT -->
-                        <VBox spacing="16" HBox.hgrow="ALWAYS" styleClass="dashboard-panel">
-
-                            <!-- HEADER -->
-                            <HBox alignment="CENTER_LEFT" spacing="12">
-                                <VBox spacing="2">
-                                    <Label text="Daftar Resep" styleClass="section-title"/>
-                                    <Label text="6 resep terdaftar" styleClass="section-subtitle"/>
-                                </VBox>
-
-                                <Region HBox.hgrow="ALWAYS"/>
-
-                                <TextField fx:id="txtSearchRecipe"
-                                promptText="Cari resep..."
-                                styleClass="search-input"/>
-
-                                <Button text="+ Tambah Resep"
-                                onAction="#handleOpenRecipeForm"
-                                styleClass="button-primary"/>
-                            </HBox>
-
-                            <!-- TABLE -->
-                            <TableView fx:id="recipeTable"
-                                       VBox.vgrow="ALWAYS"
-                                       styleClass="modern-table">
-
-                                <columns>
-                                    <TableColumn fx:id="colRecipeId"
-                                                 text="ID"
-                                                 prefWidth="60"/>
-
-                                    <TableColumn fx:id="colRecipeName"
-                                                 text="Nama Resep"
-                                                 prefWidth="180"/>
-
-                                    <TableColumn fx:id="colRecipeDescription"
-                                                 text="Deskripsi"
-                                                 prefWidth="260"/>
-
-                                    <TableColumn fx:id="colServingSize"
-                                                 text="Porsi"
-                                                 prefWidth="80"/>
-
-                                    <TableColumn fx:id="colStatus"
-                                                 text="Status"
-                                                 prefWidth="120"/>
-
-                                    <TableColumn fx:id="colActions"
-                                                 text="Aksi"
-                                                 prefWidth="180"/>
-                                </columns>
-                            </TableView>
-
-                            
-
-                            
-                        </VBox>
-
-
-                        <!-- RIGHT DETAIL -->
-                        <VBox fx:id="detailCard"
-                              spacing="14"
-                              prefWidth="260"
-                              styleClass="detail-modern-card">
-
-                            <Label text="Detail Resep"
-                                   styleClass="mini-section-title"/>
-
-                            <VBox spacing="4">
-                                <Label fx:id="lblDetailRecipeName"
-                                       styleClass="detail-title"/>
-
-                                <Label fx:id="lblDetailDescription"
-                                       wrapText="true"
-                                       styleClass="detail-subtitle"/>
-                            </VBox>
-
-                            <HBox spacing="10">
-
-                                <VBox spacing="6"
-                                       HBox.hgrow="ALWAYS"
-                                       styleClass="stat-box">
-
-                                    <Label text="Porsi"
-                                           styleClass="stat-label"/>
-
-                                    <Label fx:id="lblDetailServingSize"
-                                           styleClass="stat-value"/>
-                                </VBox>
-
-                                <VBox spacing="6"
-                                       HBox.hgrow="ALWAYS"
-                                       styleClass="stat-box">
-
-                                    <Label text="Status"
-                                           styleClass="stat-label"/>
-
-                                    <Label fx:id="lblDetailStatus"
-                                           styleClass="status-badge"/>
-                                </VBox>
-                            </HBox>
-
-                            <VBox spacing="8">
-                                <Label text="Bahan-bahan"
-                                       styleClass="mini-subtitle"/>
-
-                                <Label fx:id="lblDetailIngredients"
-                                       wrapText="true"
-                                       styleClass="detail-subtitle"/>
-                            </VBox>
-                        </VBox>
-                    </HBox>
-                </center>
-            </BorderPane>
-        </Tab>
-
-        <!-- =========================
-             TAB BAHAN
-             ========================= -->
-        <Tab fx:id="tabBahanHarga" text="Bahan &amp; Harga">
-
-            <VBox spacing="16" styleClass="content-background">
-                <padding>
-                    <Insets top="20" right="20" bottom="20" left="20"/>
-                </padding>
-
-                <VBox spacing="12" styleClass="dashboard-panel">
-
-                    <Label text="Daftar Bahan"
-                           styleClass="section-title"/>
-
-                    <TableView fx:id="ingredientTable"
-                               VBox.vgrow="ALWAYS"
-                               styleClass="modern-table">
-
-                        <columns>
-                            <TableColumn fx:id="colIngredientId"
-                                         text="ID"
-                                         prefWidth="60"/>
-
-                            <TableColumn fx:id="colIngredientName"
-                                         text="Nama"
-                                         prefWidth="220"/>
-
-                            <TableColumn fx:id="colUnit"
-                                         text="Satuan"
-                                         prefWidth="150"/>
-
-                            <TableColumn fx:id="colPricePerUnit"
-                                         text="Harga per Satuan"
-                                         prefWidth="220"/>
-                        </columns>
-                    </TableView>
-                </VBox>
-
-                <VBox spacing="14"
-                       styleClass="inner-card">
-
-                    <Label text="Form Bahan"
-                           styleClass="mini-section-title"/>
-
-                    <GridPane hgap="14" vgap="12">
-
-                        <columnConstraints>
-                            <ColumnConstraints prefWidth="140"/>
-                            <ColumnConstraints halignment="LEFT" hgrow="ALWAYS"/>
-                        </columnConstraints>
-
-                        <Label text="Nama"
-                               GridPane.rowIndex="0"
-                               GridPane.columnIndex="0"/>
-
-                        <TextField fx:id="txtIngredientName"
-                                   styleClass="modern-input"
-                                   GridPane.rowIndex="0"
-                                   GridPane.columnIndex="1"/>
-
-                        <Label text="Satuan"
-                               GridPane.rowIndex="1"
-                               GridPane.columnIndex="0"/>
-
-                        <TextField fx:id="txtUnit"
-                                   styleClass="modern-input"
-                                   GridPane.rowIndex="1"
-                                   GridPane.columnIndex="1"/>
-
-                        <Label text="Harga per Satuan"
-                               GridPane.rowIndex="2"
-                               GridPane.columnIndex="0"/>
-
-                        <TextField fx:id="txtPricePerUnit"
-                                   styleClass="modern-input"
-                                   GridPane.rowIndex="2"
-                                   GridPane.columnIndex="1"/>
-                    </GridPane>
-
-                    <HBox spacing="10">
-                        <Button fx:id="btnSaveIngredient"
-                                text="Simpan"
-                                onAction="#handleSaveIngredient"
-                                styleClass="button-primary"/>
-
-                        <Button fx:id="btnDeleteIngredient"
-                                text="Hapus"
-                                onAction="#handleDeleteIngredient"
-                                styleClass="button-danger"/>
-
-                        <Button fx:id="btnClearIngredient"
-                                text="Reset"
-                                onAction="#handleClearIngredient"
-                                styleClass="button-outline"/>
-                    </HBox>
-                </VBox>
-            </VBox>
-        </Tab>
-    </TabPane>
-</center>
+        <StackPane fx:id="contentPane" styleClass="admin-content"/>
+    </center>
 </BorderPane>
