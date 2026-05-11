@@ -49,7 +49,7 @@
 }
 
 .auth-login-card {
-    -fx-translate-y: 120px;
+    -fx-translate-y: 0px;
 }
 
 .auth-register-card {

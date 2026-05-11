@@ -114,7 +114,7 @@
     </VBox>
 
     <StackPane prefWidth="590" HBox.hgrow="ALWAYS" alignment="CENTER" styleClass="auth-form-panel">
-        <VBox maxWidth="420" spacing="20">
+        <VBox maxWidth="420" maxHeight="-Infinity" spacing="20">
             <styleClass>
                 <String fx:value="auth-form-card"/>
                 <String fx:value="auth-login-card"/>
