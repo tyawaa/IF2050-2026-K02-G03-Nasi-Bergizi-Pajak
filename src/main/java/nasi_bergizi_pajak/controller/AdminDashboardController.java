@@ -26,20 +26,16 @@ import java.util.List;
 import javafx.collections.transformation.FilteredList;
 
 public class AdminDashboardController {
-    @FXML private Label welcomeLabel;
     @FXML private Label emailLabel;
 
-    // Sidebar buttons
     @FXML private Button btnResep;
     @FXML private Button btnBahanHarga;
     @FXML private Button btnLogout;
 
-    // TabPane and Tabs
     @FXML private TabPane tabPane;
     @FXML private Tab tabResep;
     @FXML private Tab tabBahanHarga;
 
-    // Recipe Table
     @FXML private TableView<Recipe> recipeTable;
     @FXML private TextField txtSearchRecipe;
     @FXML private TableColumn<Recipe, Integer> colRecipeId;
@@ -48,7 +44,6 @@ public class AdminDashboardController {
     @FXML private TableColumn<Recipe, Integer> colServingSize;
     @FXML private TableColumn<Recipe, String> colStatus;
 
-    // Ingredient Table
     @FXML private TableView<Ingredient> ingredientTable;
     @FXML private TableColumn<Ingredient, Integer> colIngredientId;
     @FXML private TableColumn<Ingredient, String> colIngredientName;
@@ -61,7 +56,6 @@ public class AdminDashboardController {
     @FXML private Button btnClearIngredient;
 
 
-    // Detail Card
     @FXML private VBox detailCard;
     @FXML private Label lblDetailRecipeName;
     @FXML private Label lblDetailDescription;
@@ -69,20 +63,21 @@ public class AdminDashboardController {
     @FXML private Label lblDetailStatus;
     @FXML private Label lblDetailIngredients;
 
-    // DAOs
     private RecipeDAO recipeDAO = new RecipeDAO();
     private IngredientDAO ingredientDAO = new IngredientDAO();
     private RecipeIngredientDAO recipeIngredientDAO = new RecipeIngredientDAO();
 
-    // ObservableLists
+    
     private ObservableList<Recipe> recipeList = FXCollections.observableArrayList();
     private ObservableList<Ingredient> ingredientList = FXCollections.observableArrayList();
     
     @FXML
+    private Label lblRecipeCount;
+
+    @FXML
     private void initialize() {
         Akun akun = AppNavigator.getCurrentUser();
         if (akun == null) {
-            welcomeLabel.setText("Dashboard Admin");
             emailLabel.setText("");
             return;
         }
@@ -92,7 +87,6 @@ public class AdminDashboardController {
             nama += " " + akun.getLastName();
         }
 
-        welcomeLabel.setText("Halo Admin, " + nama + "!");
         emailLabel.setText(akun.getEmail());
 
         setupRecipeTable();
@@ -152,11 +146,16 @@ public class AdminDashboardController {
 
 
     private void loadData() {
+
         recipeList.clear();
         recipeList.addAll(recipeDAO.listAllRecipes());
 
         ingredientList.clear();
         ingredientList.addAll(ingredientDAO.listAllIngredients());
+
+        lblRecipeCount.setText(
+            recipeList.size() + " resep terdaftar"
+        );
     }
 
 
@@ -293,73 +292,76 @@ public class AdminDashboardController {
 
     private void setupActionColumn() {
 
-    colActions.setCellFactory(param -> new TableCell<>() {
+        colActions.setCellFactory(param -> new TableCell<>() {
 
-        private final Button btnEdit =
-            new Button("✏");
+            private final Button btnEdit =
+                new Button("✏");
 
-        private final Button btnToggle =
-            new Button("Nonaktifkan");
+            private final Button btnToggle =
+                new Button("Status");
 
-        private final HBox pane =
-            new HBox(8, btnToggle, btnEdit);
 
-        {
+            private final HBox pane =
+                new HBox(8, btnToggle, btnEdit);
 
-            btnEdit.getStyleClass()
-                .add("table-edit-button");
+            {
 
-            btnToggle.getStyleClass()
-                .add("table-danger-button");
-            
-            btnEdit.setFocusTraversable(false);
-            btnToggle.setFocusTraversable(false);
-            
-            btnEdit.setOnAction(event -> {
+                btnEdit.getStyleClass()
+                    .add("table-edit-button");
 
-                Recipe recipe =
-                    getTableView().getItems().get(getIndex());
+                btnToggle.getStyleClass()
+                    .add("table-danger-button");
 
-                openEditRecipe(recipe);
-            });
+                btnEdit.setFocusTraversable(false);
+                btnToggle.setFocusTraversable(false);
 
-            btnToggle.setOnAction(event -> {
+                btnEdit.setOnAction(event -> {
 
-                Recipe recipe =
-                    getTableView().getItems().get(getIndex());
+                    Recipe recipe =
+                        getTableView().getItems().get(getIndex());
 
-                toggleRecipeStatus(recipe);
-            });
-        }
+                    openEditRecipe(recipe);
+                });
 
-        @Override
-    protected void updateItem(Void item, boolean empty) {
+                btnToggle.setOnAction(event -> {
 
-        super.updateItem(item, empty);
+                    Recipe recipe =
+                        getTableView().getItems().get(getIndex());
 
-        if (empty) {
+                    toggleRecipeStatus(recipe);
+                });
 
-            setGraphic(null);
-
-        } else {
-
-            Recipe recipe =
-                getTableView().getItems().get(getIndex());
-
-            if (recipe.getStatus()
-                    .equalsIgnoreCase("ACTIVE")) {
-
-                btnToggle.setText("Nonaktifkan");
-
-            } else {
-
-                btnToggle.setText("Aktifkan");
+                
             }
 
-            setGraphic(pane);
-        }
-    }
-    });
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+
+                super.updateItem(item, empty);
+
+                if (empty) {
+
+                    setGraphic(null);
+
+                } else {
+
+                    Recipe recipe =
+                        getTableView().getItems().get(getIndex());
+
+                    if (recipe.getStatus()
+                            .equalsIgnoreCase("ACTIVE")) {
+
+                        btnToggle.setText("Nonaktifkan");
+
+                    } else {
+
+                        btnToggle.setText("Aktifkan");
+                    }
+
+                    setGraphic(pane);
+                }
+            }
+        });
     }
     private void openEditRecipe(Recipe recipe) {
 
@@ -418,4 +420,45 @@ public class AdminDashboardController {
         updateDetailCard(recipe);
     }
     
+
+    private void deleteRecipe(Recipe recipe) {
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+
+        confirm.setTitle("Konfirmasi Hapus");
+        confirm.setHeaderText(null);
+
+        confirm.setContentText(
+            "Yakin ingin menghapus resep \""
+            + recipe.getName()
+            + "\" ?"
+        );
+
+        ButtonType result =
+            confirm.showAndWait().orElse(ButtonType.CANCEL);
+
+        if (result != ButtonType.OK) {
+            return;
+        }
+
+        try {
+
+            recipeDAO.deleteRecipe(recipe.getRecipeId());
+
+            loadData();
+
+            if (!recipeList.isEmpty()) {
+
+                recipeTable.getSelectionModel()
+                    .selectFirst();
+            }
+
+        } catch (Exception e) {
+
+            showAlert(
+                "Error",
+                "Gagal menghapus resep"
+            );
+        }
+    }
 }

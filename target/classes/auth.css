@@ -930,3 +930,25 @@
 
     -fx-background-color: #ede9fe;
 }
+
+.recipe-ingredient-table .table-row-cell {
+    -fx-background-color: white;
+}
+
+.recipe-ingredient-table .table-row-cell:selected {
+    -fx-background-color: #FFF2E2;
+}
+
+.recipe-ingredient-table .column-header-background {
+    -fx-background-color: #FFF6EC;
+}
+
+.recipe-ingredient-table {
+    -fx-border-color: #ECE3D7;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+}
+
+.recipe-ingredient-table .table-cell {
+    -fx-padding: 10px;
+}

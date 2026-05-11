@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<?import javafx.scene.layout.Region?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -69,17 +69,74 @@
                   styleClass="modern-combo"
                   GridPane.rowIndex="3"
                   GridPane.columnIndex="1"/>
+
+        <VBox spacing="14"
+              GridPane.rowIndex="4"
+              GridPane.columnSpan="2">
+
+              <Label text="Bahan Resep"
+                     styleClass="mini-subtitle"/>
+
+              <HBox spacing="10">
+
+                     <ComboBox fx:id="cmbIngredient"
+                            promptText="Pilih bahan"
+                            prefWidth="220"
+                            styleClass="modern-combo"/>
+
+                     <TextField fx:id="txtIngredientAmount"
+                            promptText="Jumlah"
+                            prefWidth="120"
+                            styleClass="modern-input"/>
+
+                     <Button text="Tambah"
+                            onAction="#handleAddIngredient"
+                            styleClass="button-primary"/>
+              </HBox>
+
+              <TableView fx:id="recipeIngredientTable"
+                            prefHeight="180"
+                            styleClass="modern-table">
+
+                     <columns>
+
+                     <TableColumn fx:id="colIngredientName"
+                                   text="Bahan"
+                                   prefWidth="220"/>
+
+                     <TableColumn fx:id="colIngredientAmount"
+                                   text="Jumlah"
+                                   prefWidth="120"/>
+
+                     <TableColumn fx:id="colIngredientUnit"
+                                   text="Unit"
+                                   prefWidth="120"/>
+
+                     <TableColumn fx:id="colIngredientAction"
+                                   text="Aksi"
+                                   prefWidth="100"/>
+                     </columns>
+              </TableView>
+              </VBox>
     </GridPane>
 
-    <HBox spacing="10"
-           alignment="CENTER_RIGHT">
+    <HBox spacing="10" alignment="CENTER_LEFT">
 
-        <Button text="Batal"
-                onAction="#handleCancel"
-                styleClass="button-outline"/>
+       <Button fx:id="btnDeleteRecipe"
+              text="Hapus"
+              visible="false"
+              managed="false"
+              onAction="#handleDeleteRecipe"
+              styleClass="button-danger"/>
 
-        <Button text="Simpan"
-                onAction="#handleSaveRecipe"
-                styleClass="button-primary"/>
-    </HBox>
+       <Region HBox.hgrow="ALWAYS"/>
+
+       <Button text="Batal"
+              onAction="#handleCancel"
+              styleClass="button-outline"/>
+
+       <Button text="Simpan"
+              onAction="#handleSaveRecipe"
+              styleClass="button-primary"/>
+       </HBox>
 </VBox>

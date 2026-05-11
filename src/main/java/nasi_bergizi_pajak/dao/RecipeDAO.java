@@ -30,19 +30,44 @@ public class RecipeDAO {
         return recipes;
     }
 
-    public void insertRecipe(Recipe recipe) {
-        String query = "INSERT INTO recipe (name, description, serving_size, status) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, recipe.getName());
-            stmt.setString(2, recipe.getDescription());
-            stmt.setInt(3, recipe.getServingSize());
-            stmt.setString(4, recipe.getStatus());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
+    public int insertRecipe(Recipe recipe) {
+        String sql = """
+            INSERT INTO recipe(
+                name,
+                description,
+                serving_size,
+                status
+            )
+            VALUES (?, ?, ?, ?)
+        """;
+
+        try (
+            Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(
+                sql,
+                Statement.RETURN_GENERATED_KEYS
+            )
+        ) {
+
+            ps.setString(1, recipe.getName());
+            ps.setString(2, recipe.getDescription());
+            ps.setInt(3, recipe.getServingSize());
+            ps.setString(4, recipe.getStatus());
+
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
-    }
+
+        return -1;
+        }
 
     public void updateRecipe(Recipe recipe) {
         String query = "UPDATE recipe SET name = ?, description = ?, serving_size = ?, status = ? WHERE recipe_id = ?";
@@ -91,4 +116,6 @@ public class RecipeDAO {
         }
         return null;
     }
+
+    
 }

@@ -42,7 +42,6 @@
                 <Label text="Dashboard Admin" styleClass="dashboard-subtitle"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="welcomeLabel" text="Dashboard Admin" styleClass="dashboard-title"/>
             <Label fx:id="emailLabel" text="" styleClass="dashboard-email"/>
         </HBox>
     </top>
@@ -70,7 +69,9 @@
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <VBox spacing="2">
                                     <Label text="Daftar Resep" styleClass="section-title"/>
-                                    <Label text="6 resep terdaftar" styleClass="section-subtitle"/>
+                                    <Label fx:id="lblRecipeCount"
+                                    text="0 resep terdaftar"
+                                    styleClass="section-subtitle"/>
                                 </VBox>
 
                                 <Region HBox.hgrow="ALWAYS"/>
