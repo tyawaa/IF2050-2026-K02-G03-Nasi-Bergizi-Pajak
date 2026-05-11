@@ -1,4 +1,3 @@
-nasi_bergizi_pajak\controller\DashboardController.class
 nasi_bergizi_pajak\util\ValidationUtil.class
 nasi_bergizi_pajak\util\PasswordUtil.class
 nasi_bergizi_pajak\model\Akun.class
