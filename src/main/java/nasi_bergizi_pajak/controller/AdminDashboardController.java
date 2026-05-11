@@ -1,6 +1,8 @@
 package nasi_bergizi_pajak.controller;
 
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +23,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
@@ -38,6 +41,16 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import nasi_bergizi_pajak.app.AppNavigator;
+import nasi_bergizi_pajak.dao.IngredientDAO;
+import nasi_bergizi_pajak.dao.IngredientNutritionDAO;
+import nasi_bergizi_pajak.dao.IngredientPriceDAO;
+import nasi_bergizi_pajak.dao.RecipeDAO;
+import nasi_bergizi_pajak.dao.RecipeIngredientDAO;
+import nasi_bergizi_pajak.model.Ingredient;
+import nasi_bergizi_pajak.model.IngredientNutrition;
+import nasi_bergizi_pajak.model.IngredientPrice;
+import nasi_bergizi_pajak.model.Recipe;
+import nasi_bergizi_pajak.model.RecipeIngredient;
 
 public class AdminDashboardController {
     @FXML private StackPane contentPane;
@@ -53,6 +66,12 @@ public class AdminDashboardController {
     private final Map<Integer, AdminIngredient> ingredientById = new HashMap<>();
     private final Map<Integer, AdminNutrition> nutritionByIngredientId = new HashMap<>();
     private final NumberFormat rupiah = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
+    private final DateTimeFormatter dateLabelFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", new Locale("id", "ID"));
+    private final RecipeDAO recipeDAO = new RecipeDAO();
+    private final RecipeIngredientDAO recipeIngredientDAO = new RecipeIngredientDAO();
+    private final IngredientDAO ingredientDAO = new IngredientDAO();
+    private final IngredientNutritionDAO nutritionDAO = new IngredientNutritionDAO();
+    private final IngredientPriceDAO priceDAO = new IngredientPriceDAO();
 
     private AdminRecipe selectedRecipe;
     private AdminIngredient selectedIngredient;
@@ -67,7 +86,7 @@ public class AdminDashboardController {
 
     @FXML
     private void initialize() {
-        seedAdminData();
+        loadAdminData();
         userLabel.setText("Budi");
         showRecipePage();
     }
@@ -85,6 +104,68 @@ public class AdminDashboardController {
     @FXML
     private void handleLogout() {
         AppNavigator.showLogin();
+    }
+
+    private void loadAdminData() {
+        recipes.clear();
+        ingredients.clear();
+        nutritions.clear();
+        priceHistory.clear();
+        ingredientById.clear();
+        nutritionByIngredientId.clear();
+
+        for (Ingredient ingredient : ingredientDAO.listAllIngredients()) {
+            AdminIngredient adminIngredient = new AdminIngredient(
+                    ingredient.getIngredientId(),
+                    ingredient.getName(),
+                    ingredient.getUnit(),
+                    ingredient.getPricePerUnit());
+            ingredients.add(adminIngredient);
+            ingredientById.put(adminIngredient.id(), adminIngredient);
+        }
+
+        for (IngredientNutrition nutrition : nutritionDAO.listAllNutritions()) {
+            AdminNutrition adminNutrition = toAdminNutrition(nutrition);
+            nutritions.add(adminNutrition);
+            nutritionByIngredientId.put(adminNutrition.ingredientId(), adminNutrition);
+        }
+        ingredients.forEach(ingredient -> addDefaultNutritionIfAbsent(ingredient.id()));
+
+        Map<Integer, Boolean> activePriceByIngredient = new HashMap<>();
+        LocalDate today = LocalDate.now();
+        for (IngredientPrice history : priceDAO.listAllPriceHistory()) {
+            boolean active = !history.getEffectiveDate().isAfter(today)
+                    && !activePriceByIngredient.getOrDefault(history.getIngredientId(), false);
+            if (active) {
+                activePriceByIngredient.put(history.getIngredientId(), true);
+            }
+            priceHistory.add(new AdminPriceHistory(
+                    history.getIngredientId(),
+                    history.getPrice(),
+                    formatDate(history.getEffectiveDate()),
+                    active));
+        }
+
+        Map<Integer, List<AdminRecipeIngredient>> recipeIngredientMap = new HashMap<>();
+        for (RecipeIngredient item : recipeIngredientDAO.listAllRecipeIngredients()) {
+            recipeIngredientMap
+                    .computeIfAbsent(item.getRecipeId(), ignored -> new ArrayList<>())
+                    .add(toAdminRecipeIngredient(item));
+        }
+
+        for (Recipe recipe : recipeDAO.listAllRecipes()) {
+            recipes.add(new AdminRecipe(
+                    recipe.getRecipeId(),
+                    recipe.getName(),
+                    recipe.getDescription() == null ? "" : recipe.getDescription(),
+                    recipe.getServingSize(),
+                    toDisplayStatus(recipe.getStatus()),
+                    new ArrayList<>(recipeIngredientMap.getOrDefault(recipe.getRecipeId(), List.of()))));
+        }
+
+        if (!ingredients.isEmpty()) {
+            selectedIngredient = ingredients.get(0);
+        }
     }
 
     private void showRecipePage() {
@@ -105,6 +186,7 @@ public class AdminDashboardController {
         search.getStyleClass().add("admin-search");
 
         Button addButton = primaryButton("Tambah Resep");
+        addButton.getStyleClass().add("admin-header-action-button");
         addButton.setOnAction(event -> openAddRecipeDialog());
 
         Region titleSpacer = new Region();
@@ -168,20 +250,27 @@ public class AdminDashboardController {
                     return;
                 }
                 AdminRecipe recipe = getTableRow().getItem();
-                Button toggle = outlineButton(recipe.isActive() ? "Nonaktifkan" : "Aktifkan");
+                Button toggle = tableActionButton(recipe.isActive() ? "Nonaktifkan" : "Aktifkan", true);
                 toggle.setOnAction(event -> {
+                    String oldStatus = recipe.status();
                     recipe.setStatus(recipe.isActive() ? "Nonaktif" : "Aktif");
-                    table.refresh();
-                    renderRecipeDetail();
+                    try {
+                        recipeDAO.updateRecipe(toRecipeModel(recipe));
+                        table.refresh();
+                        renderRecipeDetail();
+                    } catch (RuntimeException e) {
+                        recipe.setStatus(oldStatus);
+                        showInfo("Gagal memperbarui status resep", rootMessage(e));
+                    }
                 });
-                Button edit = iconButton("Edit");
+                Button edit = tableActionButton("Edit", false);
                 edit.setOnAction(event -> openEditRecipeDialog(recipe));
                 HBox actions = new HBox(8, toggle, edit);
                 actions.setAlignment(Pos.CENTER_RIGHT);
                 setGraphic(actions);
             }
         });
-        actionCol.setMaxWidth(1f * Integer.MAX_VALUE * 0.16);
+        actionCol.setMaxWidth(1f * Integer.MAX_VALUE * 0.2);
 
         table.getColumns().addAll(nameCol, descCol, servingCol, statusCol, actionCol);
         table.setRowFactory(tv -> {
@@ -282,6 +371,7 @@ public class AdminDashboardController {
         search.setPromptText("Cari bahan...");
         search.getStyleClass().add("admin-search");
         Button add = primaryButton("Tambah Bahan");
+        add.getStyleClass().add("admin-header-action-button");
         add.setOnAction(event -> openAddIngredientDialog());
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -338,19 +428,22 @@ public class AdminDashboardController {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
+                setAlignment(Pos.CENTER_RIGHT);
                 if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                     return;
                 }
                 AdminIngredient ingredient = getTableRow().getItem();
-                Button edit = iconButton("Edit");
-                edit.setOnAction(event -> showInfo("Edit Bahan", "Handler edit untuk " + ingredient.name() + " sudah siap."));
+                Button edit = tableActionButton("Edit", false);
+                edit.setOnAction(event -> openEditIngredientDialog(ingredient));
                 HBox box = new HBox(edit);
                 box.setAlignment(Pos.CENTER_RIGHT);
                 setGraphic(box);
             }
         });
-        actionCol.setMaxWidth(1f * Integer.MAX_VALUE * 0.2);
+        actionCol.setMinWidth(92);
+        actionCol.setPrefWidth(104);
+        actionCol.setMaxWidth(1f * Integer.MAX_VALUE * 0.16);
         return actionCol;
     }
 
@@ -392,7 +485,8 @@ public class AdminDashboardController {
                 title("Data Nutrisi Bahan"),
                 subtitle("Kelola informasi gizi untuk setiap bahan"));
         Button edit = secondaryButton("Edit Nutrisi");
-        edit.setOnAction(event -> showInfo("Edit Nutrisi", "Handler edit nutrisi sudah siap."));
+        edit.getStyleClass().add("admin-header-action-button");
+        edit.setOnAction(event -> openEditNutritionDialog(nutritionForSelectedIngredient()));
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(copy, spacer, edit);
@@ -416,13 +510,14 @@ public class AdminDashboardController {
         table.setFixedCellSize(44);
         table.setPrefHeight(300);
         table.getColumns().addAll(
-                textColumn("Bahan", data -> ingredientName(data.ingredientId()), 0.2),
-                textColumn("Kalori", data -> formatNumber(data.calories()), 0.13),
-                textColumn("Protein", data -> data.protein() + "g", 0.14),
-                textColumn("Karbo", data -> data.carbohydrate() + "g", 0.14),
-                textColumn("Lemak", data -> data.fat() + "g", 0.14),
-                textColumn("Serat", data -> data.fibre() + "g", 0.14),
-                textColumn("Per", AdminNutrition::per, 0.11));
+                textColumn("Bahan", data -> ingredientName(data.ingredientId()), 0.19),
+                textColumn("Kalori", data -> formatNumber(data.calories()), 0.11),
+                textColumn("Protein", data -> data.protein() + "g", 0.12),
+                textColumn("Karbo", data -> data.carbohydrate() + "g", 0.12),
+                textColumn("Lemak", data -> data.fat() + "g", 0.11),
+                textColumn("Serat", data -> data.fibre() + "g", 0.11),
+                textColumn("Per", AdminNutrition::per, 0.08),
+                nutritionActionColumn());
         table.setRowFactory(tv -> {
             TableRow<AdminNutrition> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
@@ -434,6 +529,35 @@ public class AdminDashboardController {
             return row;
         });
         return table;
+    }
+
+    private TableColumn<AdminNutrition, String> nutritionActionColumn() {
+        TableColumn<AdminNutrition, String> actionCol = new TableColumn<>("Aksi");
+        actionCol.setCellValueFactory(data -> new SimpleStringProperty(ingredientName(data.getValue().ingredientId())));
+        actionCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setAlignment(Pos.CENTER_RIGHT);
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                    return;
+                }
+                AdminNutrition nutrition = getTableRow().getItem();
+                Button edit = tableActionButton("Edit", false);
+                edit.setOnAction(event -> {
+                    selectedIngredient = ingredientById.get(nutrition.ingredientId());
+                    openEditNutritionDialog(nutrition);
+                });
+                HBox box = new HBox(edit);
+                box.setAlignment(Pos.CENTER_RIGHT);
+                setGraphic(box);
+            }
+        });
+        actionCol.setMinWidth(92);
+        actionCol.setPrefWidth(104);
+        actionCol.setMaxWidth(1f * Integer.MAX_VALUE * 0.13);
+        return actionCol;
     }
 
     private void renderNutritionInfo() {
@@ -469,8 +593,11 @@ public class AdminDashboardController {
         VBox copy = new VBox(0,
                 title("Kelola Harga Bahan"),
                 subtitle("Update dan lihat riwayat harga bahan"));
-        Button update = primaryButton("Update Harga");
-        update.setOnAction(event -> openUpdatePriceDialog(selectedIngredient == null ? ingredients.get(0) : selectedIngredient));
+        Button update = primaryButton("+   Update Harga");
+        update.getStyleClass().add("admin-header-action-button");
+        update.setOnAction(event -> openUpdatePriceDialog(selectedIngredient == null && !ingredients.isEmpty()
+                ? ingredients.get(0)
+                : selectedIngredient));
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(copy, spacer, update);
@@ -519,19 +646,22 @@ public class AdminDashboardController {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
+                setAlignment(Pos.CENTER_RIGHT);
                 if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                     return;
                 }
                 AdminIngredient ingredient = getTableRow().getItem();
-                Button update = outlineButton("Update");
+                Button update = tableActionButton("Update", true);
                 update.setOnAction(event -> openUpdatePriceDialog(ingredient));
                 HBox box = new HBox(update);
                 box.setAlignment(Pos.CENTER_RIGHT);
                 setGraphic(box);
             }
         });
-        actionCol.setMaxWidth(1f * Integer.MAX_VALUE * 0.18);
+        actionCol.setMinWidth(126);
+        actionCol.setPrefWidth(138);
+        actionCol.setMaxWidth(1f * Integer.MAX_VALUE * 0.16);
         return actionCol;
     }
 
@@ -599,7 +729,7 @@ public class AdminDashboardController {
         addIngredient.setOnAction(event -> {
             Optional<AdminRecipeIngredient> item = openAddRecipeIngredientDialog();
             item.ifPresent(value -> {
-                pendingIngredients.add(value);
+                addOrReplaceRecipeIngredient(pendingIngredients, value);
                 renderPendingIngredients.run();
             });
         });
@@ -651,9 +781,8 @@ public class AdminDashboardController {
             if (button != addType) {
                 return null;
             }
-            int nextId = recipes.stream().mapToInt(AdminRecipe::id).max().orElse(0) + 1;
             return new AdminRecipe(
-                    nextId,
+                    0,
                     name.getText().trim(),
                     description.getText().trim(),
                     Integer.parseInt(serving.getText().trim()),
@@ -662,15 +791,22 @@ public class AdminDashboardController {
         });
 
         dialog.showAndWait().ifPresent(recipe -> {
-            recipes.add(recipe);
-            selectedRecipe = recipe;
-            recipeTable.refresh();
-            renderRecipeDetail();
+            try {
+                int recipeId = recipeDAO.saveRecipeWithIngredients(toRecipeModel(recipe), toRecipeIngredientModels(recipe.ingredients(), 0));
+                recipe.setId(recipeId);
+                recipe.setIngredients(recipeItemsWithRecipeId(recipeId, recipe.ingredients()));
+                recipes.add(recipe);
+                selectedRecipe = recipe;
+                recipeTable.refresh();
+                renderRecipeDetail();
+            } catch (RuntimeException e) {
+                showInfo("Gagal menyimpan resep", rootMessage(e));
+            }
         });
     }
 
     private void openEditRecipeDialog(AdminRecipe recipe) {
-        Dialog<Boolean> dialog = new Dialog<>();
+        Dialog<AdminRecipe> dialog = new Dialog<>();
         dialog.setTitle("Edit Resep");
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(contentPane.getScene().getWindow());
@@ -718,7 +854,7 @@ public class AdminDashboardController {
         addIngredient.setOnAction(event -> {
             Optional<AdminRecipeIngredient> item = openAddRecipeIngredientDialog();
             item.ifPresent(value -> {
-                pendingIngredients.add(value);
+                addOrReplaceRecipeIngredient(pendingIngredients, value);
                 renderPendingIngredients[0].run();
             });
         });
@@ -768,21 +904,32 @@ public class AdminDashboardController {
 
         dialog.setResultConverter(button -> {
             if (button != saveType) {
-                return false;
+                return null;
             }
-            recipe.setName(name.getText().trim());
-            recipe.setDescription(description.getText().trim());
-            recipe.setServingSize(Integer.parseInt(serving.getText().trim()));
-            recipe.setStatus(status.getValue());
-            recipe.setIngredients(new ArrayList<>(pendingIngredients));
-            return true;
+            return new AdminRecipe(
+                    recipe.id(),
+                    name.getText().trim(),
+                    description.getText().trim(),
+                    Integer.parseInt(serving.getText().trim()),
+                    status.getValue(),
+                    recipeItemsWithRecipeId(recipe.id(), pendingIngredients));
         });
 
-        dialog.showAndWait().ifPresent(saved -> {
-            if (saved) {
+        dialog.showAndWait().ifPresent(updatedRecipe -> {
+            try {
+                recipeDAO.saveRecipeWithIngredients(
+                        toRecipeModel(updatedRecipe),
+                        toRecipeIngredientModels(updatedRecipe.ingredients(), updatedRecipe.id()));
+                recipe.setName(updatedRecipe.name());
+                recipe.setDescription(updatedRecipe.description());
+                recipe.setServingSize(updatedRecipe.servingSize());
+                recipe.setStatus(updatedRecipe.status());
+                recipe.setIngredients(updatedRecipe.ingredients());
                 selectedRecipe = recipe;
                 recipeTable.refresh();
                 renderRecipeDetail();
+            } catch (RuntimeException e) {
+                showInfo("Gagal menyimpan resep", rootMessage(e));
             }
         });
     }
@@ -887,16 +1034,197 @@ public class AdminDashboardController {
             if (button != addType) {
                 return null;
             }
-            int nextId = ingredients.stream().mapToInt(AdminIngredient::id).max().orElse(0) + 1;
-            return new AdminIngredient(nextId, name.getText().trim(), unit.getText().trim(),
+            return new AdminIngredient(0, name.getText().trim(), unit.getText().trim(),
                     Double.parseDouble(price.getText().trim()));
         });
 
         dialog.showAndWait().ifPresent(ingredient -> {
-            ingredients.add(ingredient);
-            ingredientById.put(ingredient.id(), ingredient);
-            priceHistory.add(new AdminPriceHistory(ingredient.id(), ingredient.currentPrice(), "-", true));
-            ingredientTable.refresh();
+            try {
+                Ingredient model = toIngredientModel(ingredient);
+                int ingredientId = ingredientDAO.insertIngredient(model);
+                ingredient.setId(ingredientId);
+                ingredients.add(ingredient);
+                ingredientById.put(ingredient.id(), ingredient);
+                selectedIngredient = ingredient;
+                addDefaultNutritionIfAbsent(ingredient.id());
+                priceHistory.add(0, new AdminPriceHistory(ingredient.id(), ingredient.currentPrice(), formatDate(LocalDate.now()), true));
+                ingredientTable.refresh();
+                if (nutritionTable != null) {
+                    nutritionTable.refresh();
+                }
+                renderIngredientDetail();
+            } catch (RuntimeException e) {
+                showInfo("Gagal menyimpan bahan", rootMessage(e));
+            }
+        });
+    }
+
+    private void openEditIngredientDialog(AdminIngredient ingredient) {
+        if (ingredient == null) {
+            return;
+        }
+
+        Dialog<AdminIngredientEdit> dialog = new Dialog<>();
+        dialog.setTitle("Edit Bahan");
+        dialog.initOwner(contentPane.getScene().getWindow());
+        ButtonType saveType = new ButtonType("Simpan Bahan", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, saveType);
+
+        TextField name = new TextField(ingredient.name());
+        TextField unit = new TextField(ingredient.unit());
+        GridPane form = new GridPane();
+        form.setHgap(12);
+        form.setVgap(12);
+        form.add(label("Nama"), 0, 0);
+        form.add(name, 1, 0);
+        form.add(label("Unit"), 0, 1);
+        form.add(unit, 1, 1);
+        dialog.getDialogPane().setContent(form);
+
+        Node saveNode = dialog.getDialogPane().lookupButton(saveType);
+        saveNode.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            if (name.getText().trim().isBlank() || unit.getText().trim().isBlank()) {
+                showInfo("Data belum valid", "Nama dan unit bahan wajib diisi.");
+                event.consume();
+            }
+        });
+
+        dialog.setResultConverter(button -> button == saveType
+                ? new AdminIngredientEdit(name.getText().trim(), unit.getText().trim())
+                : null);
+
+        dialog.showAndWait().ifPresent(edit -> {
+            String oldName = ingredient.name();
+            String oldUnit = ingredient.unit();
+            ingredient.setName(edit.name());
+            ingredient.setUnit(edit.unit());
+            try {
+                ingredientDAO.updateIngredientDetails(toIngredientModel(ingredient));
+                selectedIngredient = ingredient;
+                if (ingredientTable != null) {
+                    ingredientTable.refresh();
+                }
+                if (priceTable != null) {
+                    priceTable.refresh();
+                }
+                if (nutritionTable != null) {
+                    nutritionTable.refresh();
+                }
+                if (ingredientDetailCard != null) {
+                    renderIngredientDetail();
+                }
+                if (nutritionInfoCard != null) {
+                    renderNutritionInfo();
+                }
+                if (priceHistoryCard != null) {
+                    renderPriceHistory();
+                }
+            } catch (RuntimeException e) {
+                ingredient.setName(oldName);
+                ingredient.setUnit(oldUnit);
+                showInfo("Gagal memperbarui bahan", rootMessage(e));
+            }
+        });
+    }
+
+    private void openEditNutritionDialog(AdminNutrition nutrition) {
+        if (nutrition == null) {
+            showInfo("Pilih bahan", "Pilih bahan yang ingin diubah data nutrisinya.");
+            return;
+        }
+
+        Dialog<AdminNutrition> dialog = new Dialog<>();
+        dialog.setTitle("Edit Nutrisi");
+        dialog.initOwner(contentPane.getScene().getWindow());
+        ButtonType saveType = new ButtonType("Simpan Nutrisi", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, saveType);
+
+        TextField calories = new TextField(formatNumber(nutrition.calories()));
+        TextField protein = new TextField(formatNumber(nutrition.protein()));
+        TextField carbohydrate = new TextField(formatNumber(nutrition.carbohydrate()));
+        TextField fat = new TextField(formatNumber(nutrition.fat()));
+        TextField fibre = new TextField(formatNumber(nutrition.fibre()));
+        TextField per = new TextField(nutrition.per());
+
+        GridPane form = new GridPane();
+        form.setHgap(12);
+        form.setVgap(12);
+        form.add(label("Bahan"), 0, 0);
+        form.add(muted(ingredientName(nutrition.ingredientId())), 1, 0);
+        form.add(label("Kalori"), 0, 1);
+        form.add(calories, 1, 1);
+        form.add(label("Protein"), 0, 2);
+        form.add(protein, 1, 2);
+        form.add(label("Karbohidrat"), 0, 3);
+        form.add(carbohydrate, 1, 3);
+        form.add(label("Lemak"), 0, 4);
+        form.add(fat, 1, 4);
+        form.add(label("Serat"), 0, 5);
+        form.add(fibre, 1, 5);
+        form.add(label("Per"), 0, 6);
+        form.add(per, 1, 6);
+        dialog.getDialogPane().setContent(form);
+
+        Node saveNode = dialog.getDialogPane().lookupButton(saveType);
+        saveNode.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            try {
+                boolean hasNegativeValue = Double.parseDouble(calories.getText().trim()) < 0
+                        || Double.parseDouble(protein.getText().trim()) < 0
+                        || Double.parseDouble(carbohydrate.getText().trim()) < 0
+                        || Double.parseDouble(fat.getText().trim()) < 0
+                        || Double.parseDouble(fibre.getText().trim()) < 0;
+                if (hasNegativeValue || per.getText().trim().isBlank()) {
+                    showInfo("Data belum valid", "Isi nutrisi dengan angka non-negatif dan satuan per wajib diisi.");
+                    event.consume();
+                }
+            } catch (NumberFormatException e) {
+                showInfo("Data belum valid", "Nilai nutrisi harus berupa angka.");
+                event.consume();
+            }
+        });
+
+        dialog.setResultConverter(button -> {
+            if (button != saveType) {
+                return null;
+            }
+            return new AdminNutrition(nutrition.ingredientId(),
+                    Double.parseDouble(calories.getText().trim()),
+                    Double.parseDouble(protein.getText().trim()),
+                    Double.parseDouble(carbohydrate.getText().trim()),
+                    Double.parseDouble(fat.getText().trim()),
+                    Double.parseDouble(fibre.getText().trim()),
+                    per.getText().trim());
+        });
+
+        dialog.showAndWait().ifPresent(updatedNutrition -> {
+            try {
+                nutritionDAO.upsertNutrition(toNutritionModel(updatedNutrition));
+                nutritionByIngredientId.put(updatedNutrition.ingredientId(), updatedNutrition);
+                int existingIndex = -1;
+                for (int i = 0; i < nutritions.size(); i++) {
+                    if (nutritions.get(i).ingredientId() == updatedNutrition.ingredientId()) {
+                        existingIndex = i;
+                        break;
+                    }
+                }
+                if (existingIndex >= 0) {
+                    nutritions.set(existingIndex, updatedNutrition);
+                } else {
+                    nutritions.add(updatedNutrition);
+                }
+                selectedIngredient = ingredientById.get(updatedNutrition.ingredientId());
+                if (nutritionTable != null) {
+                    nutritionTable.refresh();
+                }
+                if (nutritionInfoCard != null) {
+                    renderNutritionInfo();
+                }
+                if (ingredientDetailCard != null) {
+                    renderIngredientDetail();
+                }
+            } catch (RuntimeException e) {
+                showInfo("Gagal menyimpan nutrisi", rootMessage(e));
+            }
         });
     }
 
@@ -905,18 +1233,22 @@ public class AdminDashboardController {
             return;
         }
 
-        Dialog<Double> dialog = new Dialog<>();
+        Dialog<AdminPriceUpdate> dialog = new Dialog<>();
         dialog.setTitle("Update Harga");
         dialog.initOwner(contentPane.getScene().getWindow());
-        ButtonType updateType = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
+        ButtonType updateType = new ButtonType("Simpan Harga", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, updateType);
 
         TextField price = new TextField(String.valueOf((int) ingredient.currentPrice()));
+        DatePicker effectiveDate = new DatePicker(LocalDate.now());
         VBox content = new VBox(10,
-                title("Update Harga " + ingredient.name()),
-                muted("Harga saat ini: " + formatCurrency(ingredient.currentPrice())),
-                label("Harga baru"),
-                price);
+                title("Update Harga"),
+                muted(ingredient.name()),
+                verticalGap(8),
+                label("Harga Baru (Rp)"),
+                price,
+                label("Tanggal Efektif"),
+                effectiveDate);
         content.setPadding(new Insets(10));
         dialog.getDialogPane().setContent(content);
 
@@ -927,6 +1259,10 @@ public class AdminDashboardController {
                     showInfo("Data belum valid", "Harga tidak boleh negatif.");
                     event.consume();
                 }
+                if (effectiveDate.getValue() == null) {
+                    showInfo("Data belum valid", "Tanggal efektif wajib diisi.");
+                    event.consume();
+                }
             } catch (NumberFormatException e) {
                 showInfo("Data belum valid", "Harga harus berupa angka.");
                 event.consume();
@@ -934,90 +1270,29 @@ public class AdminDashboardController {
         });
 
         dialog.setResultConverter(button -> button == updateType
-                ? Double.parseDouble(price.getText().trim())
+                ? new AdminPriceUpdate(Double.parseDouble(price.getText().trim()), effectiveDate.getValue())
                 : null);
 
-        dialog.showAndWait().ifPresent(newPrice -> {
-            ingredient.setCurrentPrice(newPrice);
-            for (AdminPriceHistory history : priceHistory) {
-                if (history.ingredientId() == ingredient.id()) {
-                    history.setActive(false);
+        dialog.showAndWait().ifPresent(update -> {
+            try {
+                int selectedIngredientId = ingredient.id();
+                priceDAO.insertPrice(ingredient.id(), update.price(), update.effectiveDate());
+                loadAdminData();
+                selectedIngredient = ingredientById.get(selectedIngredientId);
+                if (priceTable != null) {
+                    priceTable.refresh();
                 }
+                if (ingredientTable != null) {
+                    ingredientTable.refresh();
+                }
+                if (ingredientDetailCard != null) {
+                    renderIngredientDetail();
+                }
+                renderPriceHistory();
+            } catch (RuntimeException e) {
+                showInfo("Gagal menyimpan harga", rootMessage(e));
             }
-            priceHistory.add(0, new AdminPriceHistory(ingredient.id(), newPrice, "11 Mei 2026", true));
-            if (priceTable != null) {
-                priceTable.refresh();
-            }
-            renderPriceHistory();
         });
-    }
-
-    private void seedAdminData() {
-        ingredients.setAll(
-                new AdminIngredient(1, "Beras", "kg", 15000),
-                new AdminIngredient(2, "Telur", "butir", 2500),
-                new AdminIngredient(3, "Ayam", "kg", 35000),
-                new AdminIngredient(4, "Tempe", "papan", 5000),
-                new AdminIngredient(5, "Bayam", "ikat", 3000),
-                new AdminIngredient(6, "Wortel", "kg", 12000),
-                new AdminIngredient(7, "Tahu", "papan", 4000),
-                new AdminIngredient(8, "Minyak Goreng", "liter", 18000),
-                new AdminIngredient(9, "Bawang Merah", "kg", 35000),
-                new AdminIngredient(10, "Bawang Putih", "kg", 40000),
-                new AdminIngredient(11, "Cabai Merah", "kg", 45000),
-                new AdminIngredient(12, "Garam", "bungkus", 3000),
-                new AdminIngredient(13, "Gula Pasir", "kg", 16000),
-                new AdminIngredient(14, "Kecap Manis", "botol", 12000));
-
-        ingredientById.clear();
-        ingredients.forEach(ingredient -> ingredientById.put(ingredient.id(), ingredient));
-
-        nutritions.setAll(
-                new AdminNutrition(1, 130, 2.7, 28, 0.3, 0.4, "100g"),
-                new AdminNutrition(2, 155, 13, 1.1, 11, 0, "butir"),
-                new AdminNutrition(3, 239, 27, 0, 14, 0, "100g"),
-                new AdminNutrition(4, 193, 19, 9.4, 11, 0, "100g"),
-                new AdminNutrition(5, 23, 2.9, 3.6, 0.4, 2.2, "100g"));
-        nutritionByIngredientId.clear();
-        nutritions.forEach(nutrition -> nutritionByIngredientId.put(nutrition.ingredientId(), nutrition));
-
-        priceHistory.setAll(
-                new AdminPriceHistory(1, 15000, "1 April 2024", true),
-                new AdminPriceHistory(1, 14500, "1 Maret 2024", false),
-                new AdminPriceHistory(1, 14000, "1 Februari 2024", false),
-                new AdminPriceHistory(2, 2500, "1 April 2024", true));
-
-        recipes.setAll(
-                new AdminRecipe(1, "Nasi Ayam Sayur", "Nasi dengan ayam goreng dan tumis sayuran segar", 3, "Aktif",
-                        recipeItems(item(1, 100, "gram"), item(3, 75, "gram"), item(5, 50, "gram"),
-                                item(6, 50, "gram"), item(10, 5, "gram"), item(12, 2, "gram"),
-                                item(8, 10, "ml"))),
-                new AdminRecipe(2, "Tumis Tempe Bayam", "Tumis tempe dengan bayam segar dan bumbu sederhana", 3, "Aktif",
-                        recipeItems(item(4, 100, "gram"), item(5, 75, "gram"), item(9, 10, "gram"),
-                                item(10, 5, "gram"), item(11, 5, "gram"), item(12, 2, "gram"),
-                                item(8, 10, "ml"))),
-                new AdminRecipe(3, "Sup Ayam Wortel", "Sup hangat dengan ayam dan wortel yang bergizi", 4, "Aktif",
-                        recipeItems(item(3, 75, "gram"), item(6, 100, "gram"),
-                                item(10, 5, "gram"), item(12, 2, "gram"))),
-                new AdminRecipe(4, "Tahu Telur", "Tahu goreng dengan telur dadar dan sambal", 3, "Aktif",
-                        recipeItems(item(7, 1, "papan"), item(2, 1, "butir"), item(11, 5, "gram"),
-                                item(12, 2, "gram"), item(8, 10, "ml"))),
-                new AdminRecipe(5, "Nasi Goreng Spesial", "Nasi goreng dengan telur, ayam, dan sayuran", 3, "Aktif",
-                        recipeItems(item(1, 150, "gram"), item(2, 1, "butir"), item(3, 50, "gram"),
-                                item(9, 10, "gram"), item(10, 5, "gram"), item(14, 10, "ml"),
-                                item(8, 10, "ml"), item(12, 2, "gram"))),
-                new AdminRecipe(6, "Sayur Asem", "Sayur asem khas Jawa dengan berbagai sayuran", 4, "Aktif",
-                        recipeItems(item(6, 50, "gram"), item(5, 50, "gram"), item(9, 10, "gram"),
-                                item(10, 5, "gram"), item(11, 5, "gram"), item(12, 2, "gram"),
-                                item(13, 5, "gram"))));
-    }
-
-    private AdminRecipeIngredient item(int ingredientId, double quantity, String unit) {
-        return new AdminRecipeIngredient(0, ingredientId, quantity, unit);
-    }
-
-    private List<AdminRecipeIngredient> recipeItems(AdminRecipeIngredient... items) {
-        return new ArrayList<>(List.of(items));
     }
 
     private void setActiveMenu(Button activeButton) {
@@ -1079,6 +1354,13 @@ public class AdminDashboardController {
     private Button outlineButton(String text) {
         Button button = new Button(text);
         button.getStyleClass().add("admin-outline-button");
+        return button;
+    }
+
+    private Button tableActionButton(String text, boolean wide) {
+        Button button = outlineButton(text);
+        button.getStyleClass().add("admin-table-action-button");
+        button.getStyleClass().add(wide ? "admin-table-action-wide" : "admin-table-action-compact");
         return button;
     }
 
@@ -1173,6 +1455,131 @@ public class AdminDashboardController {
                 .toList();
     }
 
+    private AdminNutrition toAdminNutrition(IngredientNutrition nutrition) {
+        return new AdminNutrition(
+                nutrition.getIngredientId(),
+                nutrition.getCalories(),
+                nutrition.getProtein(),
+                nutrition.getCarbohydrate(),
+                nutrition.getFat(),
+                nutrition.getFibre(),
+                nutrition.getUnit());
+    }
+
+    private IngredientNutrition toNutritionModel(AdminNutrition nutrition) {
+        return new IngredientNutrition(
+                0,
+                nutrition.ingredientId(),
+                nutrition.calories(),
+                nutrition.protein(),
+                nutrition.carbohydrate(),
+                nutrition.fat(),
+                nutrition.fibre(),
+                nutrition.per());
+    }
+
+    private AdminRecipeIngredient toAdminRecipeIngredient(RecipeIngredient ingredient) {
+        return new AdminRecipeIngredient(
+                ingredient.getRecipeId(),
+                ingredient.getIngredientId(),
+                ingredient.getQuantity(),
+                ingredient.getUnit());
+    }
+
+    private RecipeIngredient toRecipeIngredientModel(AdminRecipeIngredient ingredient, int recipeId) {
+        return new RecipeIngredient(
+                0,
+                recipeId,
+                ingredient.ingredientId(),
+                ingredient.quantity(),
+                ingredient.unit());
+    }
+
+    private List<RecipeIngredient> toRecipeIngredientModels(List<AdminRecipeIngredient> ingredients, int recipeId) {
+        List<RecipeIngredient> models = new ArrayList<>();
+        for (AdminRecipeIngredient ingredient : ingredients) {
+            models.add(toRecipeIngredientModel(ingredient, recipeId));
+        }
+        return models;
+    }
+
+    private List<AdminRecipeIngredient> recipeItemsWithRecipeId(int recipeId, List<AdminRecipeIngredient> items) {
+        List<AdminRecipeIngredient> updatedItems = new ArrayList<>();
+        for (AdminRecipeIngredient item : items) {
+            updatedItems.add(new AdminRecipeIngredient(recipeId, item.ingredientId(), item.quantity(), item.unit()));
+        }
+        return updatedItems;
+    }
+
+    private void addOrReplaceRecipeIngredient(ObservableList<AdminRecipeIngredient> items, AdminRecipeIngredient newItem) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).ingredientId() == newItem.ingredientId()) {
+                items.set(i, newItem);
+                return;
+            }
+        }
+        items.add(newItem);
+    }
+
+    private Recipe toRecipeModel(AdminRecipe recipe) {
+        return new Recipe(
+                recipe.id(),
+                recipe.name(),
+                recipe.description(),
+                recipe.servingSize(),
+                toDatabaseStatus(recipe.status()));
+    }
+
+    private Ingredient toIngredientModel(AdminIngredient ingredient) {
+        return new Ingredient(
+                ingredient.id(),
+                ingredient.name(),
+                ingredient.unit(),
+                ingredient.currentPrice());
+    }
+
+    private String toDisplayStatus(String status) {
+        if (status == null) {
+            return "Aktif";
+        }
+        return switch (status.trim().toLowerCase()) {
+            case "inactive", "nonaktif", "non-aktif" -> "Nonaktif";
+            default -> "Aktif";
+        };
+    }
+
+    private String toDatabaseStatus(String status) {
+        return "Nonaktif".equalsIgnoreCase(status) ? "inactive" : "active";
+    }
+
+    private String rootMessage(Throwable throwable) {
+        Throwable current = throwable;
+        while (current.getCause() != null) {
+            current = current.getCause();
+        }
+        return current.getMessage() == null ? throwable.getMessage() : current.getMessage();
+    }
+
+    private AdminNutrition nutritionForSelectedIngredient() {
+        if (selectedIngredient == null) {
+            return null;
+        }
+        return nutritionByIngredientId.getOrDefault(selectedIngredient.id(), defaultNutrition(selectedIngredient.id()));
+    }
+
+    private void addDefaultNutritionIfAbsent(int ingredientId) {
+        if (nutritionByIngredientId.containsKey(ingredientId)) {
+            return;
+        }
+        AdminNutrition nutrition = defaultNutrition(ingredientId);
+        nutritionByIngredientId.put(ingredientId, nutrition);
+        nutritions.add(nutrition);
+    }
+
+    private AdminNutrition defaultNutrition(int ingredientId) {
+        return new AdminNutrition(ingredientId, 0, 0, 0, 0, 0, "100g");
+    }
+
     private double estimateRecipeCost(AdminRecipe recipe) {
         double total = 0;
         for (AdminRecipeIngredient item : recipe.ingredients()) {
@@ -1219,6 +1626,10 @@ public class AdminDashboardController {
         return formatNumber(value);
     }
 
+    private String formatDate(LocalDate date) {
+        return dateLabelFormatter.format(date);
+    }
+
     private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -1227,10 +1638,16 @@ public class AdminDashboardController {
         alert.showAndWait();
     }
 
+    private record AdminIngredientEdit(String name, String unit) {
+    }
+
+    private record AdminPriceUpdate(double price, LocalDate effectiveDate) {
+    }
+
     private static final class AdminIngredient {
-        private final int id;
-        private final String name;
-        private final String unit;
+        private int id;
+        private String name;
+        private String unit;
         private double currentPrice;
 
         private AdminIngredient(int id, String name, String unit, double currentPrice) {
@@ -1244,12 +1661,24 @@ public class AdminDashboardController {
             return id;
         }
 
+        private void setId(int id) {
+            this.id = id;
+        }
+
         private String name() {
             return name;
         }
 
+        private void setName(String name) {
+            this.name = name;
+        }
+
         private String unit() {
             return unit;
+        }
+
+        private void setUnit(String unit) {
+            this.unit = unit;
         }
 
         private double currentPrice() {
@@ -1311,7 +1740,7 @@ public class AdminDashboardController {
     }
 
     private static final class AdminRecipe {
-        private final int id;
+        private int id;
         private String name;
         private String description;
         private int servingSize;
@@ -1330,6 +1759,10 @@ public class AdminDashboardController {
 
         private int id() {
             return id;
+        }
+
+        private void setId(int id) {
+            this.id = id;
         }
 
         private String name() {

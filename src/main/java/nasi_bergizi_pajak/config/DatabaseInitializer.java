@@ -29,6 +29,8 @@ public class DatabaseInitializer {
         }
 
         ensureAdminColumnExists();
+        ensureNutritionAndPriceTablesExist();
+        ensureRecipeIngredientSchema();
         ensureDefaultAdminExists();
     }
 
@@ -74,6 +76,68 @@ public class DatabaseInitializer {
         }
     }
 
+    private static void ensureNutritionAndPriceTablesExist() throws SQLException {
+        try (Connection connection = DatabaseConnection.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS ingredient_nutrition (
+                        nutrition_id   INT             NOT NULL AUTO_INCREMENT,
+                        ingredient_id  INT             NOT NULL,
+                        calories       DECIMAL(10,2)   NOT NULL DEFAULT 0,
+                        protein        DECIMAL(10,2)   NOT NULL DEFAULT 0,
+                        carbohydrate   DECIMAL(10,2)   NOT NULL DEFAULT 0,
+                        fat            DECIMAL(10,2)   NOT NULL DEFAULT 0,
+                        fibre          DECIMAL(10,2)   NOT NULL DEFAULT 0,
+                        unit           VARCHAR(50)     NOT NULL,
+                        PRIMARY KEY (nutrition_id),
+                        UNIQUE KEY uq_nutrition_ingredient (ingredient_id),
+                        CONSTRAINT fk_in_ingredient FOREIGN KEY (ingredient_id)
+                            REFERENCES ingredient(ingredient_id)
+                            ON UPDATE CASCADE
+                            ON DELETE CASCADE
+                    )
+                    """);
+
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS ingredient_price (
+                        price_id        INT             NOT NULL AUTO_INCREMENT,
+                        ingredient_id   INT             NOT NULL,
+                        price           DECIMAL(15,2)   NOT NULL,
+                        effective_date  DATE            NOT NULL,
+                        PRIMARY KEY (price_id),
+                        KEY idx_ingredient_price_ingredient_id (ingredient_id),
+                        CONSTRAINT fk_ip_ingredient FOREIGN KEY (ingredient_id)
+                            REFERENCES ingredient(ingredient_id)
+                            ON UPDATE CASCADE
+                            ON DELETE CASCADE
+                    )
+                    """);
+        }
+    }
+
+    private static void ensureRecipeIngredientSchema() throws SQLException {
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            if (!tableExists(connection, "recipe_ingredient")) {
+                return;
+            }
+
+            if (!columnExists(connection, "recipe_ingredient", "amount")) {
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute("ALTER TABLE recipe_ingredient ADD COLUMN amount DOUBLE NOT NULL DEFAULT 0");
+                    if (columnExists(connection, "recipe_ingredient", "quantity")) {
+                        statement.execute("UPDATE recipe_ingredient SET amount = quantity");
+                    }
+                }
+            }
+
+            if (!columnExists(connection, "recipe_ingredient", "unit")) {
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute("ALTER TABLE recipe_ingredient ADD COLUMN unit VARCHAR(50) NOT NULL DEFAULT ''");
+                }
+            }
+        }
+    }
+
     private static boolean columnExists(Connection connection, String tableName, String columnName) throws SQLException {
         DatabaseMetaData metaData = connection.getMetaData();
         String catalog = connection.getCatalog();
@@ -91,6 +155,15 @@ public class DatabaseInitializer {
         }
 
         try (ResultSet resultSet = metaData.getColumns(catalog, null, tableName, columnName.toLowerCase())) {
+            return resultSet.next();
+        }
+    }
+
+    private static boolean tableExists(Connection connection, String tableName) throws SQLException {
+        DatabaseMetaData metaData = connection.getMetaData();
+        String catalog = connection.getCatalog();
+
+        try (ResultSet resultSet = metaData.getTables(catalog, null, tableName, new String[]{"TABLE"})) {
             return resultSet.next();
         }
     }

@@ -48,8 +48,8 @@ public class RecipeFormController {
 
     @FXML
     private void initialize() {
-        cbStatus.getItems().addAll("ACTIVE", "INACTIVE");
-        cbStatus.setValue("ACTIVE");
+        cbStatus.getItems().addAll("Aktif", "Nonaktif");
+        cbStatus.setValue("Aktif");
 
         loadIngredientOptions();
         setupRecipeIngredientTable();
@@ -125,7 +125,7 @@ public class RecipeFormController {
             String name = txtRecipeName.getText().trim();
             String description = txtRecipeDescription.getText().trim();
             int servingSize = Integer.parseInt(txtServingSize.getText().trim());
-            String status = cbStatus.getValue() == null ? "ACTIVE" : cbStatus.getValue();
+            String status = cbStatus.getValue() == null ? "Aktif" : cbStatus.getValue();
 
             if (name.isBlank()) {
                 showAlert("Data belum lengkap", "Nama resep wajib diisi.");
@@ -142,15 +142,13 @@ public class RecipeFormController {
                 currentRecipe.setName(name);
                 currentRecipe.setDescription(description);
                 currentRecipe.setServingSize(servingSize);
-                currentRecipe.setStatus(status);
-                recipeDAO.updateRecipe(currentRecipe);
+                currentRecipe.setStatus(toDatabaseStatus(status));
+                recipeDAO.saveRecipeWithIngredients(currentRecipe, recipeIngredients);
                 recipeId = currentRecipe.getRecipeId();
             } else {
-                Recipe recipe = new Recipe(0, name, description, servingSize, status);
-                recipeId = recipeDAO.insertRecipe(recipe);
+                Recipe recipe = new Recipe(0, name, description, servingSize, toDatabaseStatus(status));
+                recipeId = recipeDAO.saveRecipeWithIngredients(recipe, recipeIngredients);
             }
-
-            recipeIngredientDAO.replaceRecipeIngredients(recipeId, recipeIngredients);
             closeWindow();
         } catch (NumberFormatException e) {
             showAlert("Data belum valid", "Porsi harus berupa angka bulat.");
@@ -170,7 +168,7 @@ public class RecipeFormController {
         txtRecipeName.setText(recipe.getName());
         txtRecipeDescription.setText(recipe.getDescription());
         txtServingSize.setText(String.valueOf(recipe.getServingSize()));
-        cbStatus.setValue(recipe.getStatus());
+        cbStatus.setValue(toDisplayStatus(recipe.getStatus()));
 
         List<RecipeIngredient> existingIngredients =
                 recipeIngredientDAO.getRecipeIngredientsByRecipeId(recipe.getRecipeId());
@@ -197,5 +195,19 @@ public class RecipeFormController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private String toDisplayStatus(String status) {
+        if (status == null) {
+            return "Aktif";
+        }
+        return switch (status.trim().toLowerCase()) {
+            case "inactive", "nonaktif", "non-aktif" -> "Nonaktif";
+            default -> "Aktif";
+        };
+    }
+
+    private String toDatabaseStatus(String status) {
+        return "Nonaktif".equalsIgnoreCase(status) ? "inactive" : "active";
     }
 }

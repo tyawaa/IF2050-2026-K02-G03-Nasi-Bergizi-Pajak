@@ -1209,6 +1209,15 @@
     -fx-padding: 9px 16px;
 }
 
+.admin-header-action-button {
+    -fx-min-width: 148px;
+    -fx-pref-height: 46px;
+    -fx-padding: 10px 22px;
+    -fx-font-size: 16px;
+    -fx-background-radius: 9px;
+    -fx-border-radius: 9px;
+}
+
 .admin-primary-button {
     -fx-background-color: #F5861F;
     -fx-text-fill: white;
@@ -1237,6 +1246,37 @@
 .admin-outline-button:hover,
 .admin-icon-button:hover {
     -fx-background-color: #FFF6EC;
+}
+
+.admin-table-action-button {
+    -fx-pref-height: 34px;
+    -fx-min-height: 34px;
+    -fx-max-height: 34px;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E8DFD2;
+    -fx-border-width: 1px;
+    -fx-text-fill: #1F1D1B;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-padding: 5px 13px;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-effect: none;
+}
+
+.admin-table-action-button:hover {
+    -fx-background-color: #FFF6EC;
+    -fx-border-color: #E2D3C0;
+}
+
+.admin-table-action-wide {
+    -fx-min-width: 108px;
+    -fx-pref-width: 108px;
+}
+
+.admin-table-action-compact {
+    -fx-min-width: 68px;
+    -fx-pref-width: 68px;
 }
 
 .admin-tabs {
