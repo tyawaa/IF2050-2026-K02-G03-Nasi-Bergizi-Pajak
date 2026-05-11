@@ -20,7 +20,6 @@ public class IngredientDAO {
                 ingredient.setIngredientId(rs.getInt("ingredient_id"));
                 ingredient.setName(rs.getString("name"));
                 ingredient.setUnit(rs.getString("unit"));
-                ingredient.setPricePerUnit(rs.getDouble("price_per_unit"));
                 ingredients.add(ingredient);
             }
         } catch (SQLException e) {
@@ -30,12 +29,11 @@ public class IngredientDAO {
     }
 
     public void insertIngredient(Ingredient ingredient) {
-        String query = "INSERT INTO ingredient (name, unit, price_per_unit) VALUES (?, ?, ?)";
+        String query = "INSERT INTO ingredient (name, unit) VALUES (?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, ingredient.getName());
             stmt.setString(2, ingredient.getUnit());
-            stmt.setDouble(3, ingredient.getPricePerUnit());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -43,13 +41,12 @@ public class IngredientDAO {
     }
 
     public void updateIngredient(Ingredient ingredient) {
-        String query = "UPDATE ingredient SET name = ?, unit = ?, price_per_unit = ? WHERE ingredient_id = ?";
+        String query = "UPDATE ingredient SET name = ?, unit = ? WHERE ingredient_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, ingredient.getName());
             stmt.setString(2, ingredient.getUnit());
-            stmt.setDouble(3, ingredient.getPricePerUnit());
-            stmt.setInt(4, ingredient.getIngredientId());
+            stmt.setInt(3, ingredient.getIngredientId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -78,7 +75,6 @@ public class IngredientDAO {
                     ingredient.setIngredientId(rs.getInt("ingredient_id"));
                     ingredient.setName(rs.getString("name"));
                     ingredient.setUnit(rs.getString("unit"));
-                    ingredient.setPricePerUnit(rs.getDouble("price_per_unit"));
                     return ingredient;
                 }
             }

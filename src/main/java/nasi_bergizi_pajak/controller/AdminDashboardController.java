@@ -53,11 +53,9 @@ public class AdminDashboardController {
     @FXML private TableColumn<Ingredient, Integer> colIngredientId;
     @FXML private TableColumn<Ingredient, String> colIngredientName;
     @FXML private TableColumn<Ingredient, String> colUnit;
-    @FXML private TableColumn<Ingredient, Double> colPricePerUnit;
 
     @FXML private TextField txtIngredientName;
     @FXML private TextField txtUnit;
-    @FXML private TextField txtPricePerUnit;
     @FXML private Button btnSaveIngredient;
     @FXML private Button btnDeleteIngredient;
     @FXML private Button btnClearIngredient;
@@ -130,7 +128,7 @@ public class AdminDashboardController {
                     .contains(keyword);
             });
         });
-
+        
         recipeTable.setItems(filteredData);
         recipeTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
@@ -143,7 +141,6 @@ public class AdminDashboardController {
         colIngredientId.setCellValueFactory(new PropertyValueFactory<>("ingredientId"));
         colIngredientName.setCellValueFactory(new PropertyValueFactory<>("name"));
         colUnit.setCellValueFactory(new PropertyValueFactory<>("unit"));
-        colPricePerUnit.setCellValueFactory(new PropertyValueFactory<>("pricePerUnit"));
 
         ingredientTable.setItems(ingredientList);
         ingredientTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -166,7 +163,6 @@ public class AdminDashboardController {
     private void populateIngredientForm(Ingredient ingredient) {
         txtIngredientName.setText(ingredient.getName());
         txtUnit.setText(ingredient.getUnit());
-        txtPricePerUnit.setText(String.valueOf(ingredient.getPricePerUnit()));
     }
 
     private void updateDetailCard(Recipe recipe) {
@@ -180,7 +176,7 @@ public class AdminDashboardController {
         for (RecipeIngredient ri : ingredients) {
             Ingredient ing = ingredientDAO.getIngredientById(ri.getIngredientId());
             if (ing != null) {
-                sb.append(ing.getName()).append(": ").append(ri.getQuantity()).append(" ").append(ing.getUnit()).append("\n");
+                sb.append(ing.getName()).append(": ").append(ri.getAmount()).append(" ").append(ing.getUnit()).append("\n");
             }
         }
         lblDetailIngredients.setText(sb.toString());
@@ -193,25 +189,28 @@ public class AdminDashboardController {
         try {
             String name = txtIngredientName.getText();
             String unit = txtUnit.getText();
-            double price = Double.parseDouble(txtPricePerUnit.getText());
+
+            if (name == null || name.isBlank() || unit == null || unit.isBlank()) {
+                showAlert("Error", "Nama dan satuan tidak boleh kosong");
+                return;
+            }
 
             Ingredient selectedIngredient = ingredientTable.getSelectionModel().getSelectedItem();
             if (selectedIngredient != null) {
                 // Update
                 selectedIngredient.setName(name);
                 selectedIngredient.setUnit(unit);
-                selectedIngredient.setPricePerUnit(price);
                 ingredientDAO.updateIngredient(selectedIngredient);
             } else {
                 // Insert
-                Ingredient newIngredient = new Ingredient(0, name, unit, price);
+                Ingredient newIngredient = new Ingredient(0, name, unit);
                 ingredientDAO.insertIngredient(newIngredient);
             }
 
             loadData();
             clearIngredientForm();
-        } catch (NumberFormatException e) {
-            showAlert("Error", "Price per unit must be a number");
+        } catch (Exception e) {
+            showAlert("Error", e.getMessage());
         }
     }
 
@@ -234,7 +233,6 @@ public class AdminDashboardController {
     private void clearIngredientForm() {
         txtIngredientName.clear();
         txtUnit.clear();
-        txtPricePerUnit.clear();
     }
 
     @FXML

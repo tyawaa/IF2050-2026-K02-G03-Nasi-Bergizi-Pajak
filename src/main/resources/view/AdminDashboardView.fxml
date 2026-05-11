@@ -115,13 +115,7 @@
                                                  prefWidth="180"/>
                                 </columns>
                             </TableView>
-
-                            
-
-                            
                         </VBox>
-
-
                         <!-- RIGHT DETAIL -->
                         <VBox fx:id="detailCard"
                               spacing="14"
@@ -201,19 +195,15 @@
                         <columns>
                             <TableColumn fx:id="colIngredientId"
                                          text="ID"
-                                         prefWidth="60"/>
+                                         prefWidth="100"/>
 
                             <TableColumn fx:id="colIngredientName"
                                          text="Nama"
-                                         prefWidth="220"/>
+                                         prefWidth="300"/>
 
                             <TableColumn fx:id="colUnit"
                                          text="Satuan"
-                                         prefWidth="150"/>
-
-                            <TableColumn fx:id="colPricePerUnit"
-                                         text="Harga per Satuan"
-                                         prefWidth="220"/>
+                                         prefWidth="200"/>
                         </columns>
                     </TableView>
                 </VBox>
@@ -247,15 +237,6 @@
                         <TextField fx:id="txtUnit"
                                    styleClass="modern-input"
                                    GridPane.rowIndex="1"
-                                   GridPane.columnIndex="1"/>
-
-                        <Label text="Harga per Satuan"
-                               GridPane.rowIndex="2"
-                               GridPane.columnIndex="0"/>
-
-                        <TextField fx:id="txtPricePerUnit"
-                                   styleClass="modern-input"
-                                   GridPane.rowIndex="2"
                                    GridPane.columnIndex="1"/>
                     </GridPane>
 

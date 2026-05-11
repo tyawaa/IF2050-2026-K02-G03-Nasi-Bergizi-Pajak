@@ -20,7 +20,7 @@ public class RecipeIngredientDAO {
                 ri.setRecipeIngredientId(rs.getInt("recipe_ingredient_id"));
                 ri.setRecipeId(rs.getInt("recipe_id"));
                 ri.setIngredientId(rs.getInt("ingredient_id"));
-                ri.setQuantity(rs.getDouble("quantity"));
+                ri.setAmount(rs.getDouble("amount"));
                 recipeIngredients.add(ri);
             }
         } catch (SQLException e) {
@@ -30,12 +30,12 @@ public class RecipeIngredientDAO {
     }
 
     public void insertRecipeIngredient(RecipeIngredient ri) {
-        String query = "INSERT INTO recipe_ingredient (recipe_id, ingredient_id, quantity) VALUES (?, ?, ?)";
+        String query = "INSERT INTO recipe_ingredient (recipe_id, ingredient_id, amount) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, ri.getRecipeId());
             stmt.setInt(2, ri.getIngredientId());
-            stmt.setDouble(3, ri.getQuantity());
+            stmt.setDouble(3, ri.getAmount());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -43,12 +43,12 @@ public class RecipeIngredientDAO {
     }
 
     public void updateRecipeIngredient(RecipeIngredient ri) {
-        String query = "UPDATE recipe_ingredient SET recipe_id = ?, ingredient_id = ?, quantity = ? WHERE recipe_ingredient_id = ?";
+        String query = "UPDATE recipe_ingredient SET recipe_id = ?, ingredient_id = ?, amount = ? WHERE recipe_ingredient_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, ri.getRecipeId());
             stmt.setInt(2, ri.getIngredientId());
-            stmt.setDouble(3, ri.getQuantity());
+            stmt.setDouble(3, ri.getAmount());
             stmt.setInt(4, ri.getRecipeIngredientId());
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -79,7 +79,7 @@ public class RecipeIngredientDAO {
                     ri.setRecipeIngredientId(rs.getInt("recipe_ingredient_id"));
                     ri.setRecipeId(rs.getInt("recipe_id"));
                     ri.setIngredientId(rs.getInt("ingredient_id"));
-                    ri.setQuantity(rs.getDouble("quantity"));
+                    ri.setAmount(rs.getDouble("amount"));
                     recipeIngredients.add(ri);
                 }
             }

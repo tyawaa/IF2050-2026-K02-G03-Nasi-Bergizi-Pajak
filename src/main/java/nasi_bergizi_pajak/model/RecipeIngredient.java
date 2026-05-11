@@ -4,16 +4,16 @@ public class RecipeIngredient {
     private int recipeIngredientId;
     private int recipeId;
     private int ingredientId;
-    private double quantity;
+    private double amount;
 
     // Constructors
     public RecipeIngredient() {}
 
-    public RecipeIngredient(int recipeIngredientId, int recipeId, int ingredientId, double quantity) {
+    public RecipeIngredient(int recipeIngredientId, int recipeId, int ingredientId, double amount) {
         this.recipeIngredientId = recipeIngredientId;
         this.recipeId = recipeId;
         this.ingredientId = ingredientId;
-        this.quantity = quantity;
+        this.amount = amount;
     }
 
     // Getters and Setters
@@ -41,11 +41,11 @@ public class RecipeIngredient {
         this.ingredientId = ingredientId;
     }
 
-    public double getQuantity() {
-        return quantity;
+    public double getAmount() {
+        return amount;
     }
 
-    public void setQuantity(double quantity) {
-        this.quantity = quantity;
+    public void setAmount(double amount) {
+        this.amount = amount;
     }
 }
