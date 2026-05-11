@@ -168,6 +168,30 @@
                                        wrapText="true"
                                        styleClass="detail-subtitle"/>
                             </VBox>
+
+                            <VBox spacing="8">
+                            <Label text="Informasi Gizi" styleClass="mini-subtitle"/>
+                            <HBox spacing="10">
+                                <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="stat-box">
+                                    <Label text="Kalori" styleClass="stat-label"/>
+                                    <Label fx:id="lblDetailCalories" styleClass="stat-value"/>
+                                </VBox>
+                                <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="stat-box">
+                                    <Label text="Protein" styleClass="stat-label"/>
+                                    <Label fx:id="lblDetailProtein" styleClass="stat-value"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10">
+                                <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="stat-box">
+                                    <Label text="Karbohidrat" styleClass="stat-label"/>
+                                    <Label fx:id="lblDetailCarbs" styleClass="stat-value"/>
+                                </VBox>
+                                <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="stat-box">
+                                    <Label text="Lemak" styleClass="stat-label"/>
+                                    <Label fx:id="lblDetailFat" styleClass="stat-value"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
                         </VBox>
                     </HBox>
                 </center>

@@ -8,11 +8,13 @@ D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\mai
 D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\RegistrasiController.java
 D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\AkunDAO.java
 D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\IngredientDAO.java
+D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\IngredientNutritionDAO.java
 D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\RecipeDAO.java
 D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\RecipeIngredientDAO.java
 D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\Main.java
 D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\Akun.java
 D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\Ingredient.java
+D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\IngredientNutrition.java
 D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\Recipe.java
 D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\RecipeIngredient.java
 D:\Sekolah\Tahun 2\Semester 4\RPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\util\PasswordUtil.java

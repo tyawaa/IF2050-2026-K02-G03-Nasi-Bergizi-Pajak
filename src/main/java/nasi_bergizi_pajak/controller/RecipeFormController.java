@@ -222,19 +222,17 @@ public class RecipeFormController {
         this.currentRecipe = recipe;
 
         txtRecipeName.setText(recipe.getName());
-
-        txtRecipeDescription.setText(
-            recipe.getDescription()
-        );
-
-        txtServingSize.setText(
-            String.valueOf(recipe.getServingSize())
-        );
-
+        txtRecipeDescription.setText(recipe.getDescription());
+        txtServingSize.setText(String.valueOf(recipe.getServingSize()));
         cbStatus.setValue(recipe.getStatus());
 
         btnDeleteRecipe.setVisible(true);
         btnDeleteRecipe.setManaged(true);
+
+        // Load existing ingredients into the table
+        recipeIngredients.setAll(
+            recipeIngredientDAO.getRecipeIngredientsByRecipeId(recipe.getRecipeId())
+        );
     }
 
     private void setupIngredientTable() {

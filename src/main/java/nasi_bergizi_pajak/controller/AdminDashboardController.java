@@ -21,6 +21,8 @@ import nasi_bergizi_pajak.model.Ingredient;
 import nasi_bergizi_pajak.model.Recipe;
 import nasi_bergizi_pajak.model.RecipeIngredient;
 import nasi_bergizi_pajak.controller.RecipeFormController;
+import nasi_bergizi_pajak.dao.IngredientNutritionDAO;
+import nasi_bergizi_pajak.model.IngredientNutrition;
 import java.io.IOException;
 import java.util.List;
 import javafx.collections.transformation.FilteredList;
@@ -62,11 +64,14 @@ public class AdminDashboardController {
     @FXML private Label lblDetailServingSize;
     @FXML private Label lblDetailStatus;
     @FXML private Label lblDetailIngredients;
-
+    @FXML private Label lblDetailCalories;
+    @FXML private Label lblDetailProtein;
+    @FXML private Label lblDetailCarbs;
+    @FXML private Label lblDetailFat;
     private RecipeDAO recipeDAO = new RecipeDAO();
     private IngredientDAO ingredientDAO = new IngredientDAO();
     private RecipeIngredientDAO recipeIngredientDAO = new RecipeIngredientDAO();
-
+    private final IngredientNutritionDAO nutritionDAO = new IngredientNutritionDAO();
     
     private ObservableList<Recipe> recipeList = FXCollections.observableArrayList();
     private ObservableList<Ingredient> ingredientList = FXCollections.observableArrayList();
@@ -171,14 +176,31 @@ public class AdminDashboardController {
         lblDetailStatus.setText(recipe.getStatus());
 
         List<RecipeIngredient> ingredients = recipeIngredientDAO.getRecipeIngredientsByRecipeId(recipe.getRecipeId());
+
         StringBuilder sb = new StringBuilder();
+        double totalCalories = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0;
+
         for (RecipeIngredient ri : ingredients) {
             Ingredient ing = ingredientDAO.getIngredientById(ri.getIngredientId());
             if (ing != null) {
                 sb.append(ing.getName()).append(": ").append(ri.getAmount()).append(" ").append(ing.getUnit()).append("\n");
             }
+
+            IngredientNutrition nutrition = nutritionDAO.getNutritionByIngredientId(ri.getIngredientId());
+            if (nutrition != null) {
+                double ratio = ri.getAmount();
+                totalCalories += nutrition.getCalories()      * ratio;
+                totalProtein  += nutrition.getProtein()       * ratio;
+                totalCarbs    += nutrition.getCarbohydrate()  * ratio;
+                totalFat      += nutrition.getFat()           * ratio;
+            }
         }
-        lblDetailIngredients.setText(sb.toString());
+
+        lblDetailIngredients.setText(sb.toString().trim().isEmpty() ? "Tidak ada data bahan" : sb.toString().trim());
+        lblDetailCalories.setText(String.format("%.0f kcal", totalCalories));
+        lblDetailProtein.setText(String.format("%.0f g",     totalProtein));
+        lblDetailCarbs.setText(String.format("%.0f g",       totalCarbs));
+        lblDetailFat.setText(String.format("%.0f g",         totalFat));
     }
 
 
@@ -295,7 +317,7 @@ public class AdminDashboardController {
         colActions.setCellFactory(param -> new TableCell<>() {
 
             private final Button btnEdit =
-                new Button("✏");
+                new Button("Edit");
 
             private final Button btnToggle =
                 new Button("Status");
