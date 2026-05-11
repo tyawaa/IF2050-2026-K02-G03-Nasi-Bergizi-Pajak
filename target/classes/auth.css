@@ -48,6 +48,10 @@
     -fx-padding: 8px;
 }
 
+.auth-login-card {
+    -fx-translate-y: 120px;
+}
+
 .auth-register-card {
     -fx-padding: 26px 8px 26px 8px;
 }
