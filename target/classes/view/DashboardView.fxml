@@ -10,38 +10,424 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="nasi_bergizi_pajak.controller.DashboardController"
             stylesheets="@../auth.css"
-            styleClass="dashboard-root">
-    <top>
-        <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dashboard-header">
+            styleClass="userdash-root">
+
+    <!-- ================================================= -->
+    <!-- SIDEBAR -->
+    <!-- ================================================= -->
+
+    <left>
+
+        <VBox spacing="18"
+              styleClass="userdash-sidebar">
+
             <padding>
-                <Insets top="18" right="28" bottom="18" left="28"/>
+                <Insets top="28"
+                        right="20"
+                        bottom="24"
+                        left="20"/>
             </padding>
-            <StackPane styleClass="brand-image-mark-small">
-                <ImageView fitWidth="44" fitHeight="44" preserveRatio="true" styleClass="brand-logo-image">
-                    <viewport>
-                        <Rectangle2D minX="33" minY="30" width="86" height="86"/>
-                    </viewport>
-                    <image>
-                        <Image url="@../img/logo_nasibergizipajak.png"/>
-                    </image>
-                </ImageView>
-            </StackPane>
-            <VBox spacing="0">
-                <Label text="Nasi Bergizi Pajak" styleClass="dashboard-brand"/>
-                <Label text="Dashboard sementara untuk validasi login" styleClass="dashboard-subtitle"/>
+
+            <!-- BRAND -->
+
+            <HBox alignment="CENTER_LEFT"
+                   spacing="14">
+
+                <StackPane styleClass="brand-image-mark-small">
+
+                    <ImageView fitWidth="42"
+                               fitHeight="42"
+                               preserveRatio="true">
+
+                        <viewport>
+                            <Rectangle2D minX="33"
+                                         minY="30"
+                                         width="86"
+                                         height="86"/>
+                        </viewport>
+
+                        <image>
+                            <Image url="@../img/logo_nasibergizipajak.png"/>
+                        </image>
+
+                    </ImageView>
+
+                </StackPane>
+
+                <VBox spacing="2">
+
+                    <Label text="Nasi Bergizi"
+                           styleClass="userdash-brand-title"/>
+
+                    <Label text="Pajak"
+                           styleClass="userdash-brand-subtitle"/>
+
+                </VBox>
+
+            </HBox>
+
+            <Separator/>
+
+            <!-- MENU TITLE -->
+
+            <Label text="Menu Utama"
+                   styleClass="userdash-menu-title"/>
+
+            <!-- MENU -->
+
+            <VBox spacing="10">
+
+                <Button text="Dashboard"
+                        styleClass="userdash-nav-active"/>
+
+                <Button text="Keluarga"
+                        styleClass="userdash-nav-button"/>
+
+                <Button text="Budget"
+                        styleClass="userdash-nav-button"/>
+
+                <Button text="Parameter Planner"
+                        styleClass="userdash-nav-button"/>
+
+                <Button text="Stok Dapur"
+                        styleClass="userdash-nav-button"/>
+
+                <Button text="Menu Mingguan"
+                        styleClass="userdash-nav-button"/>
+
+                <Button text="Rekomendasi Menu"
+                        styleClass="userdash-nav-button"/>
+
+                <Button text="Shopping Planner"
+                        styleClass="userdash-nav-button"/>
+
+                <Button text="Hasil Belanja"
+                        styleClass="userdash-nav-button"/>
+
             </VBox>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Logout" onAction="#handleLogout" styleClass="button-outline"/>
-        </HBox>
-    </top>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <Button text="Logout"
+                    onAction="#handleLogout"
+                    styleClass="button-outline"/>
+
+        </VBox>
+
+    </left>
+
+    <!-- ================================================= -->
+    <!-- MAIN CONTENT -->
+    <!-- ================================================= -->
+
     <center>
-        <StackPane>
-            <VBox alignment="CENTER" spacing="16" maxWidth="520" styleClass="dashboard-card">
-                <Label fx:id="welcomeLabel" text="Halo!" styleClass="dashboard-title"/>
-                <Label fx:id="emailLabel" text="" styleClass="dashboard-email"/>
-                <Separator/>
-                <Label text="Login berhasil. Halaman ini hanya placeholder sampai dashboard utama diintegrasikan." wrapText="true" styleClass="dashboard-note"/>
-            </VBox>
-        </StackPane>
+
+        <VBox spacing="0"
+              styleClass="userdash-main-area">
+
+            <!-- ========================================= -->
+            <!-- TOPBAR -->
+            <!-- ========================================= -->
+
+            <HBox alignment="CENTER_LEFT"
+                  styleClass="userdash-topbar">
+
+                <padding>
+                    <Insets top="22"
+                            right="30"
+                            bottom="22"
+                            left="30"/>
+                </padding>
+
+                <VBox spacing="6">
+
+                    <Label text="Dashboard Pengguna"
+                           styleClass="userdash-page-title"/>
+
+                    <Label fx:id="emailLabel"
+                           text="daniel@gmail.com"
+                           styleClass="userdash-page-subtitle"/>
+
+                    <Label fx:id="welcomeLabel"
+                           text="Halo, daniel wg!"
+                           styleClass="userdash-page-subtitle"/>
+
+                </VBox>
+
+            </HBox>
+
+            <!-- ========================================= -->
+            <!-- CONTENT -->
+            <!-- ========================================= -->
+
+            <ScrollPane fitToWidth="true"
+                        VBox.vgrow="ALWAYS"
+                        hbarPolicy="NEVER"
+                        styleClass="userdash-scroll">
+
+                <content>
+
+                    <VBox spacing="24"
+                          styleClass="userdash-content">
+
+                        <padding>
+                            <Insets top="28"
+                                    right="28"
+                                    bottom="28"
+                                    left="28"/>
+                        </padding>
+
+                        <!-- SUMMARY CARDS -->
+
+                        <HBox spacing="20">
+
+                            <VBox HBox.hgrow="ALWAYS"
+                                  prefHeight="130"
+                                  styleClass="userdash-summary-card">
+
+                                <Label text="Jumlah Anggota Keluarga"
+                                       styleClass="userdash-card-title"/>
+
+                            </VBox>
+
+                            <VBox HBox.hgrow="ALWAYS"
+                                  prefHeight="130"
+                                  styleClass="userdash-summary-card">
+
+                                <Label text="Sisa Budget"
+                                       styleClass="userdash-card-title"/>
+
+                            </VBox>
+
+                            <VBox HBox.hgrow="ALWAYS"
+                                  prefHeight="130"
+                                  styleClass="userdash-summary-card">
+
+                                <Label text="Stok Dapur"
+                                       styleClass="userdash-card-title"/>
+
+                            </VBox>
+
+                            <VBox HBox.hgrow="ALWAYS"
+                                  prefHeight="130"
+                                  styleClass="userdash-summary-card">
+
+                                <Label text="Slot Menu Mingguan"
+                                       styleClass="userdash-card-title"/>
+
+                            </VBox>
+
+                        </HBox>
+
+                        <!-- MAIN GRID -->
+
+                        <HBox spacing="24"
+                              fillHeight="true">
+
+                            <!-- LEFT SIDE -->
+
+                            <VBox spacing="24"
+                                  HBox.hgrow="ALWAYS"
+                                  maxWidth="1.7976931348623157E308">
+
+                                <!-- STATUS BUDGET -->
+
+                                <VBox spacing="18"
+                                      styleClass="userdash-panel">
+
+                                    <Label text="Status Budget"
+                                           styleClass="userdash-section-title"/>
+
+                                    <GridPane hgap="16"
+                                              vgap="16">
+
+                                        <columnConstraints>
+                                            <ColumnConstraints percentWidth="70"/>
+                                            <ColumnConstraints percentWidth="30"/>
+                                        </columnConstraints>
+
+                                        <Label text="Total Budget"
+                                               GridPane.rowIndex="0"
+                                               GridPane.columnIndex="0"/>
+
+                                        <Label text="-"
+                                               GridPane.rowIndex="0"
+                                               GridPane.columnIndex="1"/>
+
+                                        <Label text="Budget Digunakan"
+                                               GridPane.rowIndex="1"
+                                               GridPane.columnIndex="0"/>
+
+                                        <Label text="-"
+                                               GridPane.rowIndex="1"
+                                               GridPane.columnIndex="1"/>
+
+                                        <Label text="Sisa Budget"
+                                               GridPane.rowIndex="2"
+                                               GridPane.columnIndex="0"/>
+
+                                        <Label text="-"
+                                               GridPane.rowIndex="2"
+                                               GridPane.columnIndex="1"/>
+
+                                    </GridPane>
+
+                                    <VBox spacing="10">
+
+                                        <Label text="Progress Penggunaan"/>
+
+                                        <ProgressBar progress="0.45"
+                                                     prefWidth="9999"/>
+
+                                    </VBox>
+
+                                    <HBox alignment="CENTER_LEFT"
+                                          spacing="10">
+
+                                        <Label text="Status"/>
+
+                                        <Label text="-"/>
+
+                                    </HBox>
+
+                                </VBox>
+
+                                <!-- NOTIFIKASI -->
+
+                                <VBox spacing="16"
+                                      styleClass="userdash-panel">
+
+                                    <Label text="Daftar Notifikasi Sistem"
+                                           styleClass="userdash-section-title"/>
+
+                                    <VBox spacing="14">
+
+                                        <HBox alignment="CENTER_LEFT"
+                                              prefHeight="52"
+                                              styleClass="userdash-menu-item">
+
+                                            <Label text="Placeholder notifikasi"/>
+
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT"
+                                              prefHeight="52"
+                                              styleClass="userdash-menu-item">
+
+                                            <Label text="Placeholder notifikasi"/>
+
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT"
+                                              prefHeight="52"
+                                              styleClass="userdash-menu-item">
+
+                                            <Label text="Placeholder notifikasi"/>
+
+                                        </HBox>
+
+                                    </VBox>
+
+                                </VBox>
+
+                            </VBox>
+
+                            <!-- RIGHT SIDE -->
+
+                            <VBox spacing="24"
+                                  prefWidth="420"
+                                  minWidth="420"
+                                  maxWidth="420">
+
+                                <!-- EXPIRED WARNING -->
+
+                                <VBox spacing="18"
+                                      styleClass="userdash-panel">
+
+                                    <Label text="Peringatan Bahan Hampir Kadaluarsa"
+                                           wrapText="true"
+                                           styleClass="userdash-section-title"/>
+
+                                    <VBox spacing="14">
+
+                                        <HBox alignment="CENTER_LEFT"
+                                              prefHeight="54"
+                                              styleClass="userdash-menu-item">
+
+                                            <Label text="Placeholder stok"/>
+
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT"
+                                              prefHeight="54"
+                                              styleClass="userdash-menu-item">
+
+                                            <Label text="Placeholder stok"/>
+
+                                        </HBox>
+
+                                        <HBox alignment="CENTER_LEFT"
+                                              prefHeight="54"
+                                              styleClass="userdash-menu-item">
+
+                                            <Label text="Placeholder stok"/>
+
+                                        </HBox>
+
+                                    </VBox>
+
+                                </VBox>
+
+                                <!-- AKTIVITAS -->
+
+                                <VBox spacing="18"
+                                      styleClass="userdash-panel">
+
+                                    <Label text="Status Aktivitas"
+                                           styleClass="userdash-section-title"/>
+
+                                    <VBox spacing="16">
+
+                                        <VBox spacing="10"
+                                              styleClass="userdash-menu-item">
+
+                                            <Label text="Menu Mingguan"
+                                                   styleClass="userdash-card-title"/>
+
+                                            <Separator/>
+
+                                            <Label text="Placeholder aktivitas"/>
+
+                                        </VBox>
+
+                                        <VBox spacing="10"
+                                              styleClass="userdash-menu-item">
+
+                                            <Label text="Shopping Planner"
+                                                   styleClass="userdash-card-title"/>
+
+                                            <Separator/>
+
+                                            <Label text="Placeholder aktivitas"/>
+
+                                        </VBox>
+
+                                    </VBox>
+
+                                </VBox>
+
+                            </VBox>
+
+                        </HBox>
+
+                    </VBox>
+
+                </content>
+
+            </ScrollPane>
+
+        </VBox>
+
     </center>
+
 </BorderPane>
