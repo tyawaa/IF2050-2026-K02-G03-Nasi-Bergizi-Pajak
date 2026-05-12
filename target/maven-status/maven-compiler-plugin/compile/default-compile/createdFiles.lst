@@ -5,6 +5,7 @@ nasi_bergizi_pajak\model\IngredientPrice.class
 nasi_bergizi_pajak\model\RecipeIngredient.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminRecipe.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminPriceUpdate.class
+nasi_bergizi_pajak\controller\AdminDashboardController$NutritionSummary.class
 nasi_bergizi_pajak\config\DatabaseInitializer.class
 nasi_bergizi_pajak\app\AppNavigator.class
 nasi_bergizi_pajak\config\DatabaseConnection.class
@@ -26,6 +27,7 @@ nasi_bergizi_pajak\model\Akun.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminNutrition.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminPriceHistory.class
 nasi_bergizi_pajak\model\Recipe.class
+nasi_bergizi_pajak\controller\AdminDashboardController$NutritionBase.class
 nasi_bergizi_pajak\model\Ingredient.class
 nasi_bergizi_pajak\dao\RecipeIngredientDAO.class
 nasi_bergizi_pajak\controller\AdminDashboardController$1.class

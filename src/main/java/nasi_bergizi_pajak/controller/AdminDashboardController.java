@@ -321,6 +321,17 @@ public class AdminDashboardController {
             }
         }
 
+        NutritionSummary nutritionSummary = summarizeRecipeNutrition(selectedRecipe);
+        VBox nutritionBox = new VBox(8);
+        nutritionBox.getChildren().add(sectionLabel("Informasi Gizi"));
+        nutritionBox.getChildren().addAll(
+                new HBox(12,
+                        statBox("Kalori", formatNumber(nutritionSummary.calories()) + " kcal", false),
+                        statBox("Protein", formatNumber(nutritionSummary.protein()) + "g", false)),
+                new HBox(12,
+                        statBox("Karbohidrat", formatNumber(nutritionSummary.carbohydrate()) + "g", false),
+                        statBox("Lemak", formatNumber(nutritionSummary.fat()) + "g", false)));
+
         recipeDetailCard.getChildren().addAll(
                 verticalGap(16),
                 name,
@@ -328,6 +339,7 @@ public class AdminDashboardController {
                 verticalGap(10),
                 stats,
                 ingredientList,
+                nutritionBox,
                 sectionLabel("Estimasi Biaya"),
                 new Label(formatCurrency(estimateRecipeCost(selectedRecipe))));
     }
@@ -1640,6 +1652,54 @@ public class AdminDashboardController {
         return ingredient.currentPrice() * convertedQuantity;
     }
 
+    private NutritionSummary summarizeRecipeNutrition(AdminRecipe recipe) {
+        double calories = 0;
+        double protein = 0;
+        double carbohydrate = 0;
+        double fat = 0;
+
+        for (AdminRecipeIngredient item : recipe.ingredients()) {
+            AdminNutrition nutrition = nutritionByIngredientId.get(item.ingredientId());
+            if (nutrition == null) {
+                continue;
+            }
+
+            double ratio = nutritionRatio(item, nutrition.per());
+            calories += nutrition.calories() * ratio;
+            protein += nutrition.protein() * ratio;
+            carbohydrate += nutrition.carbohydrate() * ratio;
+            fat += nutrition.fat() * ratio;
+        }
+
+        return new NutritionSummary(calories, protein, carbohydrate, fat);
+    }
+
+    private double nutritionRatio(AdminRecipeIngredient item, String nutritionUnit) {
+        NutritionBase base = parseNutritionBase(nutritionUnit);
+        double convertedQuantity = UnitOptions.convertQuantity(item.quantity(), item.unit(), base.unit());
+        if (Double.isNaN(convertedQuantity)) {
+            return item.quantity() / base.quantity();
+        }
+        return convertedQuantity / base.quantity();
+    }
+
+    private NutritionBase parseNutritionBase(String value) {
+        String raw = value == null || value.isBlank() ? "100g" : value.trim();
+        String quantityPart = raw.replaceAll("[^0-9.,]", "").replace(",", ".");
+        String unitPart = raw.replaceAll("[0-9.,\\s]", "");
+
+        double quantity = 100;
+        if (!quantityPart.isBlank()) {
+            quantity = Double.parseDouble(quantityPart);
+        }
+        if (quantity <= 0) {
+            quantity = 100;
+        }
+
+        String unit = unitPart.isBlank() ? "gram" : unitPart;
+        return new NutritionBase(quantity, unit);
+    }
+
     private String formatCurrency(double amount) {
         return rupiah.format(amount).replace(",00", "");
     }
@@ -1671,6 +1731,12 @@ public class AdminDashboardController {
     }
 
     private record AdminPriceUpdate(double price, LocalDate effectiveDate) {
+    }
+
+    private record NutritionSummary(double calories, double protein, double carbohydrate, double fat) {
+    }
+
+    private record NutritionBase(double quantity, String unit) {
     }
 
     private static final class AdminIngredient {
