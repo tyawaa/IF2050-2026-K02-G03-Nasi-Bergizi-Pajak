@@ -1,42 +1,69 @@
 package nasi_bergizi_pajak.controller;
 
 import nasi_bergizi_pajak.dao.GiziDAO;
-import nasi_bergizi_pajak.dao.ResepDAO;
+import nasi_bergizi_pajak.dao.RekomendasiDAO;
 import nasi_bergizi_pajak.model.KebutuhanGizi;
 import nasi_bergizi_pajak.model.RekomendasiMenu;
-import nasi_bergizi_pajak.model.Resep;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 public class RekomendasiController {
     private final GiziDAO giziDAO;
-    private final ResepDAO resepDAO;
+    private final RekomendasiDAO rekomendasiDAO;
 
     public RekomendasiController() {
         this.giziDAO = new GiziDAO();
-        this.resepDAO = new ResepDAO();
+        this.rekomendasiDAO = new RekomendasiDAO();
     }
 
     public List<RekomendasiMenu> buatRekomendasiMenu(int userId) throws SQLException {
+        int jumlahAnggota = giziDAO.hitungJumlahAnggotaKeluarga(userId);
+
+        if (jumlahAnggota <= 0) {
+            throw new IllegalStateException("Profil keluarga belum memiliki anggota. Lengkapi profil keluarga terlebih dahulu.");
+        }
+
         KebutuhanGizi kebutuhanKeluarga = giziDAO.hitungKebutuhanGiziKeluarga(userId);
-        List<Resep> daftarResep = resepDAO.getResepAktif();
+
+        if (kebutuhanKeluarga.getKalori() <= 0) {
+            throw new IllegalStateException("Kebutuhan gizi keluarga belum dapat dihitung.");
+        }
+
+        Set<String> alergiKeluarga = giziDAO.ambilAlergiKeluarga(userId);
+        Double budgetAktif = rekomendasiDAO.findActiveBudgetAmount(userId);
+
+        List<RekomendasiDAO.RecommendationData> kandidat =
+                rekomendasiDAO.listDataRekomendasi(userId, jumlahAnggota, alergiKeluarga);
+
         List<RekomendasiMenu> hasilRekomendasi = new ArrayList<>();
 
-        for (Resep resep : daftarResep) {
-            KebutuhanGizi nilaiGizi = resepDAO.hitungNilaiGiziResep(resep.getRecipeId());
-            double estimasiHarga = resepDAO.hitungEstimasiHargaResep(resep.getRecipeId());
-            double skor = hitungSkorRekomendasi(nilaiGizi, kebutuhanKeluarga, estimasiHarga);
-            String status = tentukanStatusGizi(nilaiGizi, kebutuhanKeluarga);
+        for (RekomendasiDAO.RecommendationData data : kandidat) {
+            String statusGizi = tentukanStatusGizi(data.getNutrition(), kebutuhanKeluarga);
+            String statusBudget = tentukanStatusBudget(data.getEstimatedPrice(), budgetAktif);
+            String statusStok = data.isStockSufficient() ? "STOK_CUKUP" : "STOK_KURANG";
+
+            double skor = hitungSkorRekomendasi(
+                    data.getNutrition(),
+                    kebutuhanKeluarga,
+                    data.getEstimatedPrice(),
+                    budgetAktif,
+                    data.isStockSufficient(),
+                    data.getStockCoverage()
+            );
 
             RekomendasiMenu rekomendasi = new RekomendasiMenu(
-                    resep,
-                    nilaiGizi,
-                    estimasiHarga,
+                    data.getRecipe(),
+                    data.getNutrition(),
+                    data.getEstimatedPrice(),
                     skor,
-                    status
+                    statusGizi,
+                    statusBudget,
+                    statusStok,
+                    data.getStockCoverage()
             );
 
             hasilRekomendasi.add(rekomendasi);
@@ -51,7 +78,13 @@ public class RekomendasiController {
         return tentukanStatusGizi(nilaiGiziMenu, kebutuhanKeluarga);
     }
 
-    private double hitungSkorRekomendasi(KebutuhanGizi nilaiGizi, KebutuhanGizi kebutuhan, double estimasiHarga) {
+    private double hitungSkorRekomendasi(KebutuhanGizi nilaiGizi,
+                                         KebutuhanGizi kebutuhan,
+                                         double estimasiHarga,
+                                         Double budgetAktif,
+                                         boolean stokCukup,
+                                         double persentaseStok) {
+
         double skorKalori = hitungPersentase(nilaiGizi.getKalori(), kebutuhan.getKalori());
         double skorProtein = hitungPersentase(nilaiGizi.getProtein(), kebutuhan.getProtein());
         double skorKarbo = hitungPersentase(nilaiGizi.getKarbohidrat(), kebutuhan.getKarbohidrat());
@@ -59,9 +92,19 @@ public class RekomendasiController {
         double skorSerat = hitungPersentase(nilaiGizi.getSerat(), kebutuhan.getSerat());
 
         double skorGizi = (skorKalori + skorProtein + skorKarbo + skorLemak + skorSerat) / 5.0;
-        double penaltiHarga = estimasiHarga / 100000.0;
 
-        return Math.max(0, skorGizi - penaltiHarga);
+        double penaltiHarga;
+        if (budgetAktif != null && budgetAktif > 0) {
+            penaltiHarga = Math.min(30.0, (estimasiHarga / budgetAktif) * 25.0);
+        } else {
+            penaltiHarga = Math.min(20.0, estimasiHarga / 100000.0);
+        }
+
+        double bonusStok = stokCukup
+                ? 10.0
+                : Math.max(0.0, Math.min(5.0, persentaseStok * 5.0));
+
+        return Math.max(0.0, skorGizi - penaltiHarga + bonusStok);
     }
 
     private double hitungPersentase(double nilai, double target) {
@@ -74,12 +117,28 @@ public class RekomendasiController {
     }
 
     private String tentukanStatusGizi(KebutuhanGizi nilaiGizi, KebutuhanGizi kebutuhan) {
-        double persentaseKalori = hitungPersentase(nilaiGizi.getKalori(), kebutuhan.getKalori());
+        double skorKalori = hitungPersentase(nilaiGizi.getKalori(), kebutuhan.getKalori());
+        double skorProtein = hitungPersentase(nilaiGizi.getProtein(), kebutuhan.getProtein());
+        double skorKarbo = hitungPersentase(nilaiGizi.getKarbohidrat(), kebutuhan.getKarbohidrat());
+        double skorLemak = hitungPersentase(nilaiGizi.getLemak(), kebutuhan.getLemak());
+        double skorSerat = hitungPersentase(nilaiGizi.getSerat(), kebutuhan.getSerat());
 
-        if (persentaseKalori >= 80) {
+        double rataRata = (skorKalori + skorProtein + skorKarbo + skorLemak + skorSerat) / 5.0;
+
+        if (rataRata >= 80) {
             return "CUKUP";
         }
 
         return "KURANG";
+    }
+
+    private String tentukanStatusBudget(double estimasiHarga, Double budgetAktif) {
+        if (budgetAktif == null) {
+            return "BUDGET_TIDAK_TERSEDIA";
+        }
+
+        return estimasiHarga <= budgetAktif
+                ? "SESUAI_BUDGET"
+                : "MELEBIHI_BUDGET";
     }
 }
