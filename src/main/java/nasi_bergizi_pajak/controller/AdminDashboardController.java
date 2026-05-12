@@ -324,13 +324,16 @@ public class AdminDashboardController {
         NutritionSummary nutritionSummary = summarizeRecipeNutrition(selectedRecipe);
         VBox nutritionBox = new VBox(8);
         nutritionBox.getChildren().add(sectionLabel("Informasi Gizi"));
+        VBox caloriesBox = statBox("Kalori", formatNumber(nutritionSummary.calories()) + " kcal", false);
+        caloriesBox.setMaxWidth(Double.MAX_VALUE);
         nutritionBox.getChildren().addAll(
+                caloriesBox,
                 new HBox(12,
-                        statBox("Kalori", formatNumber(nutritionSummary.calories()) + " kcal", false),
-                        statBox("Protein", formatNumber(nutritionSummary.protein()) + "g", false)),
+                        statBox("Protein", formatGram(nutritionSummary.protein()), false),
+                        statBox("Karbo", formatGram(nutritionSummary.carbohydrate()), false)),
                 new HBox(12,
-                        statBox("Karbohidrat", formatNumber(nutritionSummary.carbohydrate()) + "g", false),
-                        statBox("Lemak", formatNumber(nutritionSummary.fat()) + "g", false)));
+                        statBox("Lemak", formatGram(nutritionSummary.fat()), false),
+                        statBox("Serat", formatGram(nutritionSummary.fibre()), false)));
 
         recipeDetailCard.getChildren().addAll(
                 verticalGap(16),
@@ -1438,6 +1441,7 @@ public class AdminDashboardController {
     private VBox statBox(String label, String value, boolean status) {
         VBox box = new VBox(4, muted(label), status ? statusBadge(value) : title(value));
         box.getStyleClass().add("admin-stat-box");
+        box.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(box, Priority.ALWAYS);
         return box;
     }
@@ -1657,6 +1661,7 @@ public class AdminDashboardController {
         double protein = 0;
         double carbohydrate = 0;
         double fat = 0;
+        double fibre = 0;
 
         for (AdminRecipeIngredient item : recipe.ingredients()) {
             AdminNutrition nutrition = nutritionByIngredientId.get(item.ingredientId());
@@ -1669,9 +1674,10 @@ public class AdminDashboardController {
             protein += nutrition.protein() * ratio;
             carbohydrate += nutrition.carbohydrate() * ratio;
             fat += nutrition.fat() * ratio;
+            fibre += nutrition.fibre() * ratio;
         }
 
-        return new NutritionSummary(calories, protein, carbohydrate, fat);
+        return new NutritionSummary(calories, protein, carbohydrate, fat, fibre);
     }
 
     private double nutritionRatio(AdminRecipeIngredient item, String nutritionUnit) {
@@ -1715,6 +1721,10 @@ public class AdminDashboardController {
         return formatNumber(value);
     }
 
+    private String formatGram(double value) {
+        return String.format(Locale.US, "%.1fg", value);
+    }
+
     private String formatDate(LocalDate date) {
         return dateLabelFormatter.format(date);
     }
@@ -1733,7 +1743,7 @@ public class AdminDashboardController {
     private record AdminPriceUpdate(double price, LocalDate effectiveDate) {
     }
 
-    private record NutritionSummary(double calories, double protein, double carbohydrate, double fat) {
+    private record NutritionSummary(double calories, double protein, double carbohydrate, double fat, double fibre) {
     }
 
     private record NutritionBase(double quantity, String unit) {
