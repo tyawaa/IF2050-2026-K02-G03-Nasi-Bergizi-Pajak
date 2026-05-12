@@ -1231,3 +1231,406 @@
 .userdash-nav-active:hover {
     -fx-background-color: #D96A1D;
 }
+
+/* =========================
+   USER DASHBOARD POLISHED
+   ========================= */
+
+.userdash-root {
+    -fx-background-color: #FAF7F1;
+    -fx-font-family: "Segoe UI", "Inter", "Arial", sans-serif;
+}
+
+.userdash-sidebar {
+    -fx-background-color: #FFFCF7;
+    -fx-border-color: transparent #E6D9C8 transparent transparent;
+    -fx-pref-width: 260px;
+    -fx-min-width: 260px;
+}
+
+.userdash-logo-box {
+    -fx-pref-width: 38px;
+    -fx-pref-height: 38px;
+    -fx-min-width: 38px;
+    -fx-min-height: 38px;
+    -fx-background-color: #F28C28;
+    -fx-background-radius: 8px;
+}
+
+.userdash-brand-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.userdash-brand-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6F665D;
+}
+
+.userdash-menu-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #6F665D;
+    -fx-padding: 14px 8px 4px 8px;
+}
+
+.userdash-nav-button,
+.userdash-nav-active {
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 10px 10px;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+}
+
+.userdash-nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #6B625A;
+}
+
+.userdash-nav-button:hover {
+    -fx-background-color: #FFF1E1;
+    -fx-text-fill: #D96A1D;
+}
+
+.userdash-nav-active {
+    -fx-background-color: #F28C28;
+    -fx-text-fill: white;
+}
+
+.userdash-nav-active:hover {
+    -fx-background-color: #D96A1D;
+    -fx-text-fill: white;
+}
+
+.userdash-sidebar-footer {
+    -fx-border-color: #E6D9C8 transparent transparent transparent;
+    -fx-padding: 12px 0 0 0;
+}
+
+.userdash-main-area {
+    -fx-background-color: #FAF7F1;
+}
+
+.userdash-topbar {
+    -fx-background-color: #FFFCF7;
+    -fx-border-color: transparent transparent #E6D9C8 transparent;
+    -fx-min-height: 56px;
+}
+
+.userdash-page-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.userdash-period-badge {
+    -fx-background-color: #EDF7E8;
+    -fx-border-color: #CFE6C6;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-padding: 3px 10px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #3F7A2F;
+}
+
+.userdash-bell {
+    -fx-pref-width: 28px;
+    -fx-pref-height: 28px;
+}
+
+.userdash-bell-badge {
+    -fx-background-color: #D9534F;
+    -fx-background-radius: 999px;
+    -fx-padding: 2px 6px;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+}
+
+.userdash-avatar {
+    -fx-pref-width: 30px;
+    -fx-pref-height: 30px;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-background-color: #F28C28;
+    -fx-background-radius: 999px;
+}
+
+.userdash-avatar-text {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+}
+
+.userdash-user-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.userdash-user-email {
+    -fx-font-size: 10px;
+    -fx-text-fill: #8A8178;
+}
+
+.userdash-content {
+    -fx-background-color: transparent;
+}
+
+.userdash-summary-card,
+.userdash-summary-green,
+.userdash-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #E6D9C8;
+    -fx-effect: dropshadow(gaussian, rgba(73, 64, 48, 0.08), 8, 0, 0, 2);
+}
+
+.userdash-summary-card,
+.userdash-summary-green {
+    -fx-padding: 18px 14px;
+    -fx-min-height: 112px;
+}
+
+.userdash-summary-green {
+    -fx-background-color: #EEF8EA;
+    -fx-border-color: #D7EBD0;
+}
+
+.userdash-panel {
+    -fx-padding: 18px 14px;
+}
+
+.userdash-icon-soft-orange,
+.userdash-icon-soft-green,
+.userdash-icon-green {
+    -fx-pref-width: 48px;
+    -fx-pref-height: 48px;
+    -fx-min-width: 48px;
+    -fx-min-height: 48px;
+    -fx-background-radius: 7px;
+}
+
+.userdash-icon-soft-orange {
+    -fx-background-color: #FFF0E4;
+}
+
+.userdash-icon-soft-green {
+    -fx-background-color: #EDF7E8;
+}
+
+.userdash-icon-green {
+    -fx-background-color: #4F8A3C;
+}
+
+.userdash-icon-number,
+.userdash-icon-text {
+    -fx-text-fill: #F28C28;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.userdash-icon-number-green {
+    -fx-text-fill: #4F8A3C;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.userdash-icon-text {
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+}
+
+.userdash-card-title,
+.userdash-budget-label,
+.userdash-section-subtitle,
+.userdash-card-caption {
+    -fx-text-fill: #6F665D;
+}
+
+.userdash-card-title {
+    -fx-font-size: 14px;
+}
+
+.userdash-card-value {
+    -fx-font-size: 25px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.userdash-card-value-green {
+    -fx-font-size: 25px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #4F8A3C;
+}
+
+.userdash-card-caption {
+    -fx-font-size: 13px;
+}
+
+.userdash-section-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.userdash-section-subtitle {
+    -fx-font-size: 14px;
+}
+
+.userdash-small-button,
+.userdash-quick-button {
+    -fx-background-color: #FFFCF7;
+    -fx-border-color: #E6D9C8;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-text-fill: #25211D;
+    -fx-font-size: 14px;
+    -fx-padding: 8px 12px;
+    -fx-cursor: hand;
+}
+
+.userdash-small-button:hover,
+.userdash-quick-button:hover {
+    -fx-background-color: #FFF1E1;
+}
+
+.userdash-budget-box,
+.userdash-budget-box-orange,
+.userdash-budget-box-green {
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-border-color: #E6D9C8;
+    -fx-padding: 10px;
+}
+
+.userdash-budget-box {
+    -fx-background-color: #FFFCF7;
+}
+
+.userdash-budget-box-orange {
+    -fx-background-color: #FFF1E7;
+}
+
+.userdash-budget-box-green {
+    -fx-background-color: #EDF7E8;
+}
+
+.userdash-budget-value-dark,
+.userdash-budget-value-orange,
+.userdash-budget-value-green,
+.userdash-budget-value-orange-small {
+    -fx-font-weight: 800;
+}
+
+.userdash-budget-value-dark {
+    -fx-font-size: 17px;
+    -fx-text-fill: #25211D;
+}
+
+.userdash-budget-value-orange {
+    -fx-font-size: 17px;
+    -fx-text-fill: #EA6A14;
+}
+
+.userdash-budget-value-green {
+    -fx-font-size: 17px;
+    -fx-text-fill: #4F8A3C;
+}
+
+.userdash-budget-value-orange-small {
+    -fx-font-size: 14px;
+    -fx-text-fill: #EA6A14;
+}
+
+.userdash-percent {
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.userdash-progress {
+    -fx-pref-height: 10px;
+}
+
+.userdash-progress .track {
+    -fx-background-color: #F1E7DC;
+    -fx-background-radius: 999px;
+}
+
+.userdash-progress .bar {
+    -fx-background-color: #4F8A3C;
+    -fx-background-radius: 999px;
+}
+
+.userdash-safe-badge,
+.userdash-chip-orange {
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 4px 12px;
+    -fx-font-weight: 800;
+}
+
+.userdash-safe-badge {
+    -fx-background-color: #E8F6E4;
+    -fx-border-color: #CFE6C6;
+    -fx-text-fill: #3F7A2F;
+}
+
+.userdash-warning-icon {
+    -fx-text-fill: #F28C28;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.userdash-alert-row,
+.userdash-stock-row-orange {
+    -fx-background-color: #FFF1E7;
+    -fx-border-color: #FFD6B3;
+}
+
+.userdash-alert-row,
+.userdash-stock-row,
+.userdash-stock-row-orange,
+.userdash-activity-row {
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 10px 12px;
+}
+
+.userdash-stock-row,
+.userdash-activity-row {
+    -fx-background-color: #FFFCF7;
+    -fx-border-color: #E6D9C8;
+}
+
+.userdash-alert-title,
+.userdash-stock-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.userdash-alert-subtitle,
+.userdash-stock-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6F665D;
+}
+
+.userdash-group-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #F28C28;
+    -fx-padding: 7px 0 0 0;
+}
+
+.userdash-chip-orange {
+    -fx-background-color: #FFF4EA;
+    -fx-border-color: #FFD6B3;
+    -fx-text-fill: #EA6A14;
+}
