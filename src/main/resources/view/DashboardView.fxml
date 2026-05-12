@@ -40,7 +40,8 @@
                 <Label fx:id="welcomeLabel" text="Halo!" styleClass="dashboard-title"/>
                 <Label fx:id="emailLabel" text="" styleClass="dashboard-email"/>
                 <Separator/>
-                <Label text="Login berhasil. Halaman ini hanya placeholder sampai dashboard utama diintegrasikan." wrapText="true" styleClass="dashboard-note"/>
+                <Label text="Kelola daftar belanja dari menu mingguan dan sinkronkan hasil belanja ke stok dapur." wrapText="true" styleClass="dashboard-note"/>
+                <Button text="Buka Planner Belanja" onAction="#handleOpenShoppingPlanner" styleClass="button-secondary"/>
             </VBox>
         </StackPane>
     </center>
