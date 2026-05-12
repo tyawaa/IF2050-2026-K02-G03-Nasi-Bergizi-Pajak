@@ -5,6 +5,7 @@ nasi_bergizi_pajak\controller\AdminDashboardController$AdminPriceUpdate.class
 nasi_bergizi_pajak\controller\AdminDashboardController$NutritionSummary.class
 nasi_bergizi_pajak\config\DatabaseInitializer.class
 nasi_bergizi_pajak\config\DatabaseConnection.class
+nasi_bergizi_pajak\controller\DashboardController$1.class
 nasi_bergizi_pajak\dao\IngredientDAO.class
 nasi_bergizi_pajak\dao\RecipeDAO.class
 nasi_bergizi_pajak\dao\IngredientNutritionDAO.class

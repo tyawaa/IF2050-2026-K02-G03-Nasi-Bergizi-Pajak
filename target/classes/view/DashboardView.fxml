@@ -41,7 +41,7 @@
                 <Button fx:id="dashboardNavButton" text="Dashboard" maxWidth="Infinity" onAction="#showDashboardPage" styleClass="userdash-nav-active"/>
                 <Button fx:id="familyProfileNavButton" text="Profil Keluarga" maxWidth="Infinity" onAction="#showFamilyProfilePage" styleClass="userdash-nav-button"/>
                 <Button text="Budget" maxWidth="Infinity" styleClass="userdash-nav-button"/>
-                <Button text="Parameter Planner" maxWidth="Infinity" styleClass="userdash-nav-button"/>
+                <Button fx:id="parameterPlannerNavButton" text="Parameter Planner" maxWidth="Infinity" onAction="#showParameterPlannerPage" styleClass="userdash-nav-button"/>
                 <Button text="Stok Dapur" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button fx:id="weeklyMenuNavButton" text="Menu Mingguan" maxWidth="Infinity" onAction="#showWeeklyMenuPage" styleClass="userdash-nav-button"/>
                 <Button fx:id="recommendationNavButton" text="Rekomendasi Menu" maxWidth="Infinity" onAction="#showRecommendationPage" styleClass="userdash-nav-button"/>
@@ -349,6 +349,157 @@
                                 </VBox>
                             </HBox>
                         </VBox>
+                        <VBox fx:id="parameterPlannerPage" alignment="TOP_CENTER" spacing="28" visible="false" managed="false" styleClass="userdash-content">
+                            <padding>
+                                <Insets top="18" right="22" bottom="28" left="22"/>
+                            </padding>
+
+                            <VBox spacing="28" maxWidth="1050" styleClass="planner-shell">
+                                <HBox fx:id="plannerToastBox"
+                                      alignment="CENTER_LEFT"
+                                      spacing="12"
+                                      visible="false"
+                                      managed="false"
+                                      styleClass="planner-toast">
+                                    <Label text="✓" styleClass="planner-toast-icon"/>
+                                    <VBox spacing="2">
+                                        <Label text="Parameter berhasil disimpan" styleClass="planner-toast-title"/>
+                                        <Label text="Preview Planner sudah memakai parameter terbaru."
+                                               wrapText="true"
+                                               styleClass="planner-toast-message"/>
+                                    </VBox>
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="16" styleClass="planner-info-banner">
+                                    <Label text="⚙" styleClass="planner-banner-icon"/>
+                                    <VBox spacing="3">
+                                        <Label text="Konfigurasi Parameter Perencanaan Menu" styleClass="planner-banner-title"/>
+                                        <Label text="Atur periode belanja dan jumlah makan per hari untuk membuat menu mingguan"
+                                               wrapText="true"
+                                               styleClass="planner-banner-subtitle"/>
+                                    </VBox>
+                                </HBox>
+
+                                <FlowPane alignment="TOP_CENTER" hgap="28" vgap="22" prefWrapLength="1050">
+                                    <VBox spacing="22" prefWidth="505" maxWidth="Infinity" styleClass="planner-card">
+                                        <VBox spacing="5">
+                                            <Label text="Atur Parameter" styleClass="planner-card-title"/>
+                                            <Label text="Konfigurasi parameter untuk perencanaan menu mingguan"
+                                                   wrapText="true"
+                                                   styleClass="planner-card-subtitle"/>
+                                        </VBox>
+
+                                        <VBox spacing="8">
+                                            <Label text="Pilih Budget Aktif" styleClass="planner-field-label"/>
+                                            <ComboBox fx:id="plannerBudgetCombo" maxWidth="Infinity" styleClass="planner-input"/>
+                                            <Label fx:id="plannerBudgetHelperLabel" text="Budget aktif : Budget Mingguan April W4" wrapText="true" styleClass="planner-helper-text"/>
+                                        </VBox>
+
+                                        <VBox spacing="10">
+                                            <Label text="Periode Belanja" styleClass="planner-section-title"/>
+                                            <GridPane hgap="18" vgap="10">
+                                                <columnConstraints>
+                                                    <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                                    <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                                </columnConstraints>
+
+                                                <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                                    <Label text="Tanggal Mulai" styleClass="planner-field-caption"/>
+                                                    <DatePicker fx:id="plannerStartDatePicker" maxWidth="Infinity" styleClass="planner-input"/>
+                                                </VBox>
+                                                <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                                    <Label text="Tanggal Akhir" styleClass="planner-field-caption"/>
+                                                    <DatePicker fx:id="plannerEndDatePicker" maxWidth="Infinity" styleClass="planner-input"/>
+                                                </VBox>
+                                            </GridPane>
+                                            <Label fx:id="plannerDateErrorLabel" text="Tanggal akhir tidak boleh lebih awal dari tanggal mulai."
+                                                   visible="false"
+                                                   managed="false"
+                                                   wrapText="true"
+                                                   styleClass="planner-error-text"/>
+                                        </VBox>
+
+                                        <VBox spacing="10">
+                                            <Label text="Konfigurasi Makan" styleClass="planner-section-title"/>
+                                            <GridPane hgap="18" vgap="10">
+                                                <columnConstraints>
+                                                    <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                                    <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                                </columnConstraints>
+
+                                                <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                                    <Label text="Makan Utama per Hari" styleClass="planner-field-caption"/>
+                                                    <ComboBox fx:id="mainMealCombo" maxWidth="Infinity" styleClass="planner-input"/>
+                                                </VBox>
+                                                <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                                    <Label text="Snack per Hari" styleClass="planner-field-caption"/>
+                                                    <ComboBox fx:id="snackCombo" maxWidth="Infinity" styleClass="planner-input"/>
+                                                </VBox>
+                                            </GridPane>
+                                        </VBox>
+
+                                        <Button fx:id="savePlannerButton"
+                                                text="Simpan Parameter"
+                                                maxWidth="Infinity"
+                                                onAction="#handleSavePlannerParameter"
+                                                styleClass="planner-primary-button"/>
+                                        <Label fx:id="plannerSaveStatusLabel"
+                                               text="Parameter belum disimpan."
+                                               wrapText="true"
+                                               styleClass="planner-helper-text"/>
+                                    </VBox>
+
+                                    <VBox spacing="20" prefWidth="505" maxWidth="Infinity" styleClass="planner-preview-card">
+                                        <VBox spacing="6">
+                                            <HBox alignment="CENTER_LEFT" spacing="9">
+                                                <Label text="▦" styleClass="planner-preview-icon"/>
+                                                <Label text="Preview Planner" styleClass="planner-preview-title"/>
+                                            </HBox>
+                                            <Label text="Ringkasan parameter yang akan digunakan"
+                                                   wrapText="true"
+                                                   styleClass="planner-preview-subtitle"/>
+                                        </VBox>
+
+                                        <VBox spacing="14">
+                                            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="planner-preview-row">
+                                                <Label text="Periode Belanja" styleClass="planner-preview-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="previewPeriodLabel" text="22 Apr - 28 Apr 2024" styleClass="planner-preview-value"/>
+                                            </HBox>
+                                            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="planner-preview-row">
+                                                <Label text="Total Hari" styleClass="planner-preview-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="previewTotalDaysLabel" text="7 hari" styleClass="planner-preview-value"/>
+                                            </HBox>
+                                            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="planner-preview-row">
+                                                <Label text="Makan per Hari" styleClass="planner-preview-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="previewMealsLabel" text="3 makan + 1 snack" styleClass="planner-preview-value"/>
+                                            </HBox>
+                                            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="planner-preview-row">
+                                                <Label text="Total Slot Menu" styleClass="planner-preview-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="previewSlotsLabel" text="28 slot" styleClass="planner-preview-value planner-preview-value-strong"/>
+                                            </HBox>
+                                            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="planner-preview-row">
+                                                <Label text="Budget Tersedia" styleClass="planner-preview-label"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="previewBudgetLabel" text="Rp500.000" styleClass="planner-preview-value"/>
+                                            </HBox>
+                                        </VBox>
+
+                                        <Separator styleClass="planner-preview-separator"/>
+
+                                        <Button fx:id="usePlannerButton"
+                                                text="Gunakan untuk Menu Mingguan  →"
+                                                maxWidth="Infinity"
+                                                onAction="#handleUsePlannerForWeeklyMenu"
+                                                styleClass="planner-green-button"/>
+                                    </VBox>
+                                </FlowPane>
+                            </VBox>
+                        </VBox>
+
                     <VBox fx:id="weeklyMenuPage" spacing="18" visible="false" managed="false" styleClass="userdash-content">
                         <padding>
                             <Insets top="18" right="22" bottom="28" left="22"/>

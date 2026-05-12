@@ -2,12 +2,21 @@ package nasi_bergizi_pajak.controller;
 
 import java.io.File;
 import java.text.NumberFormat;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.prefs.Preferences;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.animation.PauseTransition;
@@ -23,6 +32,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.DatePicker;
@@ -44,7 +54,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
+import javafx.util.StringConverter;
 import nasi_bergizi_pajak.app.AppNavigator;
+import nasi_bergizi_pajak.config.DatabaseConnection;
 import nasi_bergizi_pajak.dao.AkunDAO;
 import nasi_bergizi_pajak.dao.FamilyMemberDAO;
 import nasi_bergizi_pajak.model.Akun;
@@ -55,6 +67,19 @@ import nasi_bergizi_pajak.model.SlotMakan;
 import nasi_bergizi_pajak.util.PasswordUtil;
 
 public class DashboardController {
+    private static final Locale INDONESIAN_LOCALE = new Locale("id", "ID");
+    private static final DateTimeFormatter PICKER_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter PREVIEW_DAY_FORMATTER = DateTimeFormatter.ofPattern("d MMM", INDONESIAN_LOCALE);
+    private static final DateTimeFormatter PREVIEW_FULL_DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMM yyyy", INDONESIAN_LOCALE);
+    private static final BudgetOption FALLBACK_BUDGET = new BudgetOption(
+            -1,
+            "Budget Mingguan April W4",
+            500_000,
+            LocalDate.of(2024, 4, 22),
+            LocalDate.of(2024, 4, 28),
+            "active"
+    );
+
     @FXML private Label welcomeLabel;
     @FXML private Label emailLabel;
     @FXML private Label pageTitleLabel;
@@ -63,12 +88,14 @@ public class DashboardController {
     @FXML private Label dashboardFamilyCountLabel;
     @FXML private Button dashboardNavButton;
     @FXML private Button familyProfileNavButton;
+    @FXML private Button parameterPlannerNavButton;
     @FXML private Button settingsNavButton;
     @FXML private Button profileSettingsTabButton;
     @FXML private Button securitySettingsTabButton;
     @FXML private HBox userProfileMenuButton;
     @FXML private VBox dashboardPage;
     @FXML private VBox familyProfilePage;
+    @FXML private VBox parameterPlannerPage;
     @FXML private VBox settingsPage;
     @FXML private VBox profileSettingsPane;
     @FXML private VBox securitySettingsPane;
@@ -126,6 +153,22 @@ public class DashboardController {
     @FXML private TableColumn<RekomendasiMenu, String> recommendationBudgetColumn;
     @FXML private TableColumn<RekomendasiMenu, String> recommendationStockColumn;
     @FXML private TableColumn<RekomendasiMenu, String> recommendationScoreColumn;
+    @FXML private ComboBox<BudgetOption> plannerBudgetCombo;
+    @FXML private Label plannerBudgetHelperLabel;
+    @FXML private DatePicker plannerStartDatePicker;
+    @FXML private DatePicker plannerEndDatePicker;
+    @FXML private Label plannerDateErrorLabel;
+    @FXML private ComboBox<String> mainMealCombo;
+    @FXML private ComboBox<String> snackCombo;
+    @FXML private Button savePlannerButton;
+    @FXML private HBox plannerToastBox;
+    @FXML private Label plannerSaveStatusLabel;
+    @FXML private Button usePlannerButton;
+    @FXML private Label previewPeriodLabel;
+    @FXML private Label previewTotalDaysLabel;
+    @FXML private Label previewMealsLabel;
+    @FXML private Label previewSlotsLabel;
+    @FXML private Label previewBudgetLabel;
 
     private final AkunDAO akunDAO = new AkunDAO();
     private final FamilyMemberDAO familyMemberDAO = new FamilyMemberDAO();
@@ -135,10 +178,16 @@ public class DashboardController {
     private final MenuController menuController = new MenuController();
     private final ObservableList<RekomendasiMenu> recommendations = FXCollections.observableArrayList();
     private final RekomendasiController rekomendasiController = new RekomendasiController();
-    private final NumberFormat rupiahFormat = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
+    private final NumberFormat rupiahFormat = NumberFormat.getCurrencyInstance(INDONESIAN_LOCALE);
+    private final Preferences plannerPreferences = Preferences.userNodeForPackage(DashboardController.class)
+            .node("parameterPlanner");
     private Akun currentUser;
     private ContextMenu profileMenu;
     private PauseTransition settingsToastTimer;
+    private PauseTransition plannerToastTimer;
+    private boolean plannerDirty;
+    private boolean plannerSaved;
+    private boolean suppressPlannerDirtyTracking;
 
     @FXML
     private void initialize() {
@@ -146,10 +195,219 @@ public class DashboardController {
         initializeUserInfo();
         initializeSettingsForm();
         setupProfileMenu();
+        setupParameterPlanner();
         setupFamilyTable();
         setupWeeklyMenuTables();
         setupRecommendationTable();
         refreshFamilyMembers();
+    }
+
+    private void setupParameterPlanner() {
+        suppressPlannerDirtyTracking = true;
+        List<BudgetOption> budgetOptions = loadActiveBudgets();
+        plannerBudgetCombo.setItems(FXCollections.observableArrayList(budgetOptions));
+        plannerBudgetCombo.setValue(findPreferredBudget(budgetOptions));
+        mainMealCombo.setItems(FXCollections.observableArrayList("1 kali", "2 kali", "3 kali"));
+        snackCombo.setItems(FXCollections.observableArrayList("0 kali", "1 kali", "2 kali"));
+        mainMealCombo.setValue(plannerPreferences.getInt("mainMealsPerDay", 3) + " kali");
+        snackCombo.setValue(plannerPreferences.getInt("snacksPerDay", 1) + " kali");
+
+        StringConverter<LocalDate> dateConverter = new StringConverter<>() {
+            @Override
+            public String toString(LocalDate date) {
+                return date == null ? "" : date.format(PICKER_DATE_FORMATTER);
+            }
+
+            @Override
+            public LocalDate fromString(String value) {
+                if (value == null || value.isBlank()) {
+                    return null;
+                }
+
+                try {
+                    return LocalDate.parse(value.trim(), PICKER_DATE_FORMATTER);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        };
+
+        plannerStartDatePicker.setConverter(dateConverter);
+        plannerEndDatePicker.setConverter(dateConverter);
+        BudgetOption selectedBudget = plannerBudgetCombo.getValue();
+        plannerStartDatePicker.setValue(loadPlannerDate("startDate", selectedBudget.periodStart()));
+        plannerEndDatePicker.setValue(loadPlannerDate("endDate", selectedBudget.periodEnd()));
+
+        plannerBudgetCombo.valueProperty().addListener((observable, oldValue, newValue) -> {
+            markPlannerDirty();
+            updatePlannerPreview();
+        });
+        plannerStartDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+            markPlannerDirty();
+            updatePlannerPreview();
+        });
+        plannerEndDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+            markPlannerDirty();
+            updatePlannerPreview();
+        });
+        mainMealCombo.valueProperty().addListener((observable, oldValue, newValue) -> {
+            markPlannerDirty();
+            updatePlannerPreview();
+        });
+        snackCombo.valueProperty().addListener((observable, oldValue, newValue) -> {
+            markPlannerDirty();
+            updatePlannerPreview();
+        });
+
+        suppressPlannerDirtyTracking = false;
+        plannerSaved = plannerPreferences.getBoolean("saved", false);
+        plannerDirty = !plannerSaved;
+        updatePlannerPreview();
+    }
+
+    private List<BudgetOption> loadActiveBudgets() {
+        if (currentUser == null) {
+            return List.of(FALLBACK_BUDGET);
+        }
+
+        String sql = """
+                SELECT budget_id, name, amount, period_start, period_end, status
+                FROM budget
+                WHERE user_id = ?
+                  AND LOWER(status) = 'active'
+                ORDER BY period_end DESC, budget_id DESC
+                """;
+
+        List<BudgetOption> budgets = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, currentUser.getUserId());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    budgets.add(new BudgetOption(
+                            rs.getInt("budget_id"),
+                            rs.getString("name"),
+                            rs.getDouble("amount"),
+                            rs.getDate("period_start").toLocalDate(),
+                            rs.getDate("period_end").toLocalDate(),
+                            rs.getString("status")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Gagal memuat budget aktif untuk Parameter Planner: " + e.getMessage());
+        }
+
+        return budgets.isEmpty() ? List.of(FALLBACK_BUDGET) : budgets;
+    }
+
+    private BudgetOption findPreferredBudget(List<BudgetOption> budgetOptions) {
+        int savedBudgetId = plannerPreferences.getInt("budgetId", -1);
+        return budgetOptions.stream()
+                .filter(budget -> budget.budgetId() == savedBudgetId)
+                .findFirst()
+                .orElse(budgetOptions.get(0));
+    }
+
+    private LocalDate loadPlannerDate(String key, LocalDate fallback) {
+        try {
+            return LocalDate.parse(plannerPreferences.get(key, fallback.toString()));
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    private void updatePlannerPreview() {
+        BudgetOption selectedBudget = plannerBudgetCombo.getValue() == null ? FALLBACK_BUDGET : plannerBudgetCombo.getValue();
+        plannerBudgetHelperLabel.setText("Budget aktif : " + selectedBudget.name());
+        previewBudgetLabel.setText(formatRupiahCompact(selectedBudget.amount()));
+
+        LocalDate startDate = plannerStartDatePicker.getValue();
+        LocalDate endDate = plannerEndDatePicker.getValue();
+        boolean dateMissing = startDate == null || endDate == null;
+        boolean dateInvalid = dateMissing || endDate.isBefore(startDate);
+
+        if (dateInvalid) {
+            plannerDateErrorLabel.setText(dateMissing
+                    ? "Tanggal mulai dan tanggal akhir wajib diisi."
+                    : "Tanggal akhir tidak boleh lebih awal dari tanggal mulai.");
+            plannerDateErrorLabel.setVisible(true);
+            plannerDateErrorLabel.setManaged(true);
+            savePlannerButton.setDisable(true);
+            previewPeriodLabel.setText("-");
+            previewTotalDaysLabel.setText("0 hari");
+            previewSlotsLabel.setText("0 slot");
+        } else {
+            plannerDateErrorLabel.setVisible(false);
+            plannerDateErrorLabel.setManaged(false);
+            savePlannerButton.setDisable(false);
+
+            int totalDays = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
+            previewPeriodLabel.setText(formatPreviewPeriod(startDate, endDate));
+            previewTotalDaysLabel.setText(totalDays + " hari");
+            previewSlotsLabel.setText(totalDays * (getSelectedMainMeals() + getSelectedSnacks()) + " slot");
+        }
+
+        previewMealsLabel.setText(getSelectedMainMeals() + " makan + " + getSelectedSnacks() + " snack");
+        updatePlannerSaveState();
+    }
+
+    private void markPlannerDirty() {
+        if (!suppressPlannerDirtyTracking) {
+            plannerDirty = true;
+        }
+    }
+
+    private void updatePlannerSaveState() {
+        boolean dateInvalid = savePlannerButton.isDisable();
+        usePlannerButton.setDisable(dateInvalid || plannerDirty || !plannerSaved);
+
+        if (dateInvalid) {
+            plannerSaveStatusLabel.setText("Perbaiki tanggal sebelum menyimpan parameter.");
+            return;
+        }
+
+        if (!plannerSaved) {
+            plannerSaveStatusLabel.setText("Parameter belum disimpan. Tekan Simpan Parameter sebelum dipakai.");
+            return;
+        }
+
+        plannerSaveStatusLabel.setText(plannerDirty
+                ? "Perubahan belum disimpan. Tekan Simpan Parameter sebelum dipakai."
+                : "Parameter terakhir sudah tersimpan.");
+    }
+
+    private String formatPreviewPeriod(LocalDate startDate, LocalDate endDate) {
+        String start = startDate.getYear() == endDate.getYear()
+                ? startDate.format(PREVIEW_DAY_FORMATTER)
+                : startDate.format(PREVIEW_FULL_DATE_FORMATTER);
+        return start + " - " + endDate.format(PREVIEW_FULL_DATE_FORMATTER);
+    }
+
+    private int getSelectedMainMeals() {
+        return parseMealCount(mainMealCombo.getValue(), 3);
+    }
+
+    private int getSelectedSnacks() {
+        return parseMealCount(snackCombo.getValue(), 1);
+    }
+
+    private int parseMealCount(String value, int fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+
+        try {
+            return Integer.parseInt(value.trim().split("\\s+")[0]);
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    private String formatRupiahCompact(double amount) {
+        return "Rp" + String.format(INDONESIAN_LOCALE, "%,.0f", amount).replace(',', '.');
     }
 
     private void initializeUserInfo() {
@@ -372,7 +630,15 @@ public class DashboardController {
         refreshFamilyMembers();
     }
 
-@FXML
+    @FXML
+    private void showParameterPlannerPage() {
+        pageTitleLabel.setText("Parameter Planner");
+        showPage(parameterPlannerPage);
+        setActiveNav(parameterPlannerNavButton);
+        updatePlannerPreview();
+    }
+
+    @FXML
     private void showSettingsPage() {
         pageTitleLabel.setText("Pengaturan");
         showPage(settingsPage);
@@ -409,12 +675,139 @@ public class DashboardController {
         refreshRecommendations();
     }
 
+    @FXML
+    private void handleSavePlannerParameter() {
+        updatePlannerPreview();
+        if (savePlannerButton.isDisable()) {
+            showWarning("Parameter belum valid", plannerDateErrorLabel.getText());
+            return;
+        }
+
+        BudgetOption selectedBudget = plannerBudgetCombo.getValue() == null ? FALLBACK_BUDGET : plannerBudgetCombo.getValue();
+        int parameterId = saveParameterPlannerToDatabase(selectedBudget);
+
+        plannerPreferences.putInt("budgetId", selectedBudget.budgetId());
+        plannerPreferences.put("budgetName", selectedBudget.name());
+        plannerPreferences.put("startDate", plannerStartDatePicker.getValue().toString());
+        plannerPreferences.put("endDate", plannerEndDatePicker.getValue().toString());
+        plannerPreferences.putInt("mainMealsPerDay", getSelectedMainMeals());
+        plannerPreferences.putInt("snacksPerDay", getSelectedSnacks());
+        plannerPreferences.putBoolean("saved", true);
+        if (parameterId > 0) {
+            plannerPreferences.putInt("parameterId", parameterId);
+        }
+
+        plannerSaved = true;
+        plannerDirty = false;
+        updatePlannerPreview();
+        showPlannerToast();
+    }
+
+    private void showPlannerToast() {
+        if (plannerToastTimer != null) {
+            plannerToastTimer.stop();
+        }
+
+        plannerToastBox.setVisible(true);
+        plannerToastBox.setManaged(true);
+
+        plannerToastTimer = new PauseTransition(Duration.seconds(3));
+        plannerToastTimer.setOnFinished(event -> {
+            plannerToastBox.setVisible(false);
+            plannerToastBox.setManaged(false);
+        });
+        plannerToastTimer.play();
+    }
+
+    private int saveParameterPlannerToDatabase(BudgetOption budget) {
+        if (currentUser == null || budget.budgetId() <= 0) {
+            return -1;
+        }
+
+        int savedParameterId = plannerPreferences.getInt("parameterId", -1);
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            if (savedParameterId > 0 && updateParameterPlanner(conn, savedParameterId, budget)) {
+                return savedParameterId;
+            }
+
+            return insertParameterPlanner(conn, budget);
+        } catch (SQLException e) {
+            System.err.println("Gagal menyimpan Parameter Planner ke database: " + e.getMessage());
+            return -1;
+        }
+    }
+
+    private boolean updateParameterPlanner(Connection conn, int parameterId, BudgetOption budget) throws SQLException {
+        String sql = """
+                UPDATE parameter_planner
+                SET budget_id = ?,
+                    shopping_period_start = ?,
+                    shopping_period_end = ?,
+                    meals_per_day = ?,
+                    snack_per_day = ?
+                WHERE parameter_id = ?
+                  AND user_id = ?
+                """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, budget.budgetId());
+            stmt.setDate(2, Date.valueOf(plannerStartDatePicker.getValue()));
+            stmt.setDate(3, Date.valueOf(plannerEndDatePicker.getValue()));
+            stmt.setInt(4, getSelectedMainMeals());
+            stmt.setInt(5, getSelectedSnacks());
+            stmt.setInt(6, parameterId);
+            stmt.setInt(7, currentUser.getUserId());
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    private int insertParameterPlanner(Connection conn, BudgetOption budget) throws SQLException {
+        String sql = """
+                INSERT INTO parameter_planner
+                (user_id, budget_id, shopping_period_start, shopping_period_end, meals_per_day, snack_per_day)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setInt(1, currentUser.getUserId());
+            stmt.setInt(2, budget.budgetId());
+            stmt.setDate(3, Date.valueOf(plannerStartDatePicker.getValue()));
+            stmt.setDate(4, Date.valueOf(plannerEndDatePicker.getValue()));
+            stmt.setInt(5, getSelectedMainMeals());
+            stmt.setInt(6, getSelectedSnacks());
+            stmt.executeUpdate();
+
+            try (ResultSet keys = stmt.getGeneratedKeys()) {
+                return keys.next() ? keys.getInt(1) : -1;
+            }
+        }
+    }
+
+    @FXML
+    private void handleUsePlannerForWeeklyMenu() {
+        updatePlannerPreview();
+        if (savePlannerButton.isDisable()) {
+            showWarning("Parameter belum valid", plannerDateErrorLabel.getText());
+            return;
+        }
+
+        if (plannerDirty || !plannerSaved) {
+            showWarning("Parameter belum disimpan", "Simpan parameter dulu sebelum digunakan untuk Menu Mingguan.");
+            return;
+        }
+
+        showWeeklyMenuPage();
+    }
+
     private void showPage(VBox page) {
         dashboardPage.setVisible(page == dashboardPage);
         dashboardPage.setManaged(page == dashboardPage);
 
         familyProfilePage.setVisible(page == familyProfilePage);
         familyProfilePage.setManaged(page == familyProfilePage);
+
+        parameterPlannerPage.setVisible(page == parameterPlannerPage);
+        parameterPlannerPage.setManaged(page == parameterPlannerPage);
 
         weeklyMenuPage.setVisible(page == weeklyMenuPage);
         weeklyMenuPage.setManaged(page == weeklyMenuPage);
@@ -429,6 +822,7 @@ public class DashboardController {
     private void setActiveNav(Button activeButton) {
         setNavClass(dashboardNavButton, activeButton == dashboardNavButton);
         setNavClass(familyProfileNavButton, activeButton == familyProfileNavButton);
+        setNavClass(parameterPlannerNavButton, activeButton == parameterPlannerNavButton);
         setNavClass(weeklyMenuNavButton, activeButton == weeklyMenuNavButton);
 
         setNavClass(settingsNavButton, activeButton == settingsNavButton);
@@ -960,6 +1354,14 @@ public class DashboardController {
         alert.showAndWait();
     }
 
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
     @FXML
     private void handleLogout() {
         AppNavigator.showLogin();
@@ -968,6 +1370,21 @@ public class DashboardController {
     @FXML
     private void handleOpenRecipeForm() {
         AppNavigator.showRecipeForm();
+    }
+
+    private record BudgetOption(int budgetId, String name, double amount, LocalDate periodStart,
+                                LocalDate periodEnd, String status) {
+        @Override
+        public String toString() {
+            String statusText = status == null || status.isBlank()
+                    ? "Aktif"
+                    : status.substring(0, 1).toUpperCase(INDONESIAN_LOCALE) + status.substring(1).toLowerCase(INDONESIAN_LOCALE);
+            return name + " - " + formatAmount(amount) + " (" + statusText + ")";
+        }
+
+        private static String formatAmount(double amount) {
+            return "Rp" + String.format(INDONESIAN_LOCALE, "%,.0f", amount).replace(',', '.');
+        }
     }
 
     private static class MultilineTextCell extends TableCell<FamilyMember, String> {
