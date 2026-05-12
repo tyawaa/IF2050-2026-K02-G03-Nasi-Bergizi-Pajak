@@ -113,12 +113,8 @@
         <Label text="&#169; 2026 Nasi Bergizi Pajak. Semua hak dilindungi." styleClass="footer-text"/>
     </VBox>
 
-    <StackPane prefWidth="590" HBox.hgrow="ALWAYS" alignment="CENTER" styleClass="auth-form-panel">
-        <VBox maxWidth="420" maxHeight="-Infinity" spacing="20">
-            <styleClass>
-                <String fx:value="auth-form-card"/>
-                <String fx:value="auth-login-card"/>
-            </styleClass>
+    <StackPane prefWidth="590" HBox.hgrow="ALWAYS" styleClass="auth-form-panel">
+        <VBox maxWidth="420" spacing="20" styleClass="auth-form-card">
             <VBox spacing="8">
                 <Label text="Selamat Datang" styleClass="form-title"/>
                 <Label text="Masuk ke akun Anda untuk melanjutkan" styleClass="form-subtitle"/>

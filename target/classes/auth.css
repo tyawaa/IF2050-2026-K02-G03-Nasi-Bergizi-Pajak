@@ -1,4 +1,4 @@
-﻿/*
+/*
  * AUTH FRONT-END KAMUS / DESIGN TOKENS
  * Project : Nasi Bergizi Pajak JavaFX
  * Scope   : LoginView.fxml + RegisterView.fxml
@@ -46,10 +46,6 @@
 
 .auth-form-card {
     -fx-padding: 8px;
-}
-
-.auth-login-card {
-    -fx-translate-y: 0px;
 }
 
 .auth-register-card {

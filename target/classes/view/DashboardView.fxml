@@ -43,7 +43,7 @@
                 <Button text="Budget" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Parameter Planner" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Stok Dapur" maxWidth="Infinity" styleClass="userdash-nav-button"/>
-                <Button text="Menu Mingguan" maxWidth="Infinity" styleClass="userdash-nav-button"/>
+                <Button fx:id="weeklyMenuNavButton" text="Menu Mingguan" maxWidth="Infinity" onAction="#showWeeklyMenuPage" styleClass="userdash-nav-button"/>
                 <Button fx:id="recommendationNavButton" text="Rekomendasi Menu" maxWidth="Infinity" onAction="#showRecommendationPage" styleClass="userdash-nav-button"/>
                 <Button text="Shopping Planner" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Hasil Belanja" maxWidth="Infinity" styleClass="userdash-nav-button"/>
@@ -349,6 +349,90 @@
                                 </VBox>
                             </HBox>
                         </VBox>
+                    <VBox fx:id="weeklyMenuPage" spacing="18" visible="false" managed="false" styleClass="userdash-content">
+                        <padding>
+                            <Insets top="18" right="22" bottom="28" left="22"/>
+                        </padding>
+
+                        <HBox alignment="CENTER_LEFT">
+                            <VBox spacing="2">
+                                <Label text="Menu Mingguan" styleClass="userdash-section-title"/>
+                                <Label text="Lihat menu mingguan yang sudah tersimpan beserta slot makan dan status budget."
+                                       styleClass="userdash-section-subtitle"/>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="Muat Ulang Menu"
+                                    onAction="#handleRefreshWeeklyMenus"
+                                    styleClass="family-primary-button"/>
+                        </HBox>
+
+                        <HBox spacing="14" fillHeight="true">
+                            <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box">
+                                <Label text="Total Menu Mingguan" styleClass="userdash-budget-label"/>
+                                <Label fx:id="weeklyMenuCountLabel" text="0 menu" styleClass="userdash-budget-value-dark"/>
+                            </VBox>
+
+                            <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box-green">
+                                <Label text="Slot Menu Dipilih" styleClass="userdash-budget-label"/>
+                                <Label fx:id="weeklySlotCountLabel" text="0 slot" styleClass="userdash-budget-value-green"/>
+                            </VBox>
+                        </HBox>
+
+                        <HBox spacing="14" fillHeight="true">
+                            <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box">
+                                <Label text="Total Estimasi Menu Terpilih" styleClass="userdash-budget-label"/>
+                                <Label fx:id="weeklyMenuTotalLabel" text="Rp0" styleClass="userdash-budget-value-dark"/>
+                            </VBox>
+
+                            <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box-green">
+                                <Label text="Status Budget" styleClass="userdash-budget-label"/>
+                                <Label fx:id="weeklyMenuStatusLabel" text="Belum memilih menu" styleClass="userdash-budget-value-green"/>
+                            </VBox>
+                        </HBox>
+
+                        <HBox spacing="18" fillHeight="true">
+                            <VBox spacing="14" HBox.hgrow="ALWAYS" styleClass="userdash-panel">
+                                <VBox spacing="2">
+                                    <Label text="Daftar Menu Mingguan" styleClass="userdash-section-title"/>
+                                    <Label text="Klik satu menu untuk melihat rincian slot makannya."
+                                           styleClass="userdash-section-subtitle"/>
+                                </VBox>
+
+                                <TableView fx:id="weeklyMenuTable"
+                                           prefHeight="320"
+                                           minHeight="220"
+                                           styleClass="family-table">
+                                    <columns>
+                                        <TableColumn fx:id="weeklyMenuIdColumn" text="ID" prefWidth="70"/>
+                                        <TableColumn fx:id="weeklyMenuPeriodColumn" text="Periode Mingguan" prefWidth="240"/>
+                                        <TableColumn fx:id="weeklyMenuEstimationColumn" text="Total Estimasi" prefWidth="160"/>
+                                        <TableColumn fx:id="weeklyMenuBudgetStatusColumn" text="Status Budget" prefWidth="180"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+
+                            <VBox spacing="14" HBox.hgrow="ALWAYS" styleClass="userdash-panel">
+                                <VBox spacing="2">
+                                    <Label text="Slot Makan" styleClass="userdash-section-title"/>
+                                    <Label text="Rincian jadwal makan dari menu mingguan yang dipilih."
+                                           styleClass="userdash-section-subtitle"/>
+                                </VBox>
+
+                                <TableView fx:id="weeklySlotTable"
+                                           prefHeight="320"
+                                           minHeight="220"
+                                           styleClass="family-table">
+                                    <columns>
+                                        <TableColumn fx:id="weeklySlotDateColumn" text="Tanggal" prefWidth="130"/>
+                                        <TableColumn fx:id="weeklySlotTimeColumn" text="Waktu" prefWidth="110"/>
+                                        <TableColumn fx:id="weeklySlotTypeColumn" text="Jenis" prefWidth="150"/>
+                                        <TableColumn fx:id="weeklySlotCostColumn" text="Biaya Luar" prefWidth="140"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
                         <VBox fx:id="settingsPage" spacing="18" visible="false" managed="false" styleClass="userdash-content">
                             <padding>
                                 <Insets top="18" right="22" bottom="28" left="22"/>
