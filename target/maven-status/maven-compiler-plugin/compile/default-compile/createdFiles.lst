@@ -1,5 +1,7 @@
 nasi_bergizi_pajak\model\FamilyMember.class
+nasi_bergizi_pajak\controller\DashboardController$BudgetOption.class
 nasi_bergizi_pajak\controller\DashboardController$AllergyBadgeCell.class
+nasi_bergizi_pajak\dao\RekomendasiDAO$IngredientSnapshot.class
 nasi_bergizi_pajak\model\IngredientPrice.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminPriceUpdate.class
 nasi_bergizi_pajak\controller\AdminDashboardController$NutritionSummary.class
@@ -14,6 +16,8 @@ nasi_bergizi_pajak\controller\AdminDashboardController$5.class
 nasi_bergizi_pajak\Main.class
 nasi_bergizi_pajak\controller\AdminDashboardController.class
 nasi_bergizi_pajak\controller\DashboardController.class
+nasi_bergizi_pajak\dao\RekomendasiDAO$StockSnapshot.class
+nasi_bergizi_pajak\model\RekomendasiMenu.class
 nasi_bergizi_pajak\controller\AdminDashboardController$2.class
 nasi_bergizi_pajak\dao\FamilyMemberDAO.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminNutrition.class
@@ -22,6 +26,8 @@ nasi_bergizi_pajak\controller\LoginController.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminRecipeIngredient.class
 nasi_bergizi_pajak\model\IngredientNutrition.class
 nasi_bergizi_pajak\controller\DashboardController$MultilineTextCell.class
+nasi_bergizi_pajak\model\KebutuhanGizi.class
+nasi_bergizi_pajak\dao\RekomendasiDAO$RecommendationData.class
 nasi_bergizi_pajak\controller\RecipeFormController.class
 nasi_bergizi_pajak\controller\AdminDashboardController$3.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminIngredientEdit.class
@@ -31,11 +37,15 @@ nasi_bergizi_pajak\controller\MenuController.class
 nasi_bergizi_pajak\app\AppNavigator.class
 nasi_bergizi_pajak\dao\MenuMingguanDAO.class
 nasi_bergizi_pajak\controller\DashboardController$CenteredTextCell.class
+nasi_bergizi_pajak\dao\RekomendasiDAO.class
 nasi_bergizi_pajak\dao\IngredientPriceDAO.class
+nasi_bergizi_pajak\controller\DashboardController$2.class
 nasi_bergizi_pajak\dao\AkunDAO.class
 nasi_bergizi_pajak\util\UnitOptions.class
+nasi_bergizi_pajak\dao\RekomendasiDAO$RecipeAccumulator.class
 nasi_bergizi_pajak\util\ValidationUtil.class
 nasi_bergizi_pajak\util\PasswordUtil.class
+nasi_bergizi_pajak\dao\GiziDAO.class
 nasi_bergizi_pajak\model\SlotMakan.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminIngredient.class
 nasi_bergizi_pajak\model\Akun.class
@@ -44,6 +54,9 @@ nasi_bergizi_pajak\model\MenuMingguan.class
 nasi_bergizi_pajak\model\Recipe.class
 nasi_bergizi_pajak\controller\AdminDashboardController$NutritionBase.class
 nasi_bergizi_pajak\model\Ingredient.class
+nasi_bergizi_pajak\controller\DashboardController$WeeklySlotFormResult.class
 nasi_bergizi_pajak\dao\RecipeIngredientDAO.class
 nasi_bergizi_pajak\controller\AdminDashboardController$1.class
+nasi_bergizi_pajak\controller\DashboardController$MealSlotDefinition.class
 nasi_bergizi_pajak\controller\AdminDashboardController$4.class
+nasi_bergizi_pajak\controller\RekomendasiController.class

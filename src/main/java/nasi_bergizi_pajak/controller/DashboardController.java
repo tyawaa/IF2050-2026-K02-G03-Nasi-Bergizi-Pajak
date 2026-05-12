@@ -13,8 +13,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.prefs.Preferences;
 
@@ -28,10 +30,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Node;
+import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
@@ -48,9 +52,12 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
@@ -59,8 +66,10 @@ import nasi_bergizi_pajak.app.AppNavigator;
 import nasi_bergizi_pajak.config.DatabaseConnection;
 import nasi_bergizi_pajak.dao.AkunDAO;
 import nasi_bergizi_pajak.dao.FamilyMemberDAO;
+import nasi_bergizi_pajak.dao.RecipeDAO;
 import nasi_bergizi_pajak.model.Akun;
 import nasi_bergizi_pajak.model.FamilyMember;
+import nasi_bergizi_pajak.model.Recipe;
 import nasi_bergizi_pajak.model.RekomendasiMenu;
 import nasi_bergizi_pajak.model.MenuMingguan;
 import nasi_bergizi_pajak.model.SlotMakan;
@@ -71,6 +80,10 @@ public class DashboardController {
     private static final DateTimeFormatter PICKER_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter PREVIEW_DAY_FORMATTER = DateTimeFormatter.ofPattern("d MMM", INDONESIAN_LOCALE);
     private static final DateTimeFormatter PREVIEW_FULL_DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMM yyyy", INDONESIAN_LOCALE);
+    private static final int WEEKLY_TOTAL_SLOTS = 28;
+    private static final String[] WEEKLY_DAY_LABELS = {"Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"};
+    private static final String[] WEEKLY_MEAL_KEYS = {"breakfast", "lunch", "dinner", "snack"};
+    private static final String[] WEEKLY_MEAL_LABELS = {"Sarapan", "Makan Siang", "Makan Malam", "Snack"};
     private static final BudgetOption FALLBACK_BUDGET = new BudgetOption(
             -1,
             "Budget Mingguan April W4",
@@ -116,20 +129,18 @@ public class DashboardController {
 
     @FXML private Button weeklyMenuNavButton;
     @FXML private VBox weeklyMenuPage;
-    @FXML private Label weeklyMenuCountLabel;
-    @FXML private Label weeklySlotCountLabel;
+    @FXML private Label weeklyBudgetBadgeLabel;
+    @FXML private Label weeklyPeriodLabel;
+    @FXML private Label weeklyProgressLabel;
+    @FXML private GridPane weeklyPlannerGrid;
     @FXML private Label weeklyMenuTotalLabel;
+    @FXML private Label weeklyAvailableBudgetLabel;
     @FXML private Label weeklyMenuStatusLabel;
-    @FXML private TableView<MenuMingguan> weeklyMenuTable;
-    @FXML private TableColumn<MenuMingguan, String> weeklyMenuIdColumn;
-    @FXML private TableColumn<MenuMingguan, String> weeklyMenuPeriodColumn;
-    @FXML private TableColumn<MenuMingguan, String> weeklyMenuEstimationColumn;
-    @FXML private TableColumn<MenuMingguan, String> weeklyMenuBudgetStatusColumn;
-    @FXML private TableView<SlotMakan> weeklySlotTable;
-    @FXML private TableColumn<SlotMakan, String> weeklySlotDateColumn;
-    @FXML private TableColumn<SlotMakan, String> weeklySlotTimeColumn;
-    @FXML private TableColumn<SlotMakan, String> weeklySlotTypeColumn;
-    @FXML private TableColumn<SlotMakan, String> weeklySlotCostColumn;
+    @FXML private Label weeklyCaloriesLabel;
+    @FXML private Label weeklyProteinLabel;
+    @FXML private Label weeklyCarbsLabel;
+    @FXML private Label weeklyFatLabel;
+    @FXML private Label weeklyFiberLabel;
     @FXML private ImageView settingsAvatarImage;
     @FXML private Label settingsAvatarInitial;
     @FXML private TextField settingsFamilyNameField;
@@ -176,6 +187,8 @@ public class DashboardController {
     private final ObservableList<MenuMingguan> weeklyMenus = FXCollections.observableArrayList();
     private final ObservableList<SlotMakan> weeklySlots = FXCollections.observableArrayList();
     private final MenuController menuController = new MenuController();
+    private final RecipeDAO recipeDAO = new RecipeDAO();
+    private final Map<Integer, Recipe> weeklyRecipeCache = new HashMap<>();
     private final ObservableList<RekomendasiMenu> recommendations = FXCollections.observableArrayList();
     private final RekomendasiController rekomendasiController = new RekomendasiController();
     private final NumberFormat rupiahFormat = NumberFormat.getCurrencyInstance(INDONESIAN_LOCALE);
@@ -185,6 +198,7 @@ public class DashboardController {
     private ContextMenu profileMenu;
     private PauseTransition settingsToastTimer;
     private PauseTransition plannerToastTimer;
+    private MenuMingguan selectedWeeklyMenu;
     private boolean plannerDirty;
     private boolean plannerSaved;
     private boolean suppressPlannerDirtyTracking;
@@ -197,7 +211,7 @@ public class DashboardController {
         setupProfileMenu();
         setupParameterPlanner();
         setupFamilyTable();
-        setupWeeklyMenuTables();
+        setupWeeklyPlanner();
         setupRecommendationTable();
         refreshFamilyMembers();
     }
@@ -476,48 +490,9 @@ public class DashboardController {
         profileMenu.getStyleClass().add("profile-dropdown-menu");
     }
 
-    private void setupWeeklyMenuTables() {
-        weeklyMenuTable.setItems(weeklyMenus);
-        weeklySlotTable.setItems(weeklySlots);
-
-        weeklyMenuTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-        weeklySlotTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-
-        weeklyMenuIdColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(String.valueOf(data.getValue().getMenuId())));
-
-        weeklyMenuPeriodColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(
-                        data.getValue().getWeekStartDate() + " s.d. " + data.getValue().getWeekEndDate()
-                ));
-
-        weeklyMenuEstimationColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(rupiahFormat.format(data.getValue().getTotalEstimation())));
-
-        weeklyMenuBudgetStatusColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(formatStatus(data.getValue().getStatusBudget())));
-
-        weeklySlotDateColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(String.valueOf(data.getValue().getMealDate())));
-
-        weeklySlotTimeColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(formatStatus(data.getValue().getMealTime())));
-
-        weeklySlotTypeColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(data.getValue().isEatingOut() ? "Makan di luar" : "Resep #" + data.getValue().getRecipeId()));
-
-        weeklySlotCostColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(
-                        data.getValue().isEatingOut()
-                                ? rupiahFormat.format(data.getValue().getOutsideCost())
-                                : "-"
-                ));
-
-        weeklyMenuTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, selectedMenu) -> {
-            if (selectedMenu != null) {
-                loadWeeklySlots(selectedMenu);
-            }
-        });
+    private void setupWeeklyPlanner() {
+        renderWeeklyPlanner(null, List.of());
+        refreshWeeklySummary(null, List.of());
     }
 
     @FXML
@@ -525,13 +500,23 @@ public class DashboardController {
         refreshWeeklyMenus();
     }
 
+    @FXML
+    private void handleSaveWeeklyMenu() {
+        if (selectedWeeklyMenu == null) {
+            showInfo("Menu Mingguan", "Belum ada menu mingguan untuk disimpan.");
+            return;
+        }
+
+        showInfo("Menu Mingguan", "Menu mingguan sudah tersimpan.");
+    }
+
     private void refreshWeeklyMenus() {
         if (currentUser == null) {
             weeklyMenus.clear();
             weeklySlots.clear();
-            weeklyMenuCountLabel.setText("0 menu");
-            weeklySlotCountLabel.setText("0 slot");
-            weeklyMenuTotalLabel.setText(rupiahFormat.format(0));
+            selectedWeeklyMenu = null;
+            renderWeeklyPlanner(null, List.of());
+            refreshWeeklySummary(null, List.of());
             weeklyMenuStatusLabel.setText("User tidak ditemukan");
             return;
         }
@@ -539,24 +524,31 @@ public class DashboardController {
         try {
             List<MenuMingguan> menus = menuController.ambilMenuMingguanPengguna(currentUser.getUserId());
             weeklyMenus.setAll(menus);
-            weeklyMenuCountLabel.setText(menus.size() + " menu");
 
             if (menus.isEmpty()) {
                 weeklySlots.clear();
-                weeklySlotCountLabel.setText("0 slot");
-                weeklyMenuTotalLabel.setText(rupiahFormat.format(0));
-                weeklyMenuStatusLabel.setText("Belum ada menu");
+                selectedWeeklyMenu = null;
+                renderWeeklyPlanner(null, List.of());
+                refreshWeeklySummary(null, List.of());
                 return;
             }
 
-            weeklyMenuTable.getSelectionModel().selectFirst();
-            loadWeeklySlots(menus.get(0));
+            MenuMingguan plannerMenu = findMenuForCurrentPlanner(menus);
+            if (plannerMenu == null) {
+                weeklySlots.clear();
+                selectedWeeklyMenu = null;
+                renderWeeklyPlanner(null, List.of());
+                refreshWeeklySummary(null, List.of());
+                return;
+            }
+
+            loadWeeklySlots(plannerMenu);
         } catch (SQLException e) {
             weeklyMenus.clear();
             weeklySlots.clear();
-            weeklyMenuCountLabel.setText("0 menu");
-            weeklySlotCountLabel.setText("0 slot");
-            weeklyMenuTotalLabel.setText(rupiahFormat.format(0));
+            selectedWeeklyMenu = null;
+            renderWeeklyPlanner(null, List.of());
+            refreshWeeklySummary(null, List.of());
             weeklyMenuStatusLabel.setText("Gagal memuat");
             showError("Gagal memuat menu mingguan", e.getMessage());
         }
@@ -566,16 +558,720 @@ public class DashboardController {
         try {
             List<SlotMakan> slots = menuController.ambilSlotMakan(menu.getMenuId());
             weeklySlots.setAll(slots);
-            weeklySlotCountLabel.setText(slots.size() + " slot");
-            weeklyMenuTotalLabel.setText(rupiahFormat.format(menu.getTotalEstimation()));
-            weeklyMenuStatusLabel.setText(formatStatus(menu.getStatusBudget()));
+            selectedWeeklyMenu = menu;
+            weeklyRecipeCache.clear();
+            renderWeeklyPlanner(menu, slots);
+            refreshWeeklySummary(menu, slots);
         } catch (SQLException e) {
             weeklySlots.clear();
-            weeklySlotCountLabel.setText("0 slot");
-            weeklyMenuTotalLabel.setText(rupiahFormat.format(menu.getTotalEstimation()));
+            selectedWeeklyMenu = menu;
+            renderWeeklyPlanner(menu, List.of());
+            refreshWeeklySummary(menu, List.of());
             weeklyMenuStatusLabel.setText("Gagal memuat slot");
             showError("Gagal memuat slot menu", e.getMessage());
         }
+    }
+
+    private void renderWeeklyPlanner(MenuMingguan menu, List<SlotMakan> slots) {
+        weeklyPlannerGrid.getChildren().clear();
+        weeklyPlannerGrid.getColumnConstraints().clear();
+        weeklyPlannerGrid.getRowConstraints().clear();
+
+        ColumnConstraints labelColumn = new ColumnConstraints(88);
+        labelColumn.setMinWidth(82);
+        weeklyPlannerGrid.getColumnConstraints().add(labelColumn);
+
+        List<LocalDate> plannerDates = getPlannerDates(menu);
+        List<MealSlotDefinition> mealDefinitions = getPlannerMealDefinitions();
+
+        for (int i = 0; i < plannerDates.size(); i++) {
+            ColumnConstraints dayColumn = new ColumnConstraints();
+            dayColumn.setMinWidth(94);
+            dayColumn.setPrefWidth(128);
+            dayColumn.setHgrow(Priority.ALWAYS);
+            weeklyPlannerGrid.getColumnConstraints().add(dayColumn);
+        }
+
+        RowConstraints headerRow = new RowConstraints(48);
+        weeklyPlannerGrid.getRowConstraints().add(headerRow);
+        for (int i = 0; i < mealDefinitions.size(); i++) {
+            RowConstraints mealRow = new RowConstraints();
+            mealRow.setMinHeight(72);
+            mealRow.setPrefHeight(84);
+            mealRow.setVgrow(Priority.ALWAYS);
+            weeklyPlannerGrid.getRowConstraints().add(mealRow);
+        }
+
+        Map<String, SlotMakan> slotByCell = new HashMap<>();
+        for (SlotMakan slot : slots) {
+            if (slot.getMealDate() != null && slot.getMealTime() != null) {
+                slotByCell.put(getSlotKey(slot.getMealDate(), slot.getMealTime()), slot);
+            }
+        }
+
+        weeklyPlannerGrid.add(new Label(""), 0, 0);
+        for (int dayIndex = 0; dayIndex < plannerDates.size(); dayIndex++) {
+            LocalDate date = plannerDates.get(dayIndex);
+            Node header = createDayHeader(formatPlannerDayName(date), date);
+            weeklyPlannerGrid.add(header, dayIndex + 1, 0);
+        }
+
+        for (int mealIndex = 0; mealIndex < mealDefinitions.size(); mealIndex++) {
+            MealSlotDefinition mealDefinition = mealDefinitions.get(mealIndex);
+            weeklyPlannerGrid.add(createMealRowLabel(mealDefinition.label()), 0, mealIndex + 1);
+            for (int dayIndex = 0; dayIndex < plannerDates.size(); dayIndex++) {
+                LocalDate date = plannerDates.get(dayIndex);
+                SlotMakan slot = slotByCell.get(getSlotKey(date, mealDefinition.key()));
+                Node cell = createMealCell(date, mealDefinition.key(), slot);
+                GridPane.setHgrow(cell, Priority.ALWAYS);
+                GridPane.setVgrow(cell, Priority.ALWAYS);
+                weeklyPlannerGrid.add(cell, dayIndex + 1, mealIndex + 1);
+            }
+        }
+    }
+
+    private Node createMealCell(LocalDate mealDate, String mealTime, SlotMakan slot) {
+        if (slot == null) {
+            return createEmptySlotCell(mealDate, mealTime);
+        }
+
+        return createRecipeCard(slot);
+    }
+
+    private Node createRecipeCard(SlotMakan slot) {
+        VBox card = new VBox(4);
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setMinHeight(70);
+        card.setPickOnBounds(true);
+        card.setCursor(Cursor.HAND);
+        card.getStyleClass().add(slot.isEatingOut() ? "weekly-outside-card" : "weekly-meal-card");
+
+        HBox header = new HBox(6);
+        header.setAlignment(Pos.CENTER_LEFT);
+
+        if (slot.isEatingOut()) {
+            Label title = new Label("Makan Luar");
+            title.setWrapText(true);
+            title.getStyleClass().add("weekly-meal-title");
+            HBox.setHgrow(title, Priority.ALWAYS);
+
+            Label cost = new Label(formatRupiahCompact(slot.getOutsideCost()));
+            cost.getStyleClass().add("weekly-meal-price");
+            header.getChildren().addAll(title, createWeeklySlotActions(slot));
+            card.getChildren().addAll(header, cost);
+            card.setOnMouseClicked(event -> openWeeklySlotDialog(slot.getMealDate(), slot.getMealTime(), slot));
+            return card;
+        }
+
+        Recipe recipe = resolveRecipe(slot.getRecipeId());
+        Label title = new Label(recipe == null ? "Resep tidak ditemukan" : recipe.getName());
+        title.setWrapText(true);
+        title.getStyleClass().add("weekly-meal-title");
+        HBox.setHgrow(title, Priority.ALWAYS);
+
+        Label price = new Label(formatRecipeEstimate(slot.getRecipeId()));
+        price.getStyleClass().add("weekly-meal-price");
+
+        HBox meta = new HBox(5);
+        meta.setAlignment(Pos.CENTER_LEFT);
+        Label stock = new Label(recipe == null ? "Stok tidak lengkap" : "Stok tersedia");
+        stock.getStyleClass().add(recipe == null ? "weekly-stock-warning" : "weekly-stock-ok");
+        Label calories = new Label("Kalori -");
+        calories.getStyleClass().add("weekly-meal-meta");
+        meta.getChildren().addAll(stock, calories);
+
+        header.getChildren().addAll(title, createWeeklySlotActions(slot));
+        card.getChildren().addAll(header, price, meta);
+        card.setOnMouseClicked(event -> openWeeklySlotDialog(slot.getMealDate(), slot.getMealTime(), slot));
+        return card;
+    }
+
+    private Node createWeeklySlotActions(SlotMakan slot) {
+        HBox actions = new HBox(4);
+        actions.setAlignment(Pos.CENTER_RIGHT);
+
+        Button editButton = new Button("Edit");
+        editButton.getStyleClass().add("weekly-card-action-button");
+        editButton.setOnAction(event -> {
+            event.consume();
+            openWeeklySlotDialog(slot.getMealDate(), slot.getMealTime(), slot);
+        });
+
+        Button deleteButton = new Button("Hapus");
+        deleteButton.getStyleClass().add("weekly-card-delete-button");
+        deleteButton.setOnAction(event -> {
+            event.consume();
+            handleDeleteWeeklySlot(slot);
+        });
+
+        actions.getChildren().addAll(editButton, deleteButton);
+        return actions;
+    }
+
+    private Node createEmptySlotCell(LocalDate mealDate, String mealTime) {
+        VBox emptyCell = new VBox();
+        emptyCell.setAlignment(Pos.CENTER);
+        emptyCell.setMaxWidth(Double.MAX_VALUE);
+        emptyCell.setMinHeight(70);
+        emptyCell.setPickOnBounds(true);
+        emptyCell.setCursor(Cursor.HAND);
+        emptyCell.getStyleClass().add("weekly-empty-cell");
+        emptyCell.setOnMouseClicked(event -> openWeeklySlotDialog(mealDate, mealTime, null));
+
+        Button plusButton = new Button("+");
+        plusButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        plusButton.setMinHeight(52);
+        plusButton.getStyleClass().add("weekly-empty-button");
+        plusButton.setOnAction(event -> {
+            event.consume();
+            openWeeklySlotDialog(mealDate, mealTime, null);
+        });
+        VBox.setVgrow(plusButton, Priority.ALWAYS);
+        emptyCell.getChildren().add(plusButton);
+        return emptyCell;
+    }
+
+    private void openWeeklySlotDialog(LocalDate mealDate, String mealTime, SlotMakan existingSlot) {
+        boolean editMode = existingSlot != null;
+        Dialog<WeeklySlotFormResult> dialog = new Dialog<>();
+        dialog.setTitle(editMode ? "Edit Menu" : "Tambah Menu");
+        dialog.setHeaderText((editMode ? "Edit" : "Tambah") + " slot "
+                + formatWeeklySlotTitle(mealDate, mealTime));
+        dialog.getDialogPane().getStyleClass().add("weekly-slot-dialog");
+
+        ButtonType saveButtonType = new ButtonType(editMode ? "Simpan" : "Tambah", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+        CheckBox eatingOutCheckBox = new CheckBox("Makan di luar");
+        eatingOutCheckBox.getStyleClass().add("weekly-dialog-checkbox");
+
+        ComboBox<Recipe> recipeComboBox = new ComboBox<>();
+        recipeComboBox.setMaxWidth(Double.MAX_VALUE);
+        recipeComboBox.getStyleClass().add("planner-input");
+        recipeComboBox.setPromptText("Pilih resep");
+        List<Recipe> recipeOptions = loadRecipeOptions();
+        recipeComboBox.setItems(FXCollections.observableArrayList(recipeOptions));
+        recipeComboBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Recipe recipe) {
+                return recipe == null ? "" : recipe.getName();
+            }
+
+            @Override
+            public Recipe fromString(String value) {
+                return null;
+            }
+        });
+
+        TextField outsideCostField = new TextField();
+        outsideCostField.setPromptText("Biaya makan luar");
+        outsideCostField.getStyleClass().add("planner-input");
+
+        if (editMode) {
+            eatingOutCheckBox.setSelected(existingSlot.isEatingOut());
+            if (existingSlot.isEatingOut()) {
+                outsideCostField.setText(String.format(INDONESIAN_LOCALE, "%.0f", existingSlot.getOutsideCost()));
+            } else {
+                recipeComboBox.setValue(resolveRecipe(existingSlot.getRecipeId()));
+            }
+        } else if (!recipeOptions.isEmpty()) {
+            recipeComboBox.setValue(recipeOptions.get(0));
+        } else {
+            eatingOutCheckBox.setSelected(true);
+        }
+
+        recipeComboBox.setDisable(eatingOutCheckBox.isSelected());
+        outsideCostField.setDisable(!eatingOutCheckBox.isSelected());
+        eatingOutCheckBox.selectedProperty().addListener((observable, oldValue, eatingOut) -> {
+            recipeComboBox.setDisable(eatingOut);
+            outsideCostField.setDisable(!eatingOut);
+        });
+
+        Label helperLabel = new Label();
+        helperLabel.setWrapText(true);
+        helperLabel.getStyleClass().add("planner-error-text");
+
+        VBox form = new VBox(12);
+        form.setPadding(new Insets(8, 0, 0, 0));
+        form.getChildren().addAll(
+                eatingOutCheckBox,
+                new Label("Pilih Resep"),
+                recipeComboBox,
+                new Label("Biaya Makan Luar"),
+                outsideCostField,
+                helperLabel
+        );
+        dialog.getDialogPane().setContent(form);
+
+        Node saveButton = dialog.getDialogPane().lookupButton(saveButtonType);
+        Runnable updateSaveState = () -> {
+            String error = validateWeeklySlotForm(eatingOutCheckBox.isSelected(), recipeComboBox.getValue(), outsideCostField.getText());
+            saveButton.setDisable(error != null);
+            helperLabel.setText(error == null ? "" : error);
+            helperLabel.setVisible(error != null);
+            helperLabel.setManaged(error != null);
+        };
+        eatingOutCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> updateSaveState.run());
+        recipeComboBox.valueProperty().addListener((observable, oldValue, newValue) -> updateSaveState.run());
+        outsideCostField.textProperty().addListener((observable, oldValue, newValue) -> updateSaveState.run());
+        updateSaveState.run();
+
+        saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            String error = validateWeeklySlotForm(eatingOutCheckBox.isSelected(), recipeComboBox.getValue(), outsideCostField.getText());
+            if (error != null) {
+                showWarning("Data menu belum valid", error);
+                event.consume();
+            }
+        });
+
+        dialog.setResultConverter(button -> {
+            if (button != saveButtonType) {
+                return null;
+            }
+
+            boolean eatingOut = eatingOutCheckBox.isSelected();
+            Recipe selectedRecipe = recipeComboBox.getValue();
+            double outsideCost = eatingOut ? parseCurrencyInput(outsideCostField.getText()) : 0;
+            return new WeeklySlotFormResult(eatingOut, selectedRecipe == null ? null : selectedRecipe.getRecipeId(), outsideCost);
+        });
+
+        dialog.showAndWait().ifPresent(result -> saveWeeklySlot(mealDate, mealTime, existingSlot, result));
+    }
+
+    private void saveWeeklySlot(LocalDate mealDate, String mealTime, SlotMakan existingSlot, WeeklySlotFormResult result) {
+        try {
+            MenuMingguan menu = ensureSelectedWeeklyMenu();
+            String normalizedMealTime = normalizeMealTimeForGrid(mealTime);
+
+            if (existingSlot == null) {
+                if (result.eatingOut()) {
+                    menuController.tambahSlotMakanDiLuar(menu.getMenuId(), mealDate, normalizedMealTime, result.outsideCost());
+                } else {
+                    menuController.tambahSlotResep(menu.getMenuId(), result.recipeId(), mealDate, normalizedMealTime);
+                }
+            } else if (result.eatingOut()) {
+                menuController.ubahSlotMakanDiLuar(existingSlot.getSlotId(), menu.getMenuId(), mealDate, normalizedMealTime, result.outsideCost());
+            } else {
+                menuController.ubahSlotResep(existingSlot.getSlotId(), menu.getMenuId(), result.recipeId(), mealDate, normalizedMealTime);
+            }
+
+            reloadWeeklyMenu(menu.getMenuId());
+        } catch (SQLException | IllegalArgumentException e) {
+            showError("Gagal menyimpan slot menu", e.getMessage());
+        }
+    }
+
+    private void handleDeleteWeeklySlot(SlotMakan slot) {
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Hapus Menu");
+        confirmation.setHeaderText("Hapus slot menu ini?");
+        confirmation.setContentText(formatWeeklySlotTitle(slot.getMealDate(), slot.getMealTime()));
+
+        Optional<ButtonType> result = confirmation.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
+        try {
+            menuController.hapusSlotMakan(slot.getMenuId(), slot.getSlotId());
+            reloadWeeklyMenu(slot.getMenuId());
+        } catch (SQLException | IllegalArgumentException e) {
+            showError("Gagal menghapus slot menu", e.getMessage());
+        }
+    }
+
+    private MenuMingguan ensureSelectedWeeklyMenu() throws SQLException {
+        if (selectedWeeklyMenu != null && menuMatchesCurrentPlanner(selectedWeeklyMenu)) {
+            return selectedWeeklyMenu;
+        }
+        selectedWeeklyMenu = null;
+
+        if (currentUser == null) {
+            throw new IllegalArgumentException("User tidak ditemukan.");
+        }
+
+        BudgetOption selectedBudget = getSelectedBudgetOption();
+        int parameterId = plannerPreferences.getInt("parameterId", -1);
+        if (parameterId <= 0) {
+            updatePlannerPreview();
+            parameterId = saveParameterPlannerToDatabase(selectedBudget);
+            if (parameterId > 0) {
+                plannerPreferences.putInt("parameterId", parameterId);
+                plannerPreferences.putInt("budgetId", selectedBudget.budgetId());
+                plannerPreferences.putBoolean("saved", true);
+                plannerSaved = true;
+                plannerDirty = false;
+            }
+        }
+
+        if (parameterId <= 0) {
+            throw new IllegalArgumentException("Simpan Parameter Planner dengan budget aktif sebelum menambah menu.");
+        }
+
+        LocalDate weekStart = getPlannerStartDate();
+        LocalDate weekEnd = getPlannerEndDate(weekStart);
+        selectedWeeklyMenu = menuController.buatMenuMingguan(currentUser.getUserId(), parameterId, weekStart, weekEnd);
+        weeklyMenus.setAll(selectedWeeklyMenu);
+        return selectedWeeklyMenu;
+    }
+
+    private void reloadWeeklyMenu(int menuId) {
+        try {
+            selectedWeeklyMenu = menuController.ambilMenuMingguan(menuId);
+            if (selectedWeeklyMenu != null) {
+                loadWeeklySlots(selectedWeeklyMenu);
+            } else {
+                refreshWeeklyMenus();
+            }
+        } catch (SQLException e) {
+            showError("Gagal memuat ulang menu mingguan", e.getMessage());
+        }
+    }
+
+    private List<Recipe> loadRecipeOptions() {
+        try {
+            List<Recipe> recipes = recipeDAO.listAllRecipes();
+            if (!recipes.isEmpty()) {
+                return recipes;
+            }
+        } catch (IllegalStateException e) {
+            System.err.println("Gagal memuat daftar resep via RecipeDAO: " + e.getMessage());
+        }
+
+        return loadRecipeOptionsDirectly();
+    }
+
+    private List<Recipe> loadRecipeOptionsDirectly() {
+        String sql = """
+                SELECT recipe_id, name, description, serving_size, status
+                FROM recipe
+                ORDER BY
+                    CASE WHEN UPPER(status) = 'ACTIVE' THEN 0 ELSE 1 END,
+                    name ASC
+                """;
+
+        List<Recipe> recipes = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Recipe recipe = new Recipe();
+                recipe.setRecipeId(rs.getInt("recipe_id"));
+                recipe.setName(rs.getString("name"));
+                recipe.setDescription(rs.getString("description"));
+                recipe.setServingSize(rs.getInt("serving_size"));
+                recipe.setStatus(rs.getString("status"));
+                recipes.add(recipe);
+            }
+        } catch (SQLException e) {
+            showError("Gagal memuat daftar resep", e.getMessage());
+        }
+
+        return recipes;
+    }
+
+    private String validateWeeklySlotForm(boolean eatingOut, Recipe selectedRecipe, String outsideCostText) {
+        if (eatingOut) {
+            if (!isPositiveNumber(outsideCostText)) {
+                return "Isi biaya makan luar dengan angka positif.";
+            }
+            return null;
+        }
+
+        return selectedRecipe == null ? "Belum ada resep yang bisa dipilih. Centang Makan di luar atau tambahkan resep dulu." : null;
+    }
+
+    private double parseCurrencyInput(String value) {
+        if (value == null || value.isBlank()) {
+            return 0;
+        }
+
+        return Double.parseDouble(value.trim().replace(".", "").replace(",", "."));
+    }
+
+    private void refreshWeeklySummary(MenuMingguan menu, List<SlotMakan> slots) {
+        LocalDate startDate = getWeeklyStartDate(menu);
+        LocalDate endDate = getWeeklyEndDate(menu, startDate);
+        BudgetOption selectedBudget = getSelectedBudgetOption();
+        int filledSlots = countVisiblePlannerSlots(slots);
+        int totalSlots = getPlannerDates(menu).size() * getPlannerMealDefinitions().size();
+
+        weeklyBudgetBadgeLabel.setText("Budget: " + formatDateRangeShort(selectedBudget.periodStart(), selectedBudget.periodEnd()));
+        weeklyPeriodLabel.setText("Minggu: " + formatPreviewPeriod(startDate, endDate));
+        weeklyProgressLabel.setText(filledSlots + " dari " + totalSlots + " slot terisi");
+        weeklyMenuTotalLabel.setText(formatRupiahCompact(menu == null ? 0 : menu.getTotalEstimation()));
+        weeklyAvailableBudgetLabel.setText(formatRupiahCompact(selectedBudget.amount()));
+        updateWeeklyBudgetStatus(menu, selectedBudget.amount());
+
+        weeklyCaloriesLabel.setText("-");
+        weeklyProteinLabel.setText("-");
+        weeklyCarbsLabel.setText("-");
+        weeklyFatLabel.setText("-");
+        weeklyFiberLabel.setText("-");
+    }
+
+    private void updateWeeklyBudgetStatus(MenuMingguan menu, double availableBudget) {
+        weeklyMenuStatusLabel.getStyleClass().removeAll("weekly-status-safe", "weekly-status-over", "weekly-status-empty");
+
+        if (menu == null) {
+            weeklyMenuStatusLabel.setText("Belum ada menu");
+            weeklyMenuStatusLabel.getStyleClass().add("weekly-status-empty");
+            return;
+        }
+
+        boolean overBudget = "overbudget".equalsIgnoreCase(menu.getStatusBudget())
+                || menu.getTotalEstimation() > availableBudget;
+        weeklyMenuStatusLabel.setText(overBudget ? "Melebihi Budget" : "Aman");
+        weeklyMenuStatusLabel.getStyleClass().add(overBudget ? "weekly-status-over" : "weekly-status-safe");
+    }
+
+    private Node createDayHeader(String dayLabel, LocalDate date) {
+        VBox header = new VBox(2);
+        header.setAlignment(Pos.CENTER);
+        header.setMaxWidth(Double.MAX_VALUE);
+        header.getStyleClass().add("weekly-day-header");
+
+        Label day = new Label(dayLabel);
+        day.getStyleClass().add("weekly-day-name");
+        Label number = new Label(String.valueOf(date.getDayOfMonth()));
+        number.getStyleClass().add("weekly-day-number");
+        header.getChildren().addAll(day, number);
+        return header;
+    }
+
+    private Node createMealRowLabel(String mealLabel) {
+        Label label = new Label(mealLabel);
+        label.setWrapText(true);
+        label.setAlignment(Pos.CENTER);
+        label.setMaxWidth(Double.MAX_VALUE);
+        label.setMaxHeight(Double.MAX_VALUE);
+        label.getStyleClass().add("weekly-meal-row-label");
+        return label;
+    }
+
+    private MenuMingguan findMenuForCurrentPlanner(List<MenuMingguan> menus) {
+        return menus.stream()
+                .filter(this::menuMatchesCurrentPlanner)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private boolean menuMatchesCurrentPlanner(MenuMingguan menu) {
+        if (menu == null || menu.getWeekStartDate() == null || menu.getWeekEndDate() == null) {
+            return false;
+        }
+
+        LocalDate plannerStart = getPlannerStartDate();
+        LocalDate plannerEnd = getPlannerEndDate(plannerStart);
+        return menu.getWeekStartDate().isEqual(plannerStart)
+                && menu.getWeekEndDate().isEqual(plannerEnd);
+    }
+
+    private List<LocalDate> getPlannerDates(MenuMingguan menu) {
+        LocalDate startDate = getWeeklyStartDate(menu);
+        LocalDate endDate = getWeeklyEndDate(menu, startDate);
+        int totalDays = Math.max(1, (int) ChronoUnit.DAYS.between(startDate, endDate) + 1);
+
+        List<LocalDate> dates = new ArrayList<>();
+        for (int dayOffset = 0; dayOffset < totalDays; dayOffset++) {
+            dates.add(startDate.plusDays(dayOffset));
+        }
+        return dates;
+    }
+
+    private List<MealSlotDefinition> getPlannerMealDefinitions() {
+        int mainMeals = Math.max(1, Math.min(3, getPlannerMainMeals()));
+        int snacks = Math.max(0, getPlannerSnacks());
+
+        List<MealSlotDefinition> definitions = new ArrayList<>();
+        for (int i = 0; i < mainMeals; i++) {
+            definitions.add(new MealSlotDefinition(WEEKLY_MEAL_KEYS[i], WEEKLY_MEAL_LABELS[i]));
+        }
+
+        if (snacks > 0) {
+            definitions.add(new MealSlotDefinition("snack", "Snack"));
+        }
+
+        return definitions;
+    }
+
+    private int countVisiblePlannerSlots(List<SlotMakan> slots) {
+        if (slots == null || slots.isEmpty()) {
+            return 0;
+        }
+
+        List<LocalDate> plannerDates = getPlannerDates(selectedWeeklyMenu);
+        List<String> visibleMealKeys = getPlannerMealDefinitions().stream()
+                .map(MealSlotDefinition::key)
+                .toList();
+
+        return (int) slots.stream()
+                .filter(slot -> slot.getMealDate() != null && slot.getMealTime() != null)
+                .filter(slot -> !slot.getMealDate().isBefore(plannerDates.get(0))
+                        && !slot.getMealDate().isAfter(plannerDates.get(plannerDates.size() - 1)))
+                .filter(slot -> visibleMealKeys.contains(normalizeMealTimeForGrid(slot.getMealTime())))
+                .count();
+    }
+
+    private String formatPlannerDayName(LocalDate date) {
+        return date.format(DateTimeFormatter.ofPattern("EEE", INDONESIAN_LOCALE));
+    }
+
+    private Recipe resolveRecipe(Integer recipeId) {
+        if (recipeId == null || recipeId <= 0) {
+            return null;
+        }
+
+        if (!weeklyRecipeCache.containsKey(recipeId)) {
+            try {
+                weeklyRecipeCache.put(recipeId, recipeDAO.getRecipeById(recipeId));
+            } catch (IllegalStateException e) {
+                weeklyRecipeCache.put(recipeId, null);
+            }
+        }
+
+        return weeklyRecipeCache.get(recipeId);
+    }
+
+    private String formatRecipeEstimate(Integer recipeId) {
+        if (recipeId == null || recipeId <= 0) {
+            return "Estimasi -";
+        }
+
+        try {
+            double estimate = estimateRecipeCost(recipeId);
+            return estimate <= 0 ? "Estimasi -" : formatRupiahCompact(estimate);
+        } catch (SQLException e) {
+            return "Estimasi -";
+        }
+    }
+
+    private double estimateRecipeCost(int recipeId) throws SQLException {
+        String sql = """
+                SELECT ri.amount, ip.price
+                FROM recipe_ingredient ri
+                JOIN ingredient_price ip
+                    ON ri.ingredient_id = ip.ingredient_id
+                WHERE ri.recipe_id = ?
+                  AND ip.effective_date = (
+                        SELECT MAX(ip2.effective_date)
+                        FROM ingredient_price ip2
+                        WHERE ip2.ingredient_id = ri.ingredient_id
+                  )
+                """;
+
+        double total = 0;
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, recipeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    total += (rs.getDouble("amount") / 100.0) * rs.getDouble("price");
+                }
+            }
+        }
+        return total;
+    }
+
+    private String getSlotKey(LocalDate mealDate, String mealTime) {
+        return mealDate + "|" + normalizeMealTimeForGrid(mealTime);
+    }
+
+    private String normalizeMealTimeForGrid(String mealTime) {
+        if (mealTime == null) {
+            return "";
+        }
+
+        String normalized = mealTime.trim().toLowerCase(Locale.ROOT).replace("_", " ");
+        return switch (normalized) {
+            case "sarapan", "breakfast" -> "breakfast";
+            case "makan siang", "lunch" -> "lunch";
+            case "makan malam", "dinner" -> "dinner";
+            case "snack", "camilan" -> "snack";
+            default -> normalized;
+        };
+    }
+
+    private String formatWeeklySlotTitle(LocalDate mealDate, String mealTime) {
+        String dateText = mealDate == null
+                ? "-"
+                : mealDate.format(DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", INDONESIAN_LOCALE));
+        return dateText + " - " + formatWeeklyMealTime(mealTime);
+    }
+
+    private String formatWeeklyMealTime(String mealTime) {
+        return switch (normalizeMealTimeForGrid(mealTime)) {
+            case "breakfast" -> "Sarapan";
+            case "lunch" -> "Makan Siang";
+            case "dinner" -> "Makan Malam";
+            case "snack" -> "Snack";
+            default -> formatStatus(mealTime);
+        };
+    }
+
+    private LocalDate getWeeklyStartDate(MenuMingguan menu) {
+        if (menu != null && menuMatchesCurrentPlanner(menu) && menu.getWeekStartDate() != null) {
+            return menu.getWeekStartDate();
+        }
+
+        return getPlannerStartDate();
+    }
+
+    private LocalDate getWeeklyEndDate(MenuMingguan menu, LocalDate startDate) {
+        if (menu != null && menuMatchesCurrentPlanner(menu) && menu.getWeekEndDate() != null) {
+            return menu.getWeekEndDate();
+        }
+
+        return getPlannerEndDate(startDate);
+    }
+
+    private BudgetOption getSelectedBudgetOption() {
+        return plannerBudgetCombo != null && plannerBudgetCombo.getValue() != null
+                ? plannerBudgetCombo.getValue()
+                : FALLBACK_BUDGET;
+    }
+
+    private LocalDate getPlannerStartDate() {
+        if (plannerStartDatePicker != null && plannerStartDatePicker.getValue() != null) {
+            return plannerStartDatePicker.getValue();
+        }
+
+        try {
+            return LocalDate.parse(plannerPreferences.get("startDate", getSelectedBudgetOption().periodStart().toString()));
+        } catch (Exception e) {
+            return getSelectedBudgetOption().periodStart();
+        }
+    }
+
+    private LocalDate getPlannerEndDate(LocalDate startDate) {
+        LocalDate fallbackEnd = startDate == null ? getSelectedBudgetOption().periodEnd() : startDate.plusDays(6);
+        if (plannerEndDatePicker != null && plannerEndDatePicker.getValue() != null) {
+            LocalDate pickerEnd = plannerEndDatePicker.getValue();
+            return pickerEnd.isBefore(startDate) ? fallbackEnd : pickerEnd;
+        }
+
+        try {
+            LocalDate savedEnd = LocalDate.parse(plannerPreferences.get("endDate", fallbackEnd.toString()));
+            return savedEnd.isBefore(startDate) ? fallbackEnd : savedEnd;
+        } catch (Exception e) {
+            return fallbackEnd;
+        }
+    }
+
+    private int getPlannerMainMeals() {
+        return plannerPreferences.getInt("mainMealsPerDay", getSelectedMainMeals());
+    }
+
+    private int getPlannerSnacks() {
+        return plannerPreferences.getInt("snacksPerDay", getSelectedSnacks());
+    }
+
+    private String formatDateRangeShort(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            return "-";
+        }
+
+        return startDate.format(PREVIEW_DAY_FORMATTER) + " - " + endDate.format(PREVIEW_DAY_FORMATTER);
     }
     private void setupFamilyTable() {
         familyMemberTable.setItems(familyMembers);
@@ -1385,6 +2081,12 @@ public class DashboardController {
         private static String formatAmount(double amount) {
             return "Rp" + String.format(INDONESIAN_LOCALE, "%,.0f", amount).replace(',', '.');
         }
+    }
+
+    private record WeeklySlotFormResult(boolean eatingOut, Integer recipeId, double outsideCost) {
+    }
+
+    private record MealSlotDefinition(String key, String label) {
     }
 
     private static class MultilineTextCell extends TableCell<FamilyMember, String> {
