@@ -5,7 +5,7 @@ import java.time.LocalDate;
 public class SlotMakan {
     private int slotId;
     private int menuId;
-    private int recipeId;
+    private Integer recipeId;
     private LocalDate mealDate;
     private String mealTime;
     private boolean eatingOut;
@@ -14,7 +14,7 @@ public class SlotMakan {
     public SlotMakan() {
     }
 
-    public SlotMakan(int slotId, int menuId, int recipeId, LocalDate mealDate, String mealTime, boolean eatingOut, double outsideCost) {
+    public SlotMakan(int slotId, int menuId, Integer recipeId, LocalDate mealDate, String mealTime, boolean eatingOut, double outsideCost) {
         this.slotId = slotId;
         this.menuId = menuId;
         this.recipeId = recipeId;
@@ -40,11 +40,11 @@ public class SlotMakan {
         this.menuId = menuId;
     }
 
-    public int getRecipeId() {
+    public Integer getRecipeId() {
         return recipeId;
     }
 
-    public void setRecipeId(int recipeId) {
+    public void setRecipeId(Integer recipeId) {
         this.recipeId = recipeId;
     }
 

@@ -235,7 +235,7 @@ DROP TABLE IF EXISTS `meal_slot`;
 CREATE TABLE `meal_slot` (
   `slot_id` int NOT NULL AUTO_INCREMENT,
   `menu_id` int NOT NULL,
-  `recipe_id` int NOT NULL,
+  `recipe_id` int DEFAULT NULL,
   `meal_date` date NOT NULL,
   `meal_time` varchar(50) NOT NULL,
   `is_eating_out` tinyint(1) NOT NULL DEFAULT '0',
@@ -514,3 +514,26 @@ ALTER TABLE `shopping_planner`
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-05-05 23:22:41
+
+-- UC09: Mendukung slot makan di luar tanpa recipe_id
+ALTER TABLE `meal_slot`
+MODIFY COLUMN `recipe_id` INT NULL;
+
+UPDATE `meal_slot`
+SET `recipe_id` = NULL
+WHERE `is_eating_out` = 1;
+
+ALTER TABLE `meal_slot`
+DROP FOREIGN KEY `fk_ms_recipe`;
+
+ALTER TABLE `meal_slot`
+ADD CONSTRAINT `fk_ms_recipe`
+FOREIGN KEY (`recipe_id`) REFERENCES `recipe` (`recipe_id`);
+
+ALTER TABLE `meal_slot`
+ADD CONSTRAINT `chk_ms_recipe_or_eating_out`
+CHECK (
+    (`is_eating_out` = 0 AND `recipe_id` IS NOT NULL)
+    OR
+    (`is_eating_out` = 1 AND `recipe_id` IS NULL)
+);
