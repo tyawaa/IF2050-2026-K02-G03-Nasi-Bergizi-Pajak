@@ -23,7 +23,7 @@ public class DashboardController {
             nama += " " + akun.getLastName();
         }
 
-        welcomeLabel.setText("Halo, " + nama + "!");
+        welcomeLabel.setText(nama);
         emailLabel.setText(akun.getEmail());
     }
 
