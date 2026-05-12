@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.text.NumberFormat;
+import java.util.Locale;
+import java.sql.SQLException;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -24,6 +27,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.collections.ObservableList;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -32,6 +36,7 @@ import nasi_bergizi_pajak.app.AppNavigator;
 import nasi_bergizi_pajak.dao.FamilyMemberDAO;
 import nasi_bergizi_pajak.model.Akun;
 import nasi_bergizi_pajak.model.FamilyMember;
+import nasi_bergizi_pajak.model.RekomendasiMenu;
 
 public class DashboardController {
     @FXML private Label welcomeLabel;
@@ -58,8 +63,24 @@ public class DashboardController {
     @FXML private TableColumn<FamilyMember, String> allergyColumn;
     @FXML private TableColumn<FamilyMember, FamilyMember> actionColumn;
 
+    @FXML private Button recommendationNavButton;
+    @FXML private VBox recommendationPage;
+    @FXML private Label recommendationCountLabel;
+    @FXML private Label recommendationStatusLabel;
+    @FXML private TableView<RekomendasiMenu> recommendationTable;
+    @FXML private TableColumn<RekomendasiMenu, String> recommendationRecipeColumn;
+    @FXML private TableColumn<RekomendasiMenu, String> recommendationServingColumn;
+    @FXML private TableColumn<RekomendasiMenu, String> recommendationPriceColumn;
+    @FXML private TableColumn<RekomendasiMenu, String> recommendationNutritionColumn;
+    @FXML private TableColumn<RekomendasiMenu, String> recommendationBudgetColumn;
+    @FXML private TableColumn<RekomendasiMenu, String> recommendationStockColumn;
+    @FXML private TableColumn<RekomendasiMenu, String> recommendationScoreColumn;
+
     private final FamilyMemberDAO familyMemberDAO = new FamilyMemberDAO();
     private final ObservableList<FamilyMember> familyMembers = FXCollections.observableArrayList();
+    private final ObservableList<RekomendasiMenu> recommendations = FXCollections.observableArrayList();
+    private final RekomendasiController rekomendasiController = new RekomendasiController();
+    private final NumberFormat rupiahFormat = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
     private Akun currentUser;
 
     @FXML
@@ -139,16 +160,29 @@ public class DashboardController {
         refreshFamilyMembers();
     }
 
+
+    @FXML
+    private void showRecommendationPage() {
+        pageTitleLabel.setText("Rekomendasi Menu");
+        showPage(recommendationPage);
+        setActiveNav(recommendationNavButton);
+        refreshRecommendations();
+    }
     private void showPage(VBox page) {
         dashboardPage.setVisible(page == dashboardPage);
         dashboardPage.setManaged(page == dashboardPage);
+
         familyProfilePage.setVisible(page == familyProfilePage);
         familyProfilePage.setManaged(page == familyProfilePage);
+
+        recommendationPage.setVisible(page == recommendationPage);
+        recommendationPage.setManaged(page == recommendationPage);
     }
 
     private void setActiveNav(Button activeButton) {
         setNavClass(dashboardNavButton, activeButton == dashboardNavButton);
         setNavClass(familyProfileNavButton, activeButton == familyProfileNavButton);
+        setNavClass(recommendationNavButton, activeButton == recommendationNavButton);
     }
 
     private void setNavClass(Button button, boolean active) {
@@ -156,6 +190,73 @@ public class DashboardController {
         button.getStyleClass().add(active ? "userdash-nav-active" : "userdash-nav-button");
     }
 
+    private void setupRecommendationTable() {
+        recommendationTable.setItems(recommendations);
+        recommendationTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+
+        recommendationRecipeColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(data.getValue().getRecipe().getName()));
+
+        recommendationServingColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(String.valueOf(data.getValue().getRecipe().getServingSize())));
+
+        recommendationPriceColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(rupiahFormat.format(data.getValue().getEstimasiHarga())));
+
+        recommendationNutritionColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(formatStatus(data.getValue().getStatus())));
+
+        recommendationBudgetColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(formatStatus(data.getValue().getStatusBudget())));
+
+        recommendationStockColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(
+                        formatStatus(data.getValue().getStatusStok())
+                                + " (" + String.format(Locale.US, "%.0f", data.getValue().getPersentaseStok() * 100) + "%)"
+                ));
+
+        recommendationScoreColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(String.format(Locale.US, "%.2f", data.getValue().getSkor())));
+    }
+
+    @FXML
+    private void handleRefreshRecommendations() {
+        refreshRecommendations();
+    }
+
+    private void refreshRecommendations() {
+        if (currentUser == null) {
+            recommendations.clear();
+            recommendationCountLabel.setText("0 menu");
+            recommendationStatusLabel.setText("User tidak ditemukan");
+            return;
+        }
+
+        try {
+            List<RekomendasiMenu> hasil = rekomendasiController.buatRekomendasiMenu(currentUser.getUserId());
+            recommendations.setAll(hasil);
+            recommendationCountLabel.setText(hasil.size() + " menu");
+            recommendationStatusLabel.setText(hasil.isEmpty() ? "Belum ada data cocok" : "Rekomendasi siap");
+        } catch (IllegalStateException e) {
+            recommendations.clear();
+            recommendationCountLabel.setText("0 menu");
+            recommendationStatusLabel.setText("Data belum lengkap");
+            showWarning("Rekomendasi belum tersedia", e.getMessage());
+        } catch (SQLException e) {
+            recommendations.clear();
+            recommendationCountLabel.setText("0 menu");
+            recommendationStatusLabel.setText("Gagal memuat");
+            showError("Gagal memuat rekomendasi", e.getMessage());
+        }
+    }
+
+    private String formatStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return "-";
+        }
+
+        return status.replace("_", " ");
+    }
     private void refreshFamilyMembers() {
         if (currentUser == null) {
             familyMembers.clear();
