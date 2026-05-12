@@ -37,6 +37,8 @@ import nasi_bergizi_pajak.dao.FamilyMemberDAO;
 import nasi_bergizi_pajak.model.Akun;
 import nasi_bergizi_pajak.model.FamilyMember;
 import nasi_bergizi_pajak.model.RekomendasiMenu;
+import nasi_bergizi_pajak.model.MenuMingguan;
+import nasi_bergizi_pajak.model.SlotMakan;
 
 public class DashboardController {
     @FXML private Label welcomeLabel;
@@ -63,6 +65,23 @@ public class DashboardController {
     @FXML private TableColumn<FamilyMember, String> allergyColumn;
     @FXML private TableColumn<FamilyMember, FamilyMember> actionColumn;
 
+    @FXML private Button weeklyMenuNavButton;
+    @FXML private VBox weeklyMenuPage;
+    @FXML private Label weeklyMenuCountLabel;
+    @FXML private Label weeklySlotCountLabel;
+    @FXML private Label weeklyMenuTotalLabel;
+    @FXML private Label weeklyMenuStatusLabel;
+    @FXML private TableView<MenuMingguan> weeklyMenuTable;
+    @FXML private TableColumn<MenuMingguan, String> weeklyMenuIdColumn;
+    @FXML private TableColumn<MenuMingguan, String> weeklyMenuPeriodColumn;
+    @FXML private TableColumn<MenuMingguan, String> weeklyMenuEstimationColumn;
+    @FXML private TableColumn<MenuMingguan, String> weeklyMenuBudgetStatusColumn;
+    @FXML private TableView<SlotMakan> weeklySlotTable;
+    @FXML private TableColumn<SlotMakan, String> weeklySlotDateColumn;
+    @FXML private TableColumn<SlotMakan, String> weeklySlotTimeColumn;
+    @FXML private TableColumn<SlotMakan, String> weeklySlotTypeColumn;
+    @FXML private TableColumn<SlotMakan, String> weeklySlotCostColumn;
+
     @FXML private Button recommendationNavButton;
     @FXML private VBox recommendationPage;
     @FXML private Label recommendationCountLabel;
@@ -78,6 +97,9 @@ public class DashboardController {
 
     private final FamilyMemberDAO familyMemberDAO = new FamilyMemberDAO();
     private final ObservableList<FamilyMember> familyMembers = FXCollections.observableArrayList();
+    private final ObservableList<MenuMingguan> weeklyMenus = FXCollections.observableArrayList();
+    private final ObservableList<SlotMakan> weeklySlots = FXCollections.observableArrayList();
+    private final MenuController menuController = new MenuController();
     private final ObservableList<RekomendasiMenu> recommendations = FXCollections.observableArrayList();
     private final RekomendasiController rekomendasiController = new RekomendasiController();
     private final NumberFormat rupiahFormat = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
@@ -88,6 +110,7 @@ public class DashboardController {
         currentUser = AppNavigator.getCurrentUser();
         initializeUserInfo();
         setupFamilyTable();
+        setupWeeklyMenuTables();
         refreshFamilyMembers();
     }
 
@@ -107,6 +130,107 @@ public class DashboardController {
         emailLabel.setText(currentUser.getEmail());
     }
 
+    private void setupWeeklyMenuTables() {
+        weeklyMenuTable.setItems(weeklyMenus);
+        weeklySlotTable.setItems(weeklySlots);
+
+        weeklyMenuTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        weeklySlotTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+
+        weeklyMenuIdColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(String.valueOf(data.getValue().getMenuId())));
+
+        weeklyMenuPeriodColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(
+                        data.getValue().getWeekStartDate() + " s.d. " + data.getValue().getWeekEndDate()
+                ));
+
+        weeklyMenuEstimationColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(rupiahFormat.format(data.getValue().getTotalEstimation())));
+
+        weeklyMenuBudgetStatusColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(formatStatus(data.getValue().getStatusBudget())));
+
+        weeklySlotDateColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(String.valueOf(data.getValue().getMealDate())));
+
+        weeklySlotTimeColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(formatStatus(data.getValue().getMealTime())));
+
+        weeklySlotTypeColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(data.getValue().isEatingOut() ? "Makan di luar" : "Resep #" + data.getValue().getRecipeId()));
+
+        weeklySlotCostColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(
+                        data.getValue().isEatingOut()
+                                ? rupiahFormat.format(data.getValue().getOutsideCost())
+                                : "-"
+                ));
+
+        weeklyMenuTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, selectedMenu) -> {
+            if (selectedMenu != null) {
+                loadWeeklySlots(selectedMenu);
+            }
+        });
+    }
+
+    @FXML
+    private void handleRefreshWeeklyMenus() {
+        refreshWeeklyMenus();
+    }
+
+    private void refreshWeeklyMenus() {
+        if (currentUser == null) {
+            weeklyMenus.clear();
+            weeklySlots.clear();
+            weeklyMenuCountLabel.setText("0 menu");
+            weeklySlotCountLabel.setText("0 slot");
+            weeklyMenuTotalLabel.setText(rupiahFormat.format(0));
+            weeklyMenuStatusLabel.setText("User tidak ditemukan");
+            return;
+        }
+
+        try {
+            List<MenuMingguan> menus = menuController.ambilMenuMingguanPengguna(currentUser.getUserId());
+            weeklyMenus.setAll(menus);
+            weeklyMenuCountLabel.setText(menus.size() + " menu");
+
+            if (menus.isEmpty()) {
+                weeklySlots.clear();
+                weeklySlotCountLabel.setText("0 slot");
+                weeklyMenuTotalLabel.setText(rupiahFormat.format(0));
+                weeklyMenuStatusLabel.setText("Belum ada menu");
+                return;
+            }
+
+            weeklyMenuTable.getSelectionModel().selectFirst();
+            loadWeeklySlots(menus.get(0));
+        } catch (SQLException e) {
+            weeklyMenus.clear();
+            weeklySlots.clear();
+            weeklyMenuCountLabel.setText("0 menu");
+            weeklySlotCountLabel.setText("0 slot");
+            weeklyMenuTotalLabel.setText(rupiahFormat.format(0));
+            weeklyMenuStatusLabel.setText("Gagal memuat");
+            showError("Gagal memuat menu mingguan", e.getMessage());
+        }
+    }
+
+    private void loadWeeklySlots(MenuMingguan menu) {
+        try {
+            List<SlotMakan> slots = menuController.ambilSlotMakan(menu.getMenuId());
+            weeklySlots.setAll(slots);
+            weeklySlotCountLabel.setText(slots.size() + " slot");
+            weeklyMenuTotalLabel.setText(rupiahFormat.format(menu.getTotalEstimation()));
+            weeklyMenuStatusLabel.setText(formatStatus(menu.getStatusBudget()));
+        } catch (SQLException e) {
+            weeklySlots.clear();
+            weeklySlotCountLabel.setText("0 slot");
+            weeklyMenuTotalLabel.setText(rupiahFormat.format(menu.getTotalEstimation()));
+            weeklyMenuStatusLabel.setText("Gagal memuat slot");
+            showError("Gagal memuat slot menu", e.getMessage());
+        }
+    }
     private void setupFamilyTable() {
         familyMemberTable.setItems(familyMembers);
         familyMemberTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
@@ -161,6 +285,14 @@ public class DashboardController {
     }
 
 
+
+    @FXML
+    private void showWeeklyMenuPage() {
+        pageTitleLabel.setText("Menu Mingguan");
+        showPage(weeklyMenuPage);
+        setActiveNav(weeklyMenuNavButton);
+        refreshWeeklyMenus();
+    }
     @FXML
     private void showRecommendationPage() {
         pageTitleLabel.setText("Rekomendasi Menu");
@@ -175,6 +307,9 @@ public class DashboardController {
         familyProfilePage.setVisible(page == familyProfilePage);
         familyProfilePage.setManaged(page == familyProfilePage);
 
+        weeklyMenuPage.setVisible(page == weeklyMenuPage);
+        weeklyMenuPage.setManaged(page == weeklyMenuPage);
+
         recommendationPage.setVisible(page == recommendationPage);
         recommendationPage.setManaged(page == recommendationPage);
     }
@@ -182,6 +317,7 @@ public class DashboardController {
     private void setActiveNav(Button activeButton) {
         setNavClass(dashboardNavButton, activeButton == dashboardNavButton);
         setNavClass(familyProfileNavButton, activeButton == familyProfileNavButton);
+        setNavClass(weeklyMenuNavButton, activeButton == weeklyMenuNavButton);
         setNavClass(recommendationNavButton, activeButton == recommendationNavButton);
     }
 

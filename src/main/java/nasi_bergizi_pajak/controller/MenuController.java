@@ -7,7 +7,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import nasi_bergizi_pajak.dao.MenuMingguanDAO;
-import nasi_bergizi_pajak.dao.ResepDAO;
 import nasi_bergizi_pajak.model.MenuMingguan;
 import nasi_bergizi_pajak.model.RekomendasiMenu;
 import nasi_bergizi_pajak.model.SlotMakan;
@@ -21,12 +20,10 @@ public class MenuController {
     );
 
     private final MenuMingguanDAO menuMingguanDAO;
-    private final ResepDAO resepDAO;
     private final RekomendasiController rekomendasiController;
 
     public MenuController() {
         this.menuMingguanDAO = new MenuMingguanDAO();
-        this.resepDAO = new ResepDAO();
         this.rekomendasiController = new RekomendasiController();
     }
 
@@ -151,10 +148,6 @@ public class MenuController {
 
     public void hitungUlangEstimasiMenu(int menuId) throws SQLException {
         menuMingguanDAO.hitungUlangEstimasiDanStatus(menuId);
-    }
-
-    public double hitungEstimasiBiayaResep(int recipeId) throws SQLException {
-        return resepDAO.hitungEstimasiHargaResep(recipeId);
     }
 
     public List<RekomendasiMenu> tampilkanRekomendasiMenu(int userId) throws SQLException {
