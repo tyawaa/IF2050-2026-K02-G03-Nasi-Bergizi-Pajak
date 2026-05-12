@@ -46,6 +46,10 @@ public final class AppNavigator {
         loadScene("/view/DashboardView.fxml", "Nasi Bergizi Pajak - Dashboard");
     }
 
+    public static void showShoppingPlanner() {
+        loadScene("/view/ShoppingPlannerView.fxml", "Nasi Bergizi Pajak - Planner Belanja");
+    }
+
     private static void loadScene(String fxmlPath, String title) {
         if (stage == null) {
             throw new IllegalStateException("Stage belum diset.");
