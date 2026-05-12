@@ -47,26 +47,37 @@ public final class AppNavigator {
     }
 
     private static void loadScene(String fxmlPath, String title) {
-        if (stage == null) {
-            throw new IllegalStateException("Stage belum diset.");
-        }
-
-        try {
-            URL resource = AppNavigator.class.getResource(fxmlPath);
-            if (resource == null) {
-                throw new IOException("Resource tidak ditemukan: " + fxmlPath);
-            }
-
-            Parent root = FXMLLoader.load(resource);
-            Scene scene = new Scene(root, 1180, 720);
-            stage.setTitle(title);
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            showFatalError("Gagal membuka halaman", e.getMessage());
-            throw new IllegalStateException(e);
-        }
+    if (stage == null) {
+        throw new IllegalStateException("Stage belum diset.");
     }
+
+    try {
+        URL resource = AppNavigator.class.getResource(fxmlPath);
+
+        if (resource == null) {
+            throw new IOException("Resource tidak ditemukan: " + fxmlPath);
+        }
+
+        FXMLLoader loader = new FXMLLoader(resource);
+        Parent root = loader.load();
+
+        Scene scene = new Scene(root, 1180, 720);
+
+        stage.setTitle(title);
+        stage.setScene(scene);
+        stage.show();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+
+        showFatalError(
+            "Gagal membuka halaman",
+            e.getClass().getSimpleName() + "\n\n" + e.getMessage()
+        );
+
+        throw new IllegalStateException(e);
+    }
+}
 
     public static void showFatalError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -75,4 +86,9 @@ public final class AppNavigator {
         alert.setContentText(message == null ? "Terjadi kesalahan tidak diketahui." : message);
         alert.showAndWait();
     }
+
+    public static void showRecipeForm() {
+    loadScene("/view/RecipeFormView.fxml",
+              "Form Resep");
+}
 }

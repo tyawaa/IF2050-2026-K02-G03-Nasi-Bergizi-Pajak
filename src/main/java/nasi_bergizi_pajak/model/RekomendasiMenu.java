@@ -1,29 +1,45 @@
 package nasi_bergizi_pajak.model;
 
 public class RekomendasiMenu {
-    private Resep resep;
+    private Recipe recipe;
     private KebutuhanGizi nilaiGizi;
     private double estimasiHarga;
     private double skor;
     private String status;
+    private String statusBudget;
+    private String statusStok;
+    private double persentaseStok;
 
     public RekomendasiMenu() {
     }
 
-    public RekomendasiMenu(Resep resep, KebutuhanGizi nilaiGizi, double estimasiHarga, double skor, String status) {
-        this.resep = resep;
+    public RekomendasiMenu(Recipe recipe, KebutuhanGizi nilaiGizi, double estimasiHarga,
+                           double skor, String status, String statusBudget,
+                           String statusStok, double persentaseStok) {
+        this.recipe = recipe;
         this.nilaiGizi = nilaiGizi;
         this.estimasiHarga = estimasiHarga;
         this.skor = skor;
         this.status = status;
+        this.statusBudget = statusBudget;
+        this.statusStok = statusStok;
+        this.persentaseStok = persentaseStok;
     }
 
-    public Resep getResep() {
-        return resep;
+    public Recipe getRecipe() {
+        return recipe;
     }
 
-    public void setResep(Resep resep) {
-        this.resep = resep;
+    public void setRecipe(Recipe recipe) {
+        this.recipe = recipe;
+    }
+
+    public Recipe getResep() {
+        return recipe;
+    }
+
+    public void setResep(Recipe recipe) {
+        this.recipe = recipe;
     }
 
     public KebutuhanGizi getNilaiGizi() {
@@ -56,5 +72,29 @@ public class RekomendasiMenu {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getStatusBudget() {
+        return statusBudget;
+    }
+
+    public void setStatusBudget(String statusBudget) {
+        this.statusBudget = statusBudget;
+    }
+
+    public String getStatusStok() {
+        return statusStok;
+    }
+
+    public void setStatusStok(String statusStok) {
+        this.statusStok = statusStok;
+    }
+
+    public double getPersentaseStok() {
+        return persentaseStok;
+    }
+
+    public void setPersentaseStok(double persentaseStok) {
+        this.persentaseStok = persentaseStok;
     }
 }

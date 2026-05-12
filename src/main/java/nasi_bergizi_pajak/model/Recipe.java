@@ -1,23 +1,24 @@
 package nasi_bergizi_pajak.model;
 
-public class Resep {
+public class Recipe {
     private int recipeId;
-    private String nama;
-    private String deskripsi;
+    private String name;
+    private String description;
     private int servingSize;
     private String status;
 
-    public Resep() {
-    }
+    // Constructors
+    public Recipe() {}
 
-    public Resep(int recipeId, String nama, String deskripsi, int servingSize, String status) {
+    public Recipe(int recipeId, String name, String description, int servingSize, String status) {
         this.recipeId = recipeId;
-        this.nama = nama;
-        this.deskripsi = deskripsi;
+        this.name = name;
+        this.description = description;
         this.servingSize = servingSize;
         this.status = status;
     }
 
+    // Getters and Setters
     public int getRecipeId() {
         return recipeId;
     }
@@ -26,20 +27,20 @@ public class Resep {
         this.recipeId = recipeId;
     }
 
-    public String getNama() {
-        return nama;
+    public String getName() {
+        return name;
     }
 
-    public void setNama(String nama) {
-        this.nama = nama;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getDeskripsi() {
-        return deskripsi;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDeskripsi(String deskripsi) {
-        this.deskripsi = deskripsi;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public int getServingSize() {
@@ -56,5 +57,10 @@ public class Resep {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }
