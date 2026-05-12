@@ -5,7 +5,7 @@ import javafx.scene.control.Label;
 import nasi_bergizi_pajak.app.AppNavigator;
 import nasi_bergizi_pajak.model.Akun;
 
-public class AdminDashboardController {
+public class DashboardController {
     @FXML private Label welcomeLabel;
     @FXML private Label emailLabel;
 
@@ -13,7 +13,7 @@ public class AdminDashboardController {
     private void initialize() {
         Akun akun = AppNavigator.getCurrentUser();
         if (akun == null) {
-            welcomeLabel.setText("Dashboard Admin");
+            welcomeLabel.setText("Selamat datang");
             emailLabel.setText("");
             return;
         }
@@ -23,13 +23,8 @@ public class AdminDashboardController {
             nama += " " + akun.getLastName();
         }
 
-        welcomeLabel.setText("Halo Admin, " + nama + "!");
+        welcomeLabel.setText("Halo, " + nama + "!");
         emailLabel.setText(akun.getEmail());
-    }
-
-    @FXML
-    private void handleKitchenStock() {
-        AppNavigator.showKitchenStock();
     }
 
     @FXML

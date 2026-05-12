@@ -31,6 +31,7 @@
                 <Label text="Dashboard admin" styleClass="dashboard-subtitle"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Stok Dapur" onAction="#handleKitchenStock" styleClass="button-secondary"/>
             <Button text="Logout" onAction="#handleLogout" styleClass="button-outline"/>
         </HBox>
     </top>
