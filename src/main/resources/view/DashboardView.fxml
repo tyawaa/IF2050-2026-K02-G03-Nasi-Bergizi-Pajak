@@ -52,7 +52,7 @@
             <Region VBox.vgrow="ALWAYS"/>
 
             <VBox spacing="8" styleClass="userdash-sidebar-footer">
-                <Button text="Pengaturan" maxWidth="Infinity" styleClass="userdash-nav-button"/>
+                <Button fx:id="settingsNavButton" text="Pengaturan" maxWidth="Infinity" onAction="#showSettingsPage" styleClass="userdash-nav-button"/>
                 <Button text="Logout" maxWidth="Infinity" onAction="#handleLogout" styleClass="userdash-nav-button"/>
             </VBox>
         </VBox>
@@ -71,13 +71,15 @@
                 <StackPane styleClass="userdash-bell">
                     <Label text="3" styleClass="userdash-bell-badge"/>
                 </StackPane>
-                <StackPane styleClass="userdash-avatar">
-                    <Label text="N" styleClass="userdash-avatar-text"/>
-                </StackPane>
-                <VBox spacing="0">
-                    <Label fx:id="welcomeLabel" text="Budi" styleClass="userdash-user-name"/>
-                    <Label fx:id="emailLabel" text="" styleClass="userdash-user-email"/>
-                </VBox>
+                <HBox fx:id="userProfileMenuButton" alignment="CENTER_LEFT" spacing="8" onMouseClicked="#toggleProfileMenu" styleClass="userdash-profile-trigger">
+                    <StackPane styleClass="userdash-avatar">
+                        <Label fx:id="topbarAvatarText" text="N" styleClass="userdash-avatar-text"/>
+                    </StackPane>
+                    <VBox spacing="0">
+                        <Label fx:id="welcomeLabel" text="Budi" styleClass="userdash-user-name"/>
+                        <Label fx:id="emailLabel" text="" styleClass="userdash-user-email"/>
+                    </VBox>
+                </HBox>
             </HBox>
 
             <ScrollPane fitToWidth="true"
@@ -431,56 +433,143 @@
                         </HBox>
                     </VBox>
 
-                    
-                    <VBox fx:id="recommendationPage" spacing="18" visible="false" managed="false" styleClass="userdash-content">
-                        <padding>
-                            <Insets top="18" right="22" bottom="28" left="22"/>
-                        </padding>
+                        <VBox fx:id="settingsPage" spacing="18" visible="false" managed="false" styleClass="userdash-content">
+                            <padding>
+                                <Insets top="18" right="22" bottom="28" left="22"/>
+                            </padding>
 
-                        <HBox alignment="CENTER_LEFT">
-                            <VBox spacing="2">
-                                <Label text="Rekomendasi Menu" styleClass="userdash-section-title"/>
-                                <Label text="Rekomendasi berdasarkan profil keluarga, budget aktif, stok dapur, dan data resep admin."
-                                       styleClass="userdash-section-subtitle"/>
-                            </VBox>
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="Muat Ulang Rekomendasi"
-                                    onAction="#handleRefreshRecommendations"
-                                    styleClass="family-primary-button"/>
-                        </HBox>
+                            <Label fx:id="settingsToastLabel" maxWidth="Infinity" visible="false" managed="false" wrapText="true" styleClass="settings-toast"/>
 
-                        <HBox spacing="14" fillHeight="true">
-                            <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box">
-                                <Label text="Total Rekomendasi" styleClass="userdash-budget-label"/>
-                                <Label fx:id="recommendationCountLabel" text="0 menu" styleClass="userdash-budget-value-dark"/>
-                            </VBox>
+                            <HBox spacing="8" styleClass="settings-tab-bar">
+                                <Button fx:id="profileSettingsTabButton" text="Profil" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#showProfileSettingsTab" styleClass="settings-tab-active"/>
+                                <Button fx:id="securitySettingsTabButton" text="Keamanan" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#showSecuritySettingsTab" styleClass="settings-tab-button"/>
+                            </HBox>
 
-                            <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box-green">
-                                <Label text="Status Fitur" styleClass="userdash-budget-label"/>
-                                <Label fx:id="recommendationStatusLabel" text="Siap dimuat" styleClass="userdash-budget-value-green"/>
-                            </VBox>
-                        </HBox>
+                            <StackPane>
+                                <VBox fx:id="profileSettingsPane" spacing="22" styleClass="settings-card">
+                                    <VBox spacing="4">
+                                        <Label text="Informasi Profil" styleClass="userdash-section-title"/>
+                                        <Label text="Perbarui informasi profil keluarga Anda" styleClass="userdash-section-subtitle"/>
+                                    </VBox>
 
-                        <VBox spacing="14" styleClass="userdash-panel">
-                            <Label text="Daftar Rekomendasi" styleClass="userdash-section-title"/>
+                                    <HBox alignment="CENTER_LEFT" spacing="18" styleClass="settings-avatar-row">
+                                        <StackPane styleClass="settings-avatar-large">
+                                            <ImageView fx:id="settingsAvatarImage" fitWidth="94" fitHeight="94" preserveRatio="true" visible="false" managed="false"/>
+                                            <Label fx:id="settingsAvatarInitial" text="N" styleClass="settings-avatar-initial"/>
+                                        </StackPane>
+                                        <VBox spacing="6">
+                                            <Button text="Ubah Foto" onAction="#handleChooseProfilePhoto" styleClass="settings-secondary-button"/>
+                                            <Label text="JPG atau PNG maksimal 2MB" styleClass="settings-help-text"/>
+                                        </VBox>
+                                    </HBox>
 
-                            <TableView fx:id="recommendationTable"
-                                       prefHeight="420"
-                                       minHeight="300"
-                                       styleClass="family-table">
-                                <columns>
-                                    <TableColumn fx:id="recommendationRecipeColumn" text="Resep" prefWidth="230"/>
-                                    <TableColumn fx:id="recommendationServingColumn" text="Porsi" prefWidth="90"/>
-                                    <TableColumn fx:id="recommendationPriceColumn" text="Estimasi Harga" prefWidth="150"/>
-                                    <TableColumn fx:id="recommendationNutritionColumn" text="Status Gizi" prefWidth="125"/>
-                                    <TableColumn fx:id="recommendationBudgetColumn" text="Budget" prefWidth="160"/>
-                                    <TableColumn fx:id="recommendationStockColumn" text="Stok" prefWidth="160"/>
-                                    <TableColumn fx:id="recommendationScoreColumn" text="Skor" prefWidth="100"/>
-                                </columns>
-                            </TableView>
+                                    <GridPane hgap="18" vgap="16">
+                                        <columnConstraints>
+                                            <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                            <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                        </columnConstraints>
+
+                                        <VBox spacing="7" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                            <Label text="Nama Keluarga" styleClass="settings-label"/>
+                                            <TextField fx:id="settingsFamilyNameField" maxWidth="Infinity" promptText="Keluarga Budi" styleClass="settings-input"/>
+                                        </VBox>
+                                        <VBox spacing="7" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                            <Label text="Email" styleClass="settings-label"/>
+                                            <TextField fx:id="settingsEmailField" maxWidth="Infinity" promptText="budi@email.com" styleClass="settings-input"/>
+                                        </VBox>
+                                        <VBox spacing="7" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                            <Label text="Nomor Telepon" styleClass="settings-label"/>
+                                            <TextField fx:id="settingsPhoneField" maxWidth="Infinity" promptText="+62 812 3456 7890" styleClass="settings-input"/>
+                                        </VBox>
+                                        <VBox spacing="7" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                            <Label text="Lokasi" styleClass="settings-label"/>
+                                            <TextField fx:id="settingsLocationField" maxWidth="Infinity" promptText="Jakarta" styleClass="settings-input"/>
+                                        </VBox>
+                                    </GridPane>
+
+                                    <HBox alignment="CENTER_RIGHT">
+                                        <Button text="Simpan Perubahan" onAction="#handleSaveProfileSettings" styleClass="settings-primary-button"/>
+                                    </HBox>
+                                </VBox>
+
+                                <VBox fx:id="securitySettingsPane" spacing="22" visible="false" managed="false" styleClass="settings-card">
+                                    <VBox spacing="4">
+                                        <Label text="Keamanan Akun" styleClass="userdash-section-title"/>
+                                        <Label text="Kelola password dan perlindungan akun Anda" styleClass="userdash-section-subtitle"/>
+                                    </VBox>
+
+                                    <VBox spacing="14" styleClass="settings-section">
+                                        <Label text="Ubah Password" styleClass="settings-subtitle"/>
+                                        <VBox spacing="7">
+                                            <Label text="Password Lama" styleClass="settings-label"/>
+                                            <PasswordField fx:id="oldPasswordField" maxWidth="Infinity" promptText="Masukkan password lama" styleClass="settings-input"/>
+                                        </VBox>
+                                        <VBox spacing="7">
+                                            <Label text="Password Baru" styleClass="settings-label"/>
+                                            <PasswordField fx:id="newPasswordField" maxWidth="Infinity" promptText="Masukkan password baru" styleClass="settings-input"/>
+                                        </VBox>
+                                        <VBox spacing="7">
+                                            <Label text="Konfirmasi Password Baru" styleClass="settings-label"/>
+                                            <PasswordField fx:id="confirmPasswordField" maxWidth="Infinity" promptText="Konfirmasi password baru" styleClass="settings-input"/>
+                                        </VBox>
+                                        <Label fx:id="passwordErrorLabel" visible="false" managed="false" wrapText="true" styleClass="settings-error-text"/>
+                                        <HBox alignment="CENTER_RIGHT">
+                                            <Button text="Ubah Password" onAction="#handleChangePassword" styleClass="settings-primary-button"/>
+                                        </HBox>
+                                    </VBox>
+                                </VBox>
+                            </StackPane>
                         </VBox>
-                    </VBox>
-</StackPane>
+
+                        <VBox fx:id="recommendationPage" spacing="18" visible="false" managed="false" styleClass="userdash-content">
+                            <padding>
+                                <Insets top="18" right="22" bottom="28" left="22"/>
+                            </padding>
+
+                            <HBox alignment="CENTER_LEFT">
+                                <VBox spacing="2">
+                                    <Label text="Rekomendasi Menu" styleClass="userdash-section-title"/>
+                                    <Label text="Rekomendasi berdasarkan profil keluarga, budget aktif, stok dapur, dan data resep admin."
+                                           styleClass="userdash-section-subtitle"/>
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button text="Muat Ulang Rekomendasi"
+                                        onAction="#handleRefreshRecommendations"
+                                        styleClass="family-primary-button"/>
+                            </HBox>
+
+                            <HBox spacing="14" fillHeight="true">
+                                <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box">
+                                    <Label text="Total Rekomendasi" styleClass="userdash-budget-label"/>
+                                    <Label fx:id="recommendationCountLabel" text="0 menu" styleClass="userdash-budget-value-dark"/>
+                                </VBox>
+
+                                <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box-green">
+                                    <Label text="Status Fitur" styleClass="userdash-budget-label"/>
+                                    <Label fx:id="recommendationStatusLabel" text="Siap dimuat" styleClass="userdash-budget-value-green"/>
+                                </VBox>
+                            </HBox>
+
+                            <VBox spacing="14" styleClass="userdash-panel">
+                                <Label text="Daftar Rekomendasi" styleClass="userdash-section-title"/>
+
+                                <TableView fx:id="recommendationTable"
+                                           prefHeight="420"
+                                           minHeight="300"
+                                           styleClass="family-table">
+                                    <columns>
+                                        <TableColumn fx:id="recommendationRecipeColumn" text="Resep" prefWidth="230"/>
+                                        <TableColumn fx:id="recommendationServingColumn" text="Porsi" prefWidth="90"/>
+                                        <TableColumn fx:id="recommendationPriceColumn" text="Estimasi Harga" prefWidth="150"/>
+                                        <TableColumn fx:id="recommendationNutritionColumn" text="Status Gizi" prefWidth="125"/>
+                                        <TableColumn fx:id="recommendationBudgetColumn" text="Budget" prefWidth="160"/>
+                                        <TableColumn fx:id="recommendationStockColumn" text="Stok" prefWidth="160"/>
+                                        <TableColumn fx:id="recommendationScoreColumn" text="Skor" prefWidth="100"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                        </VBox>
+                    </StackPane>
                 </content>
             </ScrollPane>
         </VBox>
