@@ -9,6 +9,10 @@ public class Ingredient {
     // Constructors
     public Ingredient() {}
 
+    public Ingredient(int ingredientId, String name, String unit) {
+        this(ingredientId, name, unit, 0);
+    }
+
     public Ingredient(int ingredientId, String name, String unit, double pricePerUnit) {
         this.ingredientId = ingredientId;
         this.name = name;

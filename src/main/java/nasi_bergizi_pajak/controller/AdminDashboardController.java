@@ -321,6 +321,20 @@ public class AdminDashboardController {
             }
         }
 
+        NutritionSummary nutritionSummary = summarizeRecipeNutrition(selectedRecipe);
+        VBox nutritionBox = new VBox(8);
+        nutritionBox.getChildren().add(sectionLabel("Informasi Gizi"));
+        VBox caloriesBox = statBox("Kalori", formatNumber(nutritionSummary.calories()) + " kcal", false);
+        caloriesBox.setMaxWidth(Double.MAX_VALUE);
+        nutritionBox.getChildren().addAll(
+                caloriesBox,
+                new HBox(12,
+                        statBox("Protein", formatGram(nutritionSummary.protein()), false),
+                        statBox("Karbo", formatGram(nutritionSummary.carbohydrate()), false)),
+                new HBox(12,
+                        statBox("Lemak", formatGram(nutritionSummary.fat()), false),
+                        statBox("Serat", formatGram(nutritionSummary.fibre()), false)));
+
         recipeDetailCard.getChildren().addAll(
                 verticalGap(16),
                 name,
@@ -328,6 +342,7 @@ public class AdminDashboardController {
                 verticalGap(10),
                 stats,
                 ingredientList,
+                nutritionBox,
                 sectionLabel("Estimasi Biaya"),
                 new Label(formatCurrency(estimateRecipeCost(selectedRecipe))));
     }
@@ -1426,6 +1441,7 @@ public class AdminDashboardController {
     private VBox statBox(String label, String value, boolean status) {
         VBox box = new VBox(4, muted(label), status ? statusBadge(value) : title(value));
         box.getStyleClass().add("admin-stat-box");
+        box.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(box, Priority.ALWAYS);
         return box;
     }
@@ -1640,6 +1656,56 @@ public class AdminDashboardController {
         return ingredient.currentPrice() * convertedQuantity;
     }
 
+    private NutritionSummary summarizeRecipeNutrition(AdminRecipe recipe) {
+        double calories = 0;
+        double protein = 0;
+        double carbohydrate = 0;
+        double fat = 0;
+        double fibre = 0;
+
+        for (AdminRecipeIngredient item : recipe.ingredients()) {
+            AdminNutrition nutrition = nutritionByIngredientId.get(item.ingredientId());
+            if (nutrition == null) {
+                continue;
+            }
+
+            double ratio = nutritionRatio(item, nutrition.per());
+            calories += nutrition.calories() * ratio;
+            protein += nutrition.protein() * ratio;
+            carbohydrate += nutrition.carbohydrate() * ratio;
+            fat += nutrition.fat() * ratio;
+            fibre += nutrition.fibre() * ratio;
+        }
+
+        return new NutritionSummary(calories, protein, carbohydrate, fat, fibre);
+    }
+
+    private double nutritionRatio(AdminRecipeIngredient item, String nutritionUnit) {
+        NutritionBase base = parseNutritionBase(nutritionUnit);
+        double convertedQuantity = UnitOptions.convertQuantity(item.quantity(), item.unit(), base.unit());
+        if (Double.isNaN(convertedQuantity)) {
+            return item.quantity() / base.quantity();
+        }
+        return convertedQuantity / base.quantity();
+    }
+
+    private NutritionBase parseNutritionBase(String value) {
+        String raw = value == null || value.isBlank() ? "100g" : value.trim();
+        String quantityPart = raw.replaceAll("[^0-9.,]", "").replace(",", ".");
+        String unitPart = raw.replaceAll("[0-9.,\\s]", "");
+
+        double quantity = 100;
+        if (!quantityPart.isBlank()) {
+            quantity = Double.parseDouble(quantityPart);
+        }
+        if (quantity <= 0) {
+            quantity = 100;
+        }
+
+        String unit = unitPart.isBlank() ? "gram" : unitPart;
+        return new NutritionBase(quantity, unit);
+    }
+
     private String formatCurrency(double amount) {
         return rupiah.format(amount).replace(",00", "");
     }
@@ -1653,6 +1719,10 @@ public class AdminDashboardController {
 
     private String formatQuantity(double value) {
         return formatNumber(value);
+    }
+
+    private String formatGram(double value) {
+        return String.format(Locale.US, "%.1fg", value);
     }
 
     private String formatDate(LocalDate date) {
@@ -1671,6 +1741,12 @@ public class AdminDashboardController {
     }
 
     private record AdminPriceUpdate(double price, LocalDate effectiveDate) {
+    }
+
+    private record NutritionSummary(double calories, double protein, double carbohydrate, double fat, double fibre) {
+    }
+
+    private record NutritionBase(double quantity, String unit) {
     }
 
     private static final class AdminIngredient {
