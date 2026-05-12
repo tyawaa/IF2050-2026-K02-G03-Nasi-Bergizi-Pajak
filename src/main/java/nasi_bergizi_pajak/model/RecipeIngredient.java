@@ -1,32 +1,28 @@
 package nasi_bergizi_pajak.model;
 
 public class RecipeIngredient {
-
     private int recipeIngredientId;
     private int recipeId;
     private int ingredientId;
-
-    private String ingredientName;
-
-    private double amount;
+    private double quantity;
     private String unit;
 
-    public RecipeIngredient() {
+    // Constructors
+    public RecipeIngredient() {}
+
+    public RecipeIngredient(int recipeIngredientId, int recipeId, int ingredientId, double quantity) {
+        this(recipeIngredientId, recipeId, ingredientId, quantity, "");
     }
 
-    public RecipeIngredient(
-            int ingredientId,
-            String ingredientName,
-            double amount,
-            String unit
-    ) {
-
+    public RecipeIngredient(int recipeIngredientId, int recipeId, int ingredientId, double quantity, String unit) {
+        this.recipeIngredientId = recipeIngredientId;
+        this.recipeId = recipeId;
         this.ingredientId = ingredientId;
-        this.ingredientName = ingredientName;
-        this.amount = amount;
+        this.quantity = quantity;
         this.unit = unit;
     }
 
+    // Getters and Setters
     public int getRecipeIngredientId() {
         return recipeIngredientId;
     }
@@ -51,20 +47,12 @@ public class RecipeIngredient {
         this.ingredientId = ingredientId;
     }
 
-    public String getIngredientName() {
-        return ingredientName;
+    public double getQuantity() {
+        return quantity;
     }
 
-    public void setIngredientName(String ingredientName) {
-        this.ingredientName = ingredientName;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
+    public void setQuantity(double quantity) {
+        this.quantity = quantity;
     }
 
     public String getUnit() {

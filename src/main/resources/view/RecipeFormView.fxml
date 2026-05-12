@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.Region?>
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="nasi_bergizi_pajak.controller.RecipeFormController"
-      spacing="18"
-      prefWidth="520"
+      spacing="16"
+      prefWidth="680"
       styleClass="dialog-root"
       stylesheets="@../auth.css">
 
@@ -23,7 +23,7 @@
                styleClass="section-subtitle"/>
     </VBox>
 
-    <GridPane hgap="14" vgap="14">
+    <GridPane hgap="14" vgap="12">
 
         <columnConstraints>
             <ColumnConstraints prefWidth="120"/>
@@ -69,74 +69,80 @@
                   styleClass="modern-combo"
                   GridPane.rowIndex="3"
                   GridPane.columnIndex="1"/>
-
-        <VBox spacing="14"
-              GridPane.rowIndex="4"
-              GridPane.columnSpan="2">
-
-              <Label text="Bahan Resep"
-                     styleClass="mini-subtitle"/>
-
-              <HBox spacing="10">
-
-                     <ComboBox fx:id="cmbIngredient"
-                            promptText="Pilih bahan"
-                            prefWidth="220"
-                            styleClass="modern-combo"/>
-
-                     <TextField fx:id="txtIngredientAmount"
-                            promptText="Jumlah"
-                            prefWidth="120"
-                            styleClass="modern-input"/>
-
-                     <Button text="Tambah"
-                            onAction="#handleAddIngredient"
-                            styleClass="button-primary"/>
-              </HBox>
-
-              <TableView fx:id="recipeIngredientTable"
-                            prefHeight="180"
-                            styleClass="modern-table">
-
-                     <columns>
-
-                     <TableColumn fx:id="colIngredientName"
-                                   text="Bahan"
-                                   prefWidth="220"/>
-
-                     <TableColumn fx:id="colIngredientAmount"
-                                   text="Jumlah"
-                                   prefWidth="120"/>
-
-                     <TableColumn fx:id="colIngredientUnit"
-                                   text="Unit"
-                                   prefWidth="120"/>
-
-                     <TableColumn fx:id="colIngredientAction"
-                                   text="Aksi"
-                                   prefWidth="100"/>
-                     </columns>
-              </TableView>
-              </VBox>
     </GridPane>
 
-    <HBox spacing="10" alignment="CENTER_LEFT">
+    <VBox spacing="10" styleClass="recipe-ingredient-box">
+        <Label text="Bahan Resep"
+               styleClass="mini-section-title"/>
 
-       <Button fx:id="btnDeleteRecipe"
-              text="Hapus"
-              visible="false"
-              managed="false"
-              onAction="#handleDeleteRecipe"
-              styleClass="button-danger"/>
+        <GridPane hgap="10" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints prefWidth="120"/>
+                <ColumnConstraints prefWidth="120"/>
+                <ColumnConstraints prefWidth="92"/>
+                <ColumnConstraints prefWidth="92"/>
+            </columnConstraints>
 
-       <Region HBox.hgrow="ALWAYS"/>
+            <ComboBox fx:id="cbIngredient"
+                      promptText="Pilih bahan"
+                      styleClass="modern-combo"
+                      maxWidth="Infinity"
+                      GridPane.rowIndex="0"
+                      GridPane.columnIndex="0"/>
 
-       <Button text="Batal"
-              onAction="#handleCancel"
-              styleClass="button-outline"/>
+            <TextField fx:id="txtIngredientQuantity"
+                       promptText="Jumlah"
+                       styleClass="modern-input"
+                       GridPane.rowIndex="0"
+                       GridPane.columnIndex="1"/>
 
-       <Button text="Simpan"
-              onAction="#handleSaveRecipe"
-              styleClass="button-primary"/>
-       </HBox>
+            <ComboBox fx:id="cbIngredientUnit"
+                      promptText="Unit"
+                      styleClass="modern-combo"
+                      maxWidth="Infinity"
+                      GridPane.rowIndex="0"
+                      GridPane.columnIndex="2"/>
+
+            <Button text="Tambah"
+                    onAction="#handleAddIngredient"
+                    styleClass="button-secondary"
+                    GridPane.rowIndex="0"
+                    GridPane.columnIndex="3"/>
+
+            <Button text="Hapus"
+                    onAction="#handleRemoveIngredient"
+                    styleClass="button-danger"
+                    GridPane.rowIndex="0"
+                    GridPane.columnIndex="4"/>
+        </GridPane>
+
+        <TableView fx:id="recipeIngredientTable"
+                   prefHeight="160"
+                   styleClass="modern-table">
+            <columns>
+                <TableColumn fx:id="colFormIngredientName"
+                             text="Bahan"
+                             prefWidth="320"/>
+                <TableColumn fx:id="colFormIngredientQuantity"
+                             text="Jumlah"
+                             prefWidth="120"/>
+                <TableColumn fx:id="colFormIngredientUnit"
+                             text="Satuan"
+                             prefWidth="120"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+    <HBox spacing="10"
+           alignment="CENTER_RIGHT">
+
+        <Button text="Batal"
+                onAction="#handleCancel"
+                styleClass="button-outline"/>
+
+        <Button text="Simpan"
+                onAction="#handleSaveRecipe"
+                styleClass="button-primary"/>
+    </HBox>
 </VBox>

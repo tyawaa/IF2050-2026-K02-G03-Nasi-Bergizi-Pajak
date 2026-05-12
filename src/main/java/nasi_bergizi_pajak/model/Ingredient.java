@@ -4,14 +4,20 @@ public class Ingredient {
     private int ingredientId;
     private String name;
     private String unit;
+    private double pricePerUnit;
 
     // Constructors
     public Ingredient() {}
 
     public Ingredient(int ingredientId, String name, String unit) {
+        this(ingredientId, name, unit, 0);
+    }
+
+    public Ingredient(int ingredientId, String name, String unit, double pricePerUnit) {
         this.ingredientId = ingredientId;
         this.name = name;
         this.unit = unit;
+        this.pricePerUnit = pricePerUnit;
     }
 
     // Getters and Setters
@@ -37,6 +43,14 @@ public class Ingredient {
 
     public void setUnit(String unit) {
         this.unit = unit;
+    }
+
+    public double getPricePerUnit() {
+        return pricePerUnit;
+    }
+
+    public void setPricePerUnit(double pricePerUnit) {
+        this.pricePerUnit = pricePerUnit;
     }
 
     @Override
