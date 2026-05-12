@@ -1,53 +1,75 @@
 package nasi_bergizi_pajak.controller;
 
+import java.io.File;
+import java.text.NumberFormat;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.text.NumberFormat;
 import java.util.Locale;
-import java.sql.SQLException;
+import java.util.Optional;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.collections.ObservableList;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.util.Duration;
 import nasi_bergizi_pajak.app.AppNavigator;
+import nasi_bergizi_pajak.dao.AkunDAO;
 import nasi_bergizi_pajak.dao.FamilyMemberDAO;
 import nasi_bergizi_pajak.model.Akun;
 import nasi_bergizi_pajak.model.FamilyMember;
 import nasi_bergizi_pajak.model.RekomendasiMenu;
+import nasi_bergizi_pajak.util.PasswordUtil;
 
 public class DashboardController {
     @FXML private Label welcomeLabel;
     @FXML private Label emailLabel;
     @FXML private Label pageTitleLabel;
+    @FXML private Label topbarAvatarText;
     @FXML private Label dashboardFamilyIconCountLabel;
     @FXML private Label dashboardFamilyCountLabel;
     @FXML private Button dashboardNavButton;
     @FXML private Button familyProfileNavButton;
+    @FXML private Button settingsNavButton;
+    @FXML private Button profileSettingsTabButton;
+    @FXML private Button securitySettingsTabButton;
+    @FXML private HBox userProfileMenuButton;
     @FXML private VBox dashboardPage;
     @FXML private VBox familyProfilePage;
+    @FXML private VBox settingsPage;
+    @FXML private VBox profileSettingsPane;
+    @FXML private VBox securitySettingsPane;
     @FXML private HBox familyAlertBox;
     @FXML private Label familyAlertIconLabel;
     @FXML private Label familyAlertTitle;
@@ -62,7 +84,17 @@ public class DashboardController {
     @FXML private TableColumn<FamilyMember, String> weightColumn;
     @FXML private TableColumn<FamilyMember, String> allergyColumn;
     @FXML private TableColumn<FamilyMember, FamilyMember> actionColumn;
-
+    @FXML private ImageView settingsAvatarImage;
+    @FXML private Label settingsAvatarInitial;
+    @FXML private TextField settingsFamilyNameField;
+    @FXML private TextField settingsEmailField;
+    @FXML private TextField settingsPhoneField;
+    @FXML private TextField settingsLocationField;
+    @FXML private Label settingsToastLabel;
+    @FXML private PasswordField oldPasswordField;
+    @FXML private PasswordField newPasswordField;
+    @FXML private PasswordField confirmPasswordField;
+    @FXML private Label passwordErrorLabel;
     @FXML private Button recommendationNavButton;
     @FXML private VBox recommendationPage;
     @FXML private Label recommendationCountLabel;
@@ -76,18 +108,24 @@ public class DashboardController {
     @FXML private TableColumn<RekomendasiMenu, String> recommendationStockColumn;
     @FXML private TableColumn<RekomendasiMenu, String> recommendationScoreColumn;
 
+    private final AkunDAO akunDAO = new AkunDAO();
     private final FamilyMemberDAO familyMemberDAO = new FamilyMemberDAO();
     private final ObservableList<FamilyMember> familyMembers = FXCollections.observableArrayList();
     private final ObservableList<RekomendasiMenu> recommendations = FXCollections.observableArrayList();
     private final RekomendasiController rekomendasiController = new RekomendasiController();
     private final NumberFormat rupiahFormat = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
     private Akun currentUser;
+    private ContextMenu profileMenu;
+    private PauseTransition settingsToastTimer;
 
     @FXML
     private void initialize() {
         currentUser = AppNavigator.getCurrentUser();
         initializeUserInfo();
+        initializeSettingsForm();
+        setupProfileMenu();
         setupFamilyTable();
+        setupRecommendationTable();
         refreshFamilyMembers();
     }
 
@@ -105,6 +143,56 @@ public class DashboardController {
 
         welcomeLabel.setText(nama);
         emailLabel.setText(currentUser.getEmail());
+        topbarAvatarText.setText(getInitial(nama));
+    }
+
+    private String getDisplayName() {
+        if (currentUser == null) {
+            return "Budi Santoso";
+        }
+
+        String firstName = currentUser.getFirstName() == null || currentUser.getFirstName().isBlank()
+                ? "Budi"
+                : currentUser.getFirstName();
+        String lastName = currentUser.getLastName() == null ? "" : currentUser.getLastName();
+        return (firstName + " " + lastName).trim();
+    }
+
+    private String getInitial(String name) {
+        if (name == null || name.isBlank()) {
+            return "N";
+        }
+        return name.trim().substring(0, 1).toUpperCase();
+    }
+
+    private void initializeSettingsForm() {
+        String displayName = getDisplayName();
+        settingsAvatarInitial.setText(getInitial(displayName));
+        settingsFamilyNameField.setText("Keluarga " + displayName.split("\\s+")[0]);
+        settingsEmailField.setText(currentUser == null ? "budi@email.com" : currentUser.getEmail());
+        settingsPhoneField.setText("+62 812 3456 7890");
+        settingsLocationField.setText("Jakarta");
+        hidePasswordError();
+    }
+
+    private void setupProfileMenu() {
+        Label nameLabel = new Label(getDisplayName());
+        nameLabel.getStyleClass().add("profile-dropdown-name");
+
+        CustomMenuItem headerItem = new CustomMenuItem(nameLabel, false);
+        headerItem.getStyleClass().add("profile-dropdown-header");
+
+        MenuItem settingsItem = new MenuItem("Pengaturan");
+        settingsItem.setOnAction(event -> showSettingsPage());
+
+        MenuItem logoutItem = new MenuItem("Logout");
+        logoutItem.getStyleClass().add("profile-dropdown-logout");
+        logoutItem.setOnAction(event -> {
+            System.out.println("Logout clicked");
+        });
+
+        profileMenu = new ContextMenu(headerItem, new SeparatorMenuItem(), settingsItem, new SeparatorMenuItem(), logoutItem);
+        profileMenu.getStyleClass().add("profile-dropdown-menu");
     }
 
     private void setupFamilyTable() {
@@ -160,6 +248,27 @@ public class DashboardController {
         refreshFamilyMembers();
     }
 
+    @FXML
+    private void showSettingsPage() {
+        pageTitleLabel.setText("Pengaturan");
+        showPage(settingsPage);
+        setActiveNav(settingsNavButton);
+        showProfileSettingsTab();
+    }
+
+    @FXML
+    private void showProfileSettingsTab() {
+        showSettingsTab(profileSettingsPane);
+        setSettingsTabClass(profileSettingsTabButton, true);
+        setSettingsTabClass(securitySettingsTabButton, false);
+    }
+
+    @FXML
+    private void showSecuritySettingsTab() {
+        showSettingsTab(securitySettingsPane);
+        setSettingsTabClass(profileSettingsTabButton, false);
+        setSettingsTabClass(securitySettingsTabButton, true);
+    }
 
     @FXML
     private void showRecommendationPage() {
@@ -168,12 +277,16 @@ public class DashboardController {
         setActiveNav(recommendationNavButton);
         refreshRecommendations();
     }
+
     private void showPage(VBox page) {
         dashboardPage.setVisible(page == dashboardPage);
         dashboardPage.setManaged(page == dashboardPage);
 
         familyProfilePage.setVisible(page == familyProfilePage);
         familyProfilePage.setManaged(page == familyProfilePage);
+
+        settingsPage.setVisible(page == settingsPage);
+        settingsPage.setManaged(page == settingsPage);
 
         recommendationPage.setVisible(page == recommendationPage);
         recommendationPage.setManaged(page == recommendationPage);
@@ -182,12 +295,154 @@ public class DashboardController {
     private void setActiveNav(Button activeButton) {
         setNavClass(dashboardNavButton, activeButton == dashboardNavButton);
         setNavClass(familyProfileNavButton, activeButton == familyProfileNavButton);
+
+        setNavClass(settingsNavButton, activeButton == settingsNavButton);
         setNavClass(recommendationNavButton, activeButton == recommendationNavButton);
     }
 
     private void setNavClass(Button button, boolean active) {
         button.getStyleClass().removeAll("userdash-nav-button", "userdash-nav-active");
         button.getStyleClass().add(active ? "userdash-nav-active" : "userdash-nav-button");
+    }
+
+    private void showSettingsTab(VBox activePane) {
+        profileSettingsPane.setVisible(activePane == profileSettingsPane);
+        profileSettingsPane.setManaged(activePane == profileSettingsPane);
+        securitySettingsPane.setVisible(activePane == securitySettingsPane);
+        securitySettingsPane.setManaged(activePane == securitySettingsPane);
+    }
+
+    private void setSettingsTabClass(Button button, boolean active) {
+        button.getStyleClass().removeAll("settings-tab-button", "settings-tab-active");
+        button.getStyleClass().add(active ? "settings-tab-active" : "settings-tab-button");
+    }
+
+    @FXML
+    private void toggleProfileMenu() {
+        if (profileMenu == null) {
+            setupProfileMenu();
+        }
+
+        if (profileMenu.isShowing()) {
+            profileMenu.hide();
+            return;
+        }
+
+        Bounds bounds = userProfileMenuButton.localToScreen(userProfileMenuButton.getBoundsInLocal());
+        if (bounds == null) {
+            profileMenu.show(userProfileMenuButton, Side.BOTTOM, 0, 8);
+            return;
+        }
+        profileMenu.show(userProfileMenuButton, bounds.getMaxX() - 280, bounds.getMaxY() + 8);
+    }
+
+    @FXML
+    private void handleChooseProfilePhoto() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Pilih Foto Profil");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Gambar", "*.jpg", "*.jpeg", "*.png")
+        );
+
+        File file = fileChooser.showOpenDialog(settingsAvatarImage.getScene().getWindow());
+        if (file == null) {
+            return;
+        }
+
+        if (file.length() > 2 * 1024 * 1024) {
+            showWarning("Ukuran foto terlalu besar", "Pilih foto JPG atau PNG dengan ukuran maksimal 2MB.");
+            return;
+        }
+
+        settingsAvatarImage.setImage(new Image(file.toURI().toString()));
+        settingsAvatarImage.setVisible(true);
+        settingsAvatarImage.setManaged(true);
+        settingsAvatarInitial.setVisible(false);
+        settingsAvatarInitial.setManaged(false);
+    }
+
+    @FXML
+    private void handleSaveProfileSettings() {
+        showSettingsToast("Perubahan profil keluarga berhasil disimpan.", true);
+    }
+
+    @FXML
+    private void handleChangePassword() {
+        if (currentUser == null) {
+            showPasswordError("User belum terbaca. Silakan login ulang.");
+            return;
+        }
+
+        String oldPassword = oldPasswordField.getText() == null ? "" : oldPasswordField.getText();
+        String newPassword = newPasswordField.getText() == null ? "" : newPasswordField.getText();
+        String confirmPassword = confirmPasswordField.getText() == null ? "" : confirmPasswordField.getText();
+
+        if (oldPassword.isBlank() || newPassword.isBlank() || confirmPassword.isBlank()) {
+            showPasswordError("Semua field password wajib diisi.");
+            return;
+        }
+
+        if (!PasswordUtil.verifyPassword(oldPassword, currentUser.getPassword())) {
+            showPasswordError("Password lama tidak sesuai.");
+            return;
+        }
+
+        if (newPassword.length() < 8) {
+            showPasswordError("Password baru minimal 8 karakter.");
+            return;
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            showPasswordError("Password baru dan konfirmasi password harus sama.");
+            return;
+        }
+
+        try {
+            String passwordHash = PasswordUtil.hashPassword(newPassword);
+            akunDAO.updatePassword(currentUser.getUserId(), passwordHash);
+            currentUser.setPassword(passwordHash);
+            hidePasswordError();
+            oldPasswordField.clear();
+            newPasswordField.clear();
+            confirmPasswordField.clear();
+            showSettingsToast("Password berhasil diubah.", true);
+        } catch (SQLException e) {
+            showPasswordError("Gagal menyimpan password baru. Coba lagi.");
+            e.printStackTrace();
+        }
+    }
+
+    private void showSettingsToast(String message, boolean success) {
+        if (settingsToastTimer != null) {
+            settingsToastTimer.stop();
+        }
+
+        settingsToastLabel.setText(message);
+        settingsToastLabel.getStyleClass().setAll(
+                "settings-toast",
+                success ? "settings-toast-success" : "settings-toast-error"
+        );
+        settingsToastLabel.setVisible(true);
+        settingsToastLabel.setManaged(true);
+
+        settingsToastTimer = new PauseTransition(Duration.seconds(3));
+        settingsToastTimer.setOnFinished(event -> {
+            settingsToastLabel.setVisible(false);
+            settingsToastLabel.setManaged(false);
+        });
+        settingsToastTimer.play();
+    }
+
+    private void showPasswordError(String message) {
+        passwordErrorLabel.setText(message);
+        passwordErrorLabel.setVisible(true);
+        passwordErrorLabel.setManaged(true);
+    }
+
+    private void hidePasswordError() {
+        passwordErrorLabel.setText("");
+        passwordErrorLabel.setVisible(false);
+        passwordErrorLabel.setManaged(false);
     }
 
     private void setupRecommendationTable() {
@@ -257,6 +512,7 @@ public class DashboardController {
 
         return status.replace("_", " ");
     }
+
     private void refreshFamilyMembers() {
         if (currentUser == null) {
             familyMembers.clear();
