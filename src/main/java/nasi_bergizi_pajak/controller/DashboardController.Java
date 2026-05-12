@@ -31,4 +31,9 @@ public class DashboardController {
     private void handleLogout() {
         AppNavigator.showLogin();
     }
+
+    @FXML
+    private void handleOpenShoppingPlanner() {
+        AppNavigator.showShoppingPlanner();
+    }
 }
