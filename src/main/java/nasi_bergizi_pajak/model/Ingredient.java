@@ -6,10 +6,11 @@ public class Ingredient {
     private int ingredientId;
     private String name;
     private String unit;
-    private double currentPrice;
+    private double pricePerUnit;
     private LocalDate priceEffectiveDate;
 
-    public Ingredient() {}
+    public Ingredient() {
+    }
 
     public Ingredient(String name, String unit) {
         this.name = name;
@@ -17,9 +18,14 @@ public class Ingredient {
     }
 
     public Ingredient(int ingredientId, String name, String unit) {
+        this(ingredientId, name, unit, 0);
+    }
+
+    public Ingredient(int ingredientId, String name, String unit, double pricePerUnit) {
         this.ingredientId = ingredientId;
         this.name = name;
         this.unit = unit;
+        this.pricePerUnit = pricePerUnit;
     }
 
     public int getIngredientId() {
@@ -46,12 +52,20 @@ public class Ingredient {
         this.unit = unit;
     }
 
+    public double getPricePerUnit() {
+        return pricePerUnit;
+    }
+
+    public void setPricePerUnit(double pricePerUnit) {
+        this.pricePerUnit = pricePerUnit;
+    }
+
     public double getCurrentPrice() {
-        return currentPrice;
+        return pricePerUnit;
     }
 
     public void setCurrentPrice(double currentPrice) {
-        this.currentPrice = currentPrice;
+        this.pricePerUnit = currentPrice;
     }
 
     public LocalDate getPriceEffectiveDate() {
@@ -64,13 +78,7 @@ public class Ingredient {
 
     @Override
     public String toString() {
-        return "Ingredient{" +
-                "ingredientId=" + ingredientId +
-                ", name='" + name + '\'' +
-                ", unit='" + unit + '\'' +
-                ", currentPrice=" + currentPrice +
-                ", priceEffectiveDate=" + priceEffectiveDate +
-                '}';
+        return name == null ? "" : name;
     }
 
     @Override

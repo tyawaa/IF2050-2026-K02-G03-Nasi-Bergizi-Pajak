@@ -9,9 +9,15 @@ public class IngredientPrice {
     private LocalDate effectiveDate;
     private String ingredientName;
 
-    public IngredientPrice() {}
+    public IngredientPrice() {
+    }
 
     public IngredientPrice(int ingredientId, double price, LocalDate effectiveDate) {
+        this(0, ingredientId, price, effectiveDate);
+    }
+
+    public IngredientPrice(int priceId, int ingredientId, double price, LocalDate effectiveDate) {
+        this.priceId = priceId;
         this.ingredientId = ingredientId;
         this.price = price;
         this.effectiveDate = effectiveDate;

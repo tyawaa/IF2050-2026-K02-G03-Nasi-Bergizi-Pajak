@@ -24,7 +24,7 @@ public class KitchenStockDAO {
             pstmt.setDouble(3, stock.getQuantity());
             pstmt.setString(4, stock.getUnit());
             pstmt.setString(5, stock.getStorageLocation());
-            pstmt.setString(6, stock.getExpiryDate() != null ? stock.getExpiryDate().toString() : null);
+            pstmt.setDate(6, stock.getExpiryDate() != null ? Date.valueOf(stock.getExpiryDate()) : null);
             
             return pstmt.executeUpdate() > 0;
         }
@@ -40,7 +40,7 @@ public class KitchenStockDAO {
             pstmt.setDouble(1, stock.getQuantity());
             pstmt.setString(2, stock.getUnit());
             pstmt.setString(3, stock.getStorageLocation());
-            pstmt.setString(4, stock.getExpiryDate() != null ? stock.getExpiryDate().toString() : null);
+            pstmt.setDate(4, stock.getExpiryDate() != null ? Date.valueOf(stock.getExpiryDate()) : null);
             pstmt.setInt(5, stock.getStockId());
             pstmt.setInt(6, stock.getUserId());
             
@@ -109,8 +109,8 @@ public class KitchenStockDAO {
                     "JOIN ingredient i ON ks.ingredient_id = i.ingredient_id " +
                     "WHERE ks.user_id = ? " +
                     "AND ks.expiry_date IS NOT NULL " +
-                    "AND ks.expiry_date >= date('now') " +
-                    "AND ks.expiry_date <= date('now', '+' || ? || ' days') " +
+                    "AND ks.expiry_date >= CURDATE() " +
+                    "AND ks.expiry_date <= DATE_ADD(CURDATE(), INTERVAL ? DAY) " +
                     "ORDER BY ks.expiry_date ASC";
         
         List<KitchenStock> stocks = new ArrayList<>();
@@ -135,7 +135,7 @@ public class KitchenStockDAO {
                     "JOIN ingredient i ON ks.ingredient_id = i.ingredient_id " +
                     "WHERE ks.user_id = ? " +
                     "AND ks.expiry_date IS NOT NULL " +
-                    "AND ks.expiry_date < date('now') " +
+                    "AND ks.expiry_date < CURDATE() " +
                     "ORDER BY ks.expiry_date ASC";
         
         List<KitchenStock> stocks = new ArrayList<>();
@@ -200,9 +200,9 @@ public class KitchenStockDAO {
         stock.setUnit(rs.getString("unit"));
         stock.setStorageLocation(rs.getString("storage_location"));
         
-        String expiryDateStr = rs.getString("expiry_date");
-        if (expiryDateStr != null && !expiryDateStr.isEmpty()) {
-            stock.setExpiryDate(LocalDate.parse(expiryDateStr));
+        Date expiryDate = rs.getDate("expiry_date");
+        if (expiryDate != null) {
+            stock.setExpiryDate(expiryDate.toLocalDate());
         }
         
         stock.setIngredientName(rs.getString("ingredient_name"));
