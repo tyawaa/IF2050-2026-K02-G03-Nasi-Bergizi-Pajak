@@ -28,6 +28,11 @@ public class AdminDashboardController {
     }
 
     @FXML
+    private void handleManageIngredientPrice() {
+        AppNavigator.showManageIngredientPrice();
+    }
+
+    @FXML
     private void handleLogout() {
         AppNavigator.showLogin();
     }

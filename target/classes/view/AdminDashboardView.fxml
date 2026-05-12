@@ -40,7 +40,11 @@
                 <Label fx:id="welcomeLabel" text="Dashboard Admin" styleClass="dashboard-title"/>
                 <Label fx:id="emailLabel" text="" styleClass="dashboard-email"/>
                 <Separator/>
-                <Label text="Login admin berhasil. Halaman ini disiapkan untuk dashboard khusus admin." wrapText="true" styleClass="dashboard-note"/>
+                <Label text="Pilih menu di bawah untuk mengelola data aplikasi." wrapText="true" styleClass="dashboard-note"/>
+                <Button text="Kelola Harga Bahan Makanan"
+                        onAction="#handleManageIngredientPrice"
+                        styleClass="button-secondary"
+                        maxWidth="Infinity"/>
             </VBox>
         </StackPane>
     </center>

@@ -68,6 +68,10 @@ public final class AppNavigator {
         }
     }
 
+    public static void showManageIngredientPrice() {
+        loadScene("/view/ManageIngredientPriceView.fxml", "Nasi Bergizi Pajak - Manajemen Harga Bahan");
+    }
+
     public static void showFatalError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

@@ -518,3 +518,99 @@
     -fx-font-weight: 800;
     -fx-text-fill: #2E2A25;
 }
+
+/* =========================
+   11. INGREDIENT TABLE
+   ========================= */
+.ingredient-table {
+    -fx-background-color: transparent;
+    -fx-border-color: #E6D9C8;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-padding: 0;
+}
+
+.ingredient-table .column-header-background {
+    -fx-background-color: #FFF3E8;
+    -fx-background-radius: 10px 10px 0 0;
+}
+
+.ingredient-table .column-header,
+.ingredient-table .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #E6D9C8 transparent;
+    -fx-size: 40px;
+}
+
+.ingredient-table .column-header .label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6F665D;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.ingredient-table .table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent #F2EDE5 transparent;
+    -fx-cell-size: 44px;
+}
+
+.ingredient-table .table-row-cell:odd {
+    -fx-background-color: #FAFAF7;
+}
+
+.ingredient-table .table-row-cell:selected {
+    -fx-background-color: #FFF3E8;
+}
+
+.ingredient-table .table-row-cell:selected .text {
+    -fx-fill: #2E2A25;
+}
+
+.ingredient-table .table-row-cell:hover {
+    -fx-background-color: #FFF8EF;
+    -fx-cursor: hand;
+}
+
+.ingredient-table .table-cell {
+    -fx-font-size: 13px;
+    -fx-text-fill: #2E2A25;
+    -fx-padding: 0 10px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* =========================
+   12. DATE PICKER INPUT
+   ========================= */
+.date-picker-input {
+    -fx-pref-height: 46px;
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #E6D9C8;
+    -fx-border-width: 1px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2E2A25;
+}
+
+.date-picker-input:focused {
+    -fx-border-color: #F28C28;
+    -fx-effect: dropshadow(gaussian, rgba(242, 140, 40, 0.18), 10, 0, 0, 0);
+}
+
+.date-picker-input .arrow-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+}
+
+.date-picker-input .arrow-button .arrow {
+    -fx-background-color: #6F665D;
+}
+
+.date-picker-input .date-picker-display-node {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0 14px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2E2A25;
+}
