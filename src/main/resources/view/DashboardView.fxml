@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.geometry.Rectangle2D?>
 <?import javafx.scene.control.*?>
@@ -37,8 +38,8 @@
 
             <VBox spacing="8">
                 <Label text="MENU UTAMA" styleClass="userdash-menu-title"/>
-                <Button text="Dashboard" maxWidth="Infinity" styleClass="userdash-nav-active"/>
-                <Button text="Profil Keluarga" maxWidth="Infinity" styleClass="userdash-nav-button"/>
+                <Button fx:id="dashboardNavButton" text="Dashboard" maxWidth="Infinity" onAction="#showDashboardPage" styleClass="userdash-nav-active"/>
+                <Button fx:id="familyProfileNavButton" text="Profil Keluarga" maxWidth="Infinity" onAction="#showFamilyProfilePage" styleClass="userdash-nav-button"/>
                 <Button text="Budget" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Parameter Planner" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Stok Dapur" maxWidth="Infinity" styleClass="userdash-nav-button"/>
@@ -64,7 +65,7 @@
                     <Insets top="14" right="22" bottom="14" left="22"/>
                 </padding>
 
-                <Label text="Dashboard" styleClass="userdash-page-title"/>
+                <Label fx:id="pageTitleLabel" text="Dashboard" styleClass="userdash-page-title"/>
                 <Label text="Budget: 22 Apr - 28 Apr" styleClass="userdash-period-badge"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <StackPane styleClass="userdash-bell">
@@ -84,19 +85,24 @@
                         VBox.vgrow="ALWAYS"
                         styleClass="userdash-scroll">
                 <content>
-                    <VBox spacing="18" styleClass="userdash-content">
-                        <padding>
-                            <Insets top="18" right="22" bottom="28" left="22"/>
-                        </padding>
+                    <StackPane styleClass="userdash-content">
+                        <VBox fx:id="dashboardPage" spacing="18" styleClass="userdash-content">
+                            <padding>
+                                <Insets top="18" right="22" bottom="28" left="22"/>
+                            </padding>
 
                         <HBox spacing="14" fillHeight="true">
-                            <HBox alignment="CENTER_LEFT" spacing="14" HBox.hgrow="ALWAYS" styleClass="userdash-summary-card">
+                            <HBox alignment="CENTER_LEFT" spacing="14" HBox.hgrow="ALWAYS" onMouseClicked="#showFamilyProfilePage">
+                                <styleClass>
+                                    <String fx:value="userdash-summary-card"/>
+                                    <String fx:value="userdash-clickable-card"/>
+                                </styleClass>
                                 <StackPane styleClass="userdash-icon-soft-orange">
-                                    <Label text="3" styleClass="userdash-icon-number"/>
+                                    <Label fx:id="dashboardFamilyIconCountLabel" text="0" styleClass="userdash-icon-number"/>
                                 </StackPane>
                                 <VBox spacing="4">
                                     <Label text="Anggota Keluarga" styleClass="userdash-card-title"/>
-                                    <Label text="3" styleClass="userdash-card-value"/>
+                                    <Label fx:id="dashboardFamilyCountLabel" text="0" styleClass="userdash-card-value"/>
                                 </VBox>
                             </HBox>
 
@@ -272,12 +278,76 @@
                                 </VBox>
 
                                 <HBox spacing="10">
-                                    <Button text="Profil Keluarga" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="userdash-quick-button"/>
+                                    <Button text="Profil Keluarga" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#showFamilyProfilePage" styleClass="userdash-quick-button"/>
                                     <Button text="Rekomendasi" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="userdash-quick-button"/>
                                 </HBox>
                             </VBox>
                         </HBox>
-                    </VBox>
+                        </VBox>
+
+                        <VBox fx:id="familyProfilePage" spacing="18" visible="false" managed="false" styleClass="userdash-content">
+                            <padding>
+                                <Insets top="18" right="22" bottom="28" left="22"/>
+                            </padding>
+
+                            <HBox fx:id="familyAlertBox" alignment="CENTER_LEFT" spacing="14" styleClass="family-alert">
+                                <StackPane styleClass="family-alert-icon">
+                                    <Label fx:id="familyAlertIconLabel" text="!" styleClass="family-alert-icon-text"/>
+                                </StackPane>
+                                <VBox spacing="2">
+                                    <Label fx:id="familyAlertTitle" text="Profil keluarga belum lengkap" styleClass="family-alert-title"/>
+                                    <Label fx:id="familyAlertSubtitle" text="Tambahkan anggota keluarga agar rekomendasi menu bisa disesuaikan." styleClass="family-alert-subtitle"/>
+                                </VBox>
+                            </HBox>
+
+                            <HBox spacing="18" fillHeight="true">
+                                <VBox spacing="18" HBox.hgrow="ALWAYS" styleClass="userdash-panel family-member-card">
+                                    <HBox alignment="CENTER_LEFT">
+                                        <VBox spacing="2">
+                                            <Label text="Daftar Anggota Keluarga" styleClass="userdash-section-title"/>
+                                            <Label fx:id="familyCountSubtitle" text="0 anggota terdaftar" styleClass="userdash-section-subtitle"/>
+                                        </VBox>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button text="+  Tambah Anggota" onAction="#handleAddFamilyMember" styleClass="family-primary-button"/>
+                                    </HBox>
+
+                                    <TableView fx:id="familyMemberTable" prefHeight="260" minHeight="180" VBox.vgrow="NEVER" styleClass="family-table">
+                                        <columns>
+                                            <TableColumn fx:id="nameColumn" text="Nama" prefWidth="210"/>
+                                            <TableColumn fx:id="birthDateColumn" text="Tanggal Lahir / Usia" prefWidth="230"/>
+                                            <TableColumn fx:id="heightColumn" text="Tinggi (cm)" prefWidth="130"/>
+                                            <TableColumn fx:id="weightColumn" text="Berat (kg)" prefWidth="130"/>
+                                            <TableColumn fx:id="allergyColumn" text="Alergi" prefWidth="180"/>
+                                            <TableColumn fx:id="actionColumn" text="Aksi" prefWidth="180"/>
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+
+                                <VBox spacing="18" prefWidth="390" minWidth="330" styleClass="userdash-panel family-summary-card">
+                                    <Label text="Ringkasan Keluarga" styleClass="userdash-section-title"/>
+
+                                    <VBox spacing="5" styleClass="family-total-box">
+                                        <Label text="Total Anggota" styleClass="userdash-card-title"/>
+                                        <Label fx:id="totalMembersLabel" text="0" styleClass="family-total-value"/>
+                                    </VBox>
+
+                                    <VBox spacing="10">
+                                        <Label text="Anggota dengan Alergi" styleClass="family-side-title"/>
+                                        <VBox fx:id="allergySummaryBox" spacing="8"/>
+                                    </VBox>
+
+                                    <VBox spacing="4" styleClass="family-note-box">
+                                        <Label text="Data profil keluarga digunakan untuk menyesuaikan rekomendasi menu dan porsi makanan sesuai kebutuhan gizi."
+                                               wrapText="true"
+                                               styleClass="family-note-text"/>
+                                        <Label text="Jika ada lebih dari satu alergi, pisahkan dengan koma. Contoh: Udang, Kacang, Susu. Kosongkan jika tidak ada alergi."
+                                               wrapText="true"
+                                               styleClass="family-note-text"/>
+                                    </VBox>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                    </StackPane>
                 </content>
             </ScrollPane>
         </VBox>

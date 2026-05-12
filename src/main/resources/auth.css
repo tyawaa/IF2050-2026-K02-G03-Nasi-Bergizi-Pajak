@@ -1858,6 +1858,15 @@
     -fx-min-height: 112px;
 }
 
+.userdash-clickable-card {
+    -fx-cursor: hand;
+}
+
+.userdash-clickable-card:hover {
+    -fx-background-color: #FFF8EE;
+    -fx-border-color: #F3CDA6;
+}
+
 .userdash-summary-green {
     -fx-background-color: #EEF8EA;
     -fx-border-color: #D7EBD0;
@@ -2094,4 +2103,262 @@
     -fx-background-color: #FFF4EA;
     -fx-border-color: #FFD6B3;
     -fx-text-fill: #EA6A14;
+}
+
+/* =========================
+   FAMILY PROFILE
+   ========================= */
+.family-alert {
+    -fx-background-color: #EEF8EA;
+    -fx-border-color: #CFE6C6;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 28px;
+    -fx-min-height: 118px;
+}
+
+.family-alert-warning {
+    -fx-background-color: #FFF7EA;
+    -fx-border-color: #F6D4A4;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 28px;
+    -fx-min-height: 118px;
+}
+
+.family-alert-icon {
+    -fx-pref-width: 40px;
+    -fx-pref-height: 40px;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-max-width: 40px;
+    -fx-max-height: 40px;
+    -fx-background-color: transparent;
+    -fx-border-color: #4F8A3C;
+    -fx-border-radius: 999px;
+    -fx-background-radius: 999px;
+}
+
+.family-alert-warning .family-alert-icon {
+    -fx-border-color: #D98E04;
+}
+
+.family-alert-icon-text {
+    -fx-text-fill: #4F8A3C;
+    -fx-font-size: 11px;
+    -fx-font-weight: 900;
+}
+
+.family-alert-warning .family-alert-icon-text {
+    -fx-text-fill: #D98E04;
+}
+
+.family-alert-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2F6B2D;
+}
+
+.family-alert-warning .family-alert-title {
+    -fx-text-fill: #9A5A00;
+}
+
+.family-alert-subtitle,
+.family-note-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: #3F7A2F;
+}
+
+.family-alert-warning .family-alert-subtitle {
+    -fx-text-fill: #8A6A2F;
+}
+
+.family-member-card {
+    -fx-min-width: 680px;
+}
+
+.family-summary-card {
+    -fx-min-height: 420px;
+}
+
+.family-primary-button {
+    -fx-background-color: #F28C28;
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 10px 18px;
+    -fx-cursor: hand;
+}
+
+.family-primary-button:hover {
+    -fx-background-color: #D96A1D;
+}
+
+.family-table {
+    -fx-background-color: white;
+    -fx-border-color: transparent;
+    -fx-table-cell-border-color: transparent;
+    -fx-padding: 0 8px 0 8px;
+}
+
+.family-table .column-header-background,
+.family-table .column-header,
+.family-table .filler {
+    -fx-background-color: white;
+}
+
+.family-table .column-header .label {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 14px 0 14px;
+}
+
+.family-table .family-center-column,
+.family-table .column-header.family-center-column .label {
+    -fx-alignment: CENTER;
+}
+
+.family-table .table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent #EFE5D8 transparent;
+    -fx-cell-size: 72px;
+}
+
+.family-table .table-row-cell:hover,
+.family-table .table-row-cell:selected {
+    -fx-background-color: #FFFCF7;
+}
+
+.family-table .table-cell {
+    -fx-font-size: 15px;
+    -fx-padding: 9px 18px;
+    -fx-text-fill: #25211D;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.family-table .table-cell.family-center-column {
+    -fx-alignment: CENTER;
+}
+
+.family-table .placeholder {
+    -fx-background-color: #FFFCF7;
+}
+
+.family-table .placeholder .label {
+    -fx-text-fill: #6F665D;
+}
+
+.family-allergy-badge {
+    -fx-background-color: #FFF0F0;
+    -fx-border-color: #F7C4C4;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 4px 9px;
+    -fx-text-fill: #D9534F;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+    -fx-ellipsis-string: "";
+}
+
+.family-edit-button,
+.family-delete-button {
+    -fx-background-color: white;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 7px 10px;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-cursor: hand;
+}
+
+.family-edit-button {
+    -fx-border-color: #E6D9C8;
+    -fx-text-fill: #25211D;
+}
+
+.family-edit-button:hover {
+    -fx-background-color: #FFF1E1;
+}
+
+.family-delete-button {
+    -fx-border-color: #F1B8B3;
+    -fx-text-fill: #D9534F;
+}
+
+.family-delete-button:hover {
+    -fx-background-color: #FFF0F0;
+}
+
+.family-total-box {
+    -fx-background-color: #FFFCF7;
+    -fx-border-color: #E6D9C8;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 16px;
+}
+
+.family-total-value {
+    -fx-font-size: 28px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #25211D;
+}
+
+.family-side-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.family-allergy-row {
+    -fx-background-color: #FFF0F0;
+    -fx-border-color: #F7C4C4;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 12px 14px;
+    -fx-spacing: 12px;
+}
+
+.family-allergy-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+    -fx-min-width: 84px;
+    -fx-pref-width: 96px;
+    -fx-wrap-text: true;
+}
+
+.family-allergy-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: #D9534F;
+}
+
+.family-muted-row {
+    -fx-background-color: #FFFCF7;
+    -fx-border-color: #E6D9C8;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 12px 14px;
+    -fx-text-fill: #6F665D;
+}
+
+.family-note-box {
+    -fx-background-color: #EEF8EA;
+    -fx-border-color: #CFE6C6;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 16px;
+}
+
+.family-empty-state {
+    -fx-padding: 32px;
+}
+
+.family-empty-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
 }
