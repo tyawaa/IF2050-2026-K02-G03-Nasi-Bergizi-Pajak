@@ -14,10 +14,13 @@ nasi_bergizi_pajak\Main.class
 nasi_bergizi_pajak\controller\AdminDashboardController.class
 nasi_bergizi_pajak\controller\DashboardController.class
 nasi_bergizi_pajak\controller\AdminDashboardController$2.class
+nasi_bergizi_pajak\model\WeeklyMenuOption.class
 nasi_bergizi_pajak\dao\FamilyMemberDAO.class
+nasi_bergizi_pajak\model\ShoppingPlanner.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminNutrition.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminPriceHistory.class
 nasi_bergizi_pajak\controller\LoginController.class
+nasi_bergizi_pajak\controller\ShoppingPlannerController$1.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminRecipeIngredient.class
 nasi_bergizi_pajak\model\IngredientNutrition.class
 nasi_bergizi_pajak\controller\DashboardController$MultilineTextCell.class
@@ -38,6 +41,7 @@ nasi_bergizi_pajak\util\PasswordUtil.class
 nasi_bergizi_pajak\model\SlotMakan.class
 nasi_bergizi_pajak\controller\AdminDashboardController$AdminIngredient.class
 nasi_bergizi_pajak\model\Akun.class
+nasi_bergizi_pajak\model\ShoppingItem.class
 nasi_bergizi_pajak\controller\DashboardController$ActionButtonCell.class
 nasi_bergizi_pajak\model\MenuMingguan.class
 nasi_bergizi_pajak\model\Recipe.class
