@@ -170,6 +170,9 @@ public class DashboardController {
     @FXML private Label passwordErrorLabel;
     @FXML private Button recommendationNavButton;
     @FXML private VBox recommendationPage;
+    @FXML private Button kitchenStockNavButton;
+    @FXML private VBox kitchenStockPage;
+    @FXML private KitchenStockViewController kitchenStockContentController;
     @FXML private Label recommendationCountLabel;
     @FXML private Label recommendationStatusLabel;
     @FXML private TableView<RekomendasiMenu> recommendationTable;
@@ -2131,6 +2134,9 @@ public class DashboardController {
 
         recommendationPage.setVisible(page == recommendationPage);
         recommendationPage.setManaged(page == recommendationPage);
+
+        kitchenStockPage.setVisible(page == kitchenStockPage);
+        kitchenStockPage.setManaged(page == kitchenStockPage);
     }
 
     private void setActiveNav(Button activeButton) {
@@ -2142,6 +2148,7 @@ public class DashboardController {
 
         setNavClass(settingsNavButton, activeButton == settingsNavButton);
         setNavClass(recommendationNavButton, activeButton == recommendationNavButton);
+        setNavClass(kitchenStockNavButton, activeButton == kitchenStockNavButton);
     }
 
     private void setNavClass(Button button, boolean active) {
@@ -2675,6 +2682,16 @@ public class DashboardController {
         alert.setHeaderText(title);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    private void handleStokDapur() {
+        pageTitleLabel.setText("Stok Dapur");
+        showPage(kitchenStockPage);
+        setActiveNav(kitchenStockNavButton);
+        if (kitchenStockContentController != null) {
+            kitchenStockContentController.refreshData();
+        }
     }
 
     @FXML

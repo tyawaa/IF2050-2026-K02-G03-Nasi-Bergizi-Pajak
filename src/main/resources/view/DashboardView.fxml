@@ -42,7 +42,7 @@
                 <Button fx:id="familyProfileNavButton" text="Profil Keluarga" maxWidth="Infinity" onAction="#showFamilyProfilePage" styleClass="userdash-nav-button"/>
                 <Button fx:id="budgetNavButton" text="Budget" maxWidth="Infinity" onAction="#showBudgetPage" styleClass="userdash-nav-button"/>
                 <Button fx:id="parameterPlannerNavButton" text="Parameter Planner" maxWidth="Infinity" onAction="#showParameterPlannerPage" styleClass="userdash-nav-button"/>
-                <Button text="Stok Dapur" maxWidth="Infinity" styleClass="userdash-nav-button"/>
+                <Button fx:id="kitchenStockNavButton" text="Stok Dapur" maxWidth="Infinity" onAction="#handleStokDapur" styleClass="userdash-nav-button"/>
                 <Button fx:id="weeklyMenuNavButton" text="Menu Mingguan" maxWidth="Infinity" onAction="#showWeeklyMenuPage" styleClass="userdash-nav-button"/>
                 <Button fx:id="recommendationNavButton" text="Rekomendasi Menu" maxWidth="Infinity" onAction="#showRecommendationPage" styleClass="userdash-nav-button"/>
                 <Button text="Shopping Planner" maxWidth="Infinity" styleClass="userdash-nav-button"/>
@@ -779,6 +779,10 @@
                                 </TableView>
                             </VBox>
                         </VBox>
+                        <VBox fx:id="kitchenStockPage" visible="false" managed="false">
+                            <fx:include source="KitchenStockContent.fxml" fx:id="kitchenStockContent"/>
+                        </VBox>
+
                     </StackPane>
                 </content>
             </ScrollPane>
