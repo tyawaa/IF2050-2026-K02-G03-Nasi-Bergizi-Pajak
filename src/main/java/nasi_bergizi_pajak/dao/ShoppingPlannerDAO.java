@@ -9,12 +9,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import nasi_bergizi_pajak.config.DatabaseConnection;
 import nasi_bergizi_pajak.model.ShoppingItem;
 import nasi_bergizi_pajak.model.ShoppingPlanner;
 import nasi_bergizi_pajak.model.WeeklyMenuOption;
+import nasi_bergizi_pajak.util.UnitOptions;
 
 public class ShoppingPlannerDAO {
     public List<WeeklyMenuOption> cariMenuMingguanUser(int userId) throws SQLException {
@@ -197,10 +200,9 @@ public class ShoppingPlannerDAO {
             statement.setInt(1, menuId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    if ("completed".equalsIgnoreCase(resultSet.getString("status"))) {
-                        throw new SQLException("Planner belanja untuk menu ini sudah completed.");
+                    if (!"completed".equalsIgnoreCase(resultSet.getString("status"))) {
+                        return resultSet.getInt("planner_id");
                     }
-                    return resultSet.getInt("planner_id");
                 }
             }
         }
@@ -226,40 +228,134 @@ public class ShoppingPlannerDAO {
             statement.executeUpdate();
         }
 
+        Map<Integer, ShoppingRequirement> requirements = loadMenuRequirements(connection, menuId);
+        subtractKitchenStock(connection, userId, requirements);
+
         String insertSql = """
-                INSERT INTO shopping_planner_item (planner_id, ingredient_id, required_qty, unit, estimated_price)
-                SELECT ?, kebutuhan.ingredient_id, kebutuhan.qty_beli, kebutuhan.unit,
-                       COALESCE(harga.price, 0) * kebutuhan.qty_beli AS estimated_price
-                FROM (
-                    SELECT ri.ingredient_id, i.unit,
-                           GREATEST(SUM(ri.amount) - COALESCE(stok.quantity, 0), 0) AS qty_beli
-                    FROM meal_slot ms
-                    JOIN recipe_ingredient ri ON ri.recipe_id = ms.recipe_id
-                    JOIN ingredient i ON i.ingredient_id = ri.ingredient_id
-                    LEFT JOIN (
-                        SELECT ingredient_id, SUM(quantity) AS quantity
-                        FROM kitchen_stock
-                        WHERE user_id = ?
-                        GROUP BY ingredient_id
-                    ) stok ON stok.ingredient_id = ri.ingredient_id
-                    WHERE ms.menu_id = ? AND ms.is_eating_out = 0
-                    GROUP BY ri.ingredient_id, i.unit, stok.quantity
-                ) kebutuhan
-                LEFT JOIN ingredient_price harga ON harga.price_id = (
-                    SELECT ip.price_id
-                    FROM ingredient_price ip
-                    WHERE ip.ingredient_id = kebutuhan.ingredient_id
-                    ORDER BY ip.effective_date DESC, ip.price_id DESC
-                    LIMIT 1
-                )
-                WHERE kebutuhan.qty_beli > 0
+                INSERT INTO shopping_planner_item
+                    (planner_id, ingredient_id, required_qty, unit, estimated_price, actual_price, status_beli)
+                VALUES (?, ?, ?, ?, ?, 0, 'belum')
                 """;
         try (PreparedStatement statement = connection.prepareStatement(insertSql)) {
-            statement.setInt(1, plannerId);
-            statement.setInt(2, userId);
-            statement.setInt(3, menuId);
-            statement.executeUpdate();
+            for (ShoppingRequirement requirement : requirements.values()) {
+                double quantityToBuy = Math.max(0, requirement.requiredQuantity());
+                if (quantityToBuy <= 0) {
+                    continue;
+                }
+
+                statement.setInt(1, plannerId);
+                statement.setInt(2, requirement.ingredientId());
+                statement.setDouble(3, quantityToBuy);
+                statement.setString(4, requirement.unit());
+                statement.setBigDecimal(5, getLatestIngredientPrice(connection, requirement.ingredientId())
+                        .multiply(BigDecimal.valueOf(quantityToBuy)));
+                statement.addBatch();
+            }
+            statement.executeBatch();
         }
+    }
+
+    private Map<Integer, ShoppingRequirement> loadMenuRequirements(Connection connection, int menuId) throws SQLException {
+        String sql = """
+                SELECT ri.ingredient_id, ri.amount, ri.unit AS recipe_unit, i.unit AS ingredient_unit
+                FROM meal_slot ms
+                JOIN recipe_ingredient ri ON ri.recipe_id = ms.recipe_id
+                JOIN ingredient i ON i.ingredient_id = ri.ingredient_id
+                WHERE ms.menu_id = ?
+                  AND ms.is_eating_out = 0
+                  AND ms.recipe_id IS NOT NULL
+                """;
+
+        Map<Integer, ShoppingRequirement> requirements = new HashMap<>();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, menuId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int ingredientId = resultSet.getInt("ingredient_id");
+                    String targetUnit = resultSet.getString("ingredient_unit");
+                    double quantity = convertOrKeep(
+                            resultSet.getDouble("amount"),
+                            resultSet.getString("recipe_unit"),
+                            targetUnit
+                    );
+
+                    requirements.merge(
+                            ingredientId,
+                            new ShoppingRequirement(ingredientId, targetUnit, quantity),
+                            (existing, incoming) -> existing.plus(incoming.requiredQuantity())
+                    );
+                }
+            }
+        }
+
+        return requirements;
+    }
+
+    private void subtractKitchenStock(Connection connection, int userId, Map<Integer, ShoppingRequirement> requirements)
+            throws SQLException {
+        if (requirements.isEmpty()) {
+            return;
+        }
+
+        String sql = """
+                SELECT ingredient_id, quantity, unit
+                FROM kitchen_stock
+                WHERE user_id = ?
+                """;
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, userId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int ingredientId = resultSet.getInt("ingredient_id");
+                    ShoppingRequirement requirement = requirements.get(ingredientId);
+                    if (requirement == null) {
+                        continue;
+                    }
+
+                    double stockQuantity = convertOrZero(
+                            resultSet.getDouble("quantity"),
+                            resultSet.getString("unit"),
+                            requirement.unit()
+                    );
+                    requirements.put(ingredientId, requirement.minus(stockQuantity));
+                }
+            }
+        }
+    }
+
+    private BigDecimal getLatestIngredientPrice(Connection connection, int ingredientId) throws SQLException {
+        String sql = """
+                SELECT price
+                FROM ingredient_price
+                WHERE ingredient_id = ?
+                ORDER BY effective_date DESC, price_id DESC
+                LIMIT 1
+                """;
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, ingredientId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getBigDecimal("price");
+                }
+            }
+        }
+
+        return BigDecimal.ZERO;
+    }
+
+    private double convertOrKeep(double quantity, String fromUnit, String toUnit) {
+        double converted = UnitOptions.convertQuantity(quantity, fromUnit, toUnit);
+        return Double.isNaN(converted) ? quantity : converted;
+    }
+
+    private double convertOrZero(double quantity, String fromUnit, String toUnit) {
+        double converted = UnitOptions.convertQuantity(quantity, fromUnit, toUnit);
+        return Double.isNaN(converted) ? 0 : converted;
     }
 
     private void updatePlannerTotal(Connection connection, int plannerId) throws SQLException {
@@ -379,5 +475,15 @@ public class ShoppingPlannerDAO {
                 resultSet.getBigDecimal("actual_price"),
                 resultSet.getString("status_beli")
         );
+    }
+
+    private record ShoppingRequirement(int ingredientId, String unit, double requiredQuantity) {
+        private ShoppingRequirement plus(double quantity) {
+            return new ShoppingRequirement(ingredientId, unit, requiredQuantity + quantity);
+        }
+
+        private ShoppingRequirement minus(double quantity) {
+            return new ShoppingRequirement(ingredientId, unit, Math.max(0, requiredQuantity - quantity));
+        }
     }
 }
