@@ -7,11 +7,12 @@ public class IngredientPrice {
     private int ingredientId;
     private double price;
     private LocalDate effectiveDate;
-    private String ingredientName;
 
-    public IngredientPrice() {}
+    public IngredientPrice() {
+    }
 
-    public IngredientPrice(int ingredientId, double price, LocalDate effectiveDate) {
+    public IngredientPrice(int priceId, int ingredientId, double price, LocalDate effectiveDate) {
+        this.priceId = priceId;
         this.ingredientId = ingredientId;
         this.price = price;
         this.effectiveDate = effectiveDate;
@@ -47,24 +48,5 @@ public class IngredientPrice {
 
     public void setEffectiveDate(LocalDate effectiveDate) {
         this.effectiveDate = effectiveDate;
-    }
-
-    public String getIngredientName() {
-        return ingredientName;
-    }
-
-    public void setIngredientName(String ingredientName) {
-        this.ingredientName = ingredientName;
-    }
-
-    @Override
-    public String toString() {
-        return "IngredientPrice{" +
-                "priceId=" + priceId +
-                ", ingredientId=" + ingredientId +
-                ", ingredientName='" + ingredientName + '\'' +
-                ", price=" + price +
-                ", effectiveDate=" + effectiveDate +
-                '}';
     }
 }
