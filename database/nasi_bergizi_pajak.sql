@@ -15,26 +15,6 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-CREATE DATABASE IF NOT EXISTS `nasi_bergizi_pajak` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `nasi_bergizi_pajak`;
-
--- Pre-create parent table so child tables with FK to user_account can be created.
-CREATE TABLE IF NOT EXISTS `user_account` (
-  `user_id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `first_name` varchar(100) NOT NULL,
-  `last_name` varchar(100) DEFAULT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  `signup_datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `profile_image_name` varchar(255) DEFAULT NULL,
-  `tipe_admin` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `uq_user_email` (`email`),
-  CONSTRAINT `chk_user_active` CHECK ((`active` in (0,1))),
-  CONSTRAINT `chk_user_tipe_admin` CHECK ((`tipe_admin` in (0,1)))
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 --
 -- Table structure for table `budget`
 --
@@ -45,11 +25,11 @@ DROP TABLE IF EXISTS `budget`;
 CREATE TABLE `budget` (
   `budget_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
-  `name` varchar(100) NOT NULL,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `amount` decimal(15,2) NOT NULL,
   `period_start` date NOT NULL,
   `period_end` date NOT NULL,
-  `status` varchar(50) NOT NULL DEFAULT 'active',
+  `status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   PRIMARY KEY (`budget_id`),
   KEY `idx_budget_user_id` (`user_id`),
   CONSTRAINT `fk_budget_user` FOREIGN KEY (`user_id`) REFERENCES `user_account` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -78,11 +58,11 @@ DROP TABLE IF EXISTS `family_member`;
 CREATE TABLE `family_member` (
   `member_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
-  `name` varchar(100) NOT NULL,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `birth_date` date DEFAULT NULL,
   `height` double DEFAULT NULL,
   `weight` double DEFAULT NULL,
-  `allergy` text,
+  `allergy` text COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`member_id`),
   KEY `idx_family_member_user_id` (`user_id`),
   CONSTRAINT `fk_fm_user` FOREIGN KEY (`user_id`) REFERENCES `user_account` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -108,8 +88,8 @@ DROP TABLE IF EXISTS `ingredient`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ingredient` (
   `ingredient_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  `unit` varchar(50) NOT NULL,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `unit` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`ingredient_id`),
   UNIQUE KEY `uq_ingredient_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -140,7 +120,7 @@ CREATE TABLE `ingredient_nutrition` (
   `carbohydrate` decimal(10,2) NOT NULL DEFAULT '0.00',
   `fat` decimal(10,2) NOT NULL DEFAULT '0.00',
   `fibre` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `unit` varchar(50) NOT NULL,
+  `unit` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`nutrition_id`),
   UNIQUE KEY `uq_nutrition_ingredient` (`ingredient_id`),
   CONSTRAINT `fk_in_ingredient` FOREIGN KEY (`ingredient_id`) REFERENCES `ingredient` (`ingredient_id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -203,8 +183,8 @@ CREATE TABLE `kitchen_stock` (
   `user_id` int NOT NULL,
   `ingredient_id` int NOT NULL,
   `quantity` double NOT NULL DEFAULT '0',
-  `unit` varchar(50) NOT NULL,
-  `storage_location` varchar(100) DEFAULT NULL,
+  `unit` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `storage_location` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `expiry_date` date DEFAULT NULL,
   PRIMARY KEY (`stock_id`),
   KEY `idx_kitchen_stock_user_id` (`user_id`),
@@ -235,16 +215,19 @@ DROP TABLE IF EXISTS `meal_slot`;
 CREATE TABLE `meal_slot` (
   `slot_id` int NOT NULL AUTO_INCREMENT,
   `menu_id` int NOT NULL,
-  `recipe_id` int NOT NULL,
+  `recipe_id` int DEFAULT NULL,
   `meal_date` date NOT NULL,
-  `meal_time` varchar(50) NOT NULL,
+  `meal_time` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `is_eating_out` tinyint(1) NOT NULL DEFAULT '0',
   `outside_cost` decimal(15,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`slot_id`),
   KEY `idx_meal_slot_menu_id` (`menu_id`),
   KEY `idx_meal_slot_recipe_id` (`recipe_id`),
+  CONSTRAINT `fk_ms_menu` FOREIGN KEY (`menu_id`) REFERENCES `weekly_menu` (`menu_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_ms_recipe` FOREIGN KEY (`recipe_id`) REFERENCES `recipe` (`recipe_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `chk_ms_is_eating_out` CHECK ((`is_eating_out` in (0,1))),
-  CONSTRAINT `chk_ms_outside_cost` CHECK ((`outside_cost` >= 0))
+  CONSTRAINT `chk_ms_outside_cost` CHECK ((`outside_cost` >= 0)),
+    CONSTRAINT `chk_ms_recipe_or_eating_out` CHECK (((`is_eating_out` = 0 AND `recipe_id` IS NOT NULL) OR (`is_eating_out` = 1 AND `recipe_id` IS NULL)))
 ) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -303,14 +286,14 @@ DROP TABLE IF EXISTS `recipe`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `recipe` (
   `recipe_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(200) NOT NULL,
-  `description` text,
+  `name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
   `serving_size` int NOT NULL DEFAULT '1',
-  `status` varchar(50) NOT NULL DEFAULT 'active',
+  `status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   PRIMARY KEY (`recipe_id`),
   UNIQUE KEY `uq_recipe_name` (`name`),
   CONSTRAINT `chk_recipe_serving_size` CHECK ((`serving_size` > 0))
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -319,7 +302,7 @@ CREATE TABLE `recipe` (
 
 LOCK TABLES `recipe` WRITE;
 /*!40000 ALTER TABLE `recipe` DISABLE KEYS */;
-INSERT INTO `recipe` VALUES (1,'Nasi Goreng','Fuga temporibus laboriosam doloribus. Quidem temporibus ipsum sint eius doloremque. Expedita excepturi sint nobis tempora inventore magni recusandae.',3,'inactive'),(2,'Ayam Bakar','Consectetur soluta ut rem vitae possimus. Vitae pariatur animi.',8,'inactive'),(3,'Sayur Bayam','A hic adipisci quibusdam vitae dolore nesciunt ea. Omnis cum eligendi iure minima.',4,'inactive'),(4,'Tumis Tempe','Dolorem ducimus quibusdam veniam earum veniam.',8,'active'),(5,'Sup Ayam','Sit atque vitae soluta ratione quo quia.',5,'inactive'),(6,'Omelette','Suscipit quibusdam est consectetur quam voluptas perferendis accusamus. Excepturi a ea magnam.',2,'inactive'),(7,'Tahu Goreng','Accusantium error ea eveniet vel rem. Officiis harum minus quae. Sed blanditiis consectetur quidem sequi.',4,'inactive'),(8,'Capcay','Necessitatibus consequuntur odit voluptate eaque. Dolor quos animi ea nemo.',6,'inactive'),(9,'Sop Wortel','Qui adipisci excepturi nisi quidem. Quas nostrum ullam deleniti. Voluptas deserunt sequi cupiditate eligendi porro.',2,'active'),(10,'Tempe Orek','Voluptatem ullam eveniet suscipit. Expedita nesciunt impedit maiores. Eius quia optio sequi autem iusto officiis dolorum. Ea porro doloremque labore provident.',3,'active'),(11,'Extreme Portion Meal','Huge serving meal',100,'active');
+INSERT INTO `recipe` VALUES (1,'Nasi Goreng','Nasi digoreng',3,'INACTIVE'),(2,'Ayam Bakar','Consectetur soluta ut rem vitae possimus. Vitae pariatur animi.',8,'INACTIVE'),(3,'Sayur Bayam','A hic adipisci quibusdam vitae dolore nesciunt ea. Omnis cum eligendi iure minima.',4,'INACTIVE'),(4,'Tumis Tempe','Dolorem ducimus quibusdam veniam earum veniam.',8,'ACTIVE'),(5,'Sup Ayam','Sit atque vitae soluta ratione quo quia.',5,'INACTIVE'),(6,'Omelette','Suscipit quibusdam est consectetur quam voluptas perferendis accusamus. Excepturi a ea magnam.',2,'INACTIVE'),(7,'Tahu Goreng','Accusantium error ea eveniet vel rem. Officiis harum minus quae. Sed blanditiis consectetur quidem sequi.',4,'INACTIVE'),(8,'Capcay','Cpcy',6,'INACTIVE'),(9,'Sop Wortel','Sop wortel',2,'INACTIVE'),(10,'Tempe Orek','Voluptatem ullam eveniet suscipit. Expedita nesciunt impedit maiores. Eius quia optio sequi autem iusto officiis dolorum. Ea porro doloremque labore provident.',3,'ACTIVE'),(11,'Extreme Portion Meal','Huge serving meal',100,'ACTIVE'),(13,'Nasi Bakar','Nasi dibakar',3,'ACTIVE'),(16,'Mie Goreng','mie goreng',2,'INACTIVE');
 /*!40000 ALTER TABLE `recipe` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -335,7 +318,7 @@ CREATE TABLE `recipe_ingredient` (
   `recipe_id` int NOT NULL,
   `ingredient_id` int NOT NULL,
   `amount` double NOT NULL,
-  `unit` varchar(50) NOT NULL,
+  `unit` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`recipe_ingredient_id`),
   UNIQUE KEY `uq_ri_recipe_ingredient` (`recipe_id`,`ingredient_id`),
   KEY `idx_recipe_ingredient_recipe_id` (`recipe_id`),
@@ -352,7 +335,7 @@ CREATE TABLE `recipe_ingredient` (
 
 LOCK TABLES `recipe_ingredient` WRITE;
 /*!40000 ALTER TABLE `recipe_ingredient` DISABLE KEYS */;
-INSERT INTO `recipe_ingredient` VALUES (1,1,7,1.15,'liter'),(2,1,12,2.1,'ml'),(3,1,3,2.38,'kg'),(4,1,14,1.11,'liter'),(5,2,7,0.2,'ml'),(6,2,13,1.96,'kg'),(7,2,10,4.72,'pcs'),(8,2,12,3.79,'liter'),(9,3,9,4.02,'gram'),(10,3,12,2.49,'pcs'),(11,3,14,2.24,'kg'),(12,3,15,2.01,'liter'),(13,4,12,4.91,'ml'),(14,4,3,0.23,'liter'),(15,4,8,3,'kg'),(16,4,14,0.51,'liter'),(17,5,3,0.35,'liter'),(18,5,14,1.7,'liter'),(19,5,8,1.7,'liter'),(20,5,15,1.46,'liter'),(21,6,5,0.19,'ml'),(22,6,14,0.36,'pcs'),(23,6,2,1.2,'kg'),(24,6,8,3.93,'kg'),(25,7,13,4.21,'ml'),(26,7,1,0.85,'gram'),(27,7,4,2.42,'kg'),(28,7,15,2.86,'gram'),(29,8,8,0.92,'ml'),(30,8,12,4.82,'kg'),(31,8,5,3.91,'gram'),(32,8,6,4.83,'kg'),(33,9,10,3.42,'liter'),(34,9,1,2.04,'gram'),(35,9,5,0.47,'gram'),(36,9,15,0.6,'pcs'),(37,10,14,4,'ml'),(38,10,11,3.93,'pcs'),(39,10,10,2.71,'pcs'),(40,10,2,0.44,'pcs');
+INSERT INTO `recipe_ingredient` VALUES (1,1,7,1.15,'liter'),(2,1,12,2.1,'ml'),(3,1,3,2.38,'kg'),(4,1,14,1.11,'liter'),(5,1,2,0.3,'kg'),(6,2,13,1.96,'kg'),(7,2,10,4.72,'pcs'),(8,2,12,3.79,'liter'),(9,3,9,4.02,'gram'),(10,3,12,2.49,'pcs'),(11,3,14,2.24,'kg'),(12,3,15,2.01,'liter'),(13,4,12,4.91,'ml'),(14,4,3,0.23,'liter'),(15,4,8,3,'kg'),(16,4,14,0.51,'liter'),(17,5,3,0.35,'liter'),(18,5,14,1.7,'liter'),(19,5,8,1.7,'liter'),(20,5,15,1.46,'liter'),(21,6,5,0.19,'ml'),(22,6,14,0.36,'pcs'),(23,6,2,1.2,'kg'),(24,6,8,3.93,'kg'),(25,7,13,4.21,'ml'),(26,7,1,0.85,'gram'),(27,7,4,2.42,'kg'),(28,7,15,2.86,'gram'),(29,8,8,0.92,'ml'),(30,8,12,4.82,'kg'),(31,8,5,3.91,'gram'),(32,8,6,4.83,'kg'),(33,9,10,3.42,'liter'),(34,9,1,2.04,'gram'),(35,9,5,0.47,'gram'),(36,9,15,0.6,'pcs'),(37,10,14,4,'ml'),(38,10,11,3.93,'pcs'),(39,10,10,2.71,'pcs'),(40,10,2,0.44,'pcs');
 /*!40000 ALTER TABLE `recipe_ingredient` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -369,9 +352,10 @@ CREATE TABLE `shopping_planner` (
   `created_datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `total_estimation` decimal(15,2) NOT NULL DEFAULT '0.00',
   `total_actual` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `status` varchar(50) NOT NULL DEFAULT 'draft',
+  `status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
   PRIMARY KEY (`planner_id`),
   KEY `idx_shopping_planner_menu_id` (`menu_id`),
+  CONSTRAINT `fk_sp_menu` FOREIGN KEY (`menu_id`) REFERENCES `weekly_menu` (`menu_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `chk_sp_total_actual` CHECK ((`total_actual` >= 0)),
   CONSTRAINT `chk_sp_total_estimation` CHECK ((`total_estimation` >= 0))
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -399,10 +383,10 @@ CREATE TABLE `shopping_planner_item` (
   `planner_id` int NOT NULL,
   `ingredient_id` int NOT NULL,
   `required_qty` double NOT NULL,
-  `unit` varchar(50) NOT NULL,
+  `unit` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `estimated_price` decimal(15,2) NOT NULL DEFAULT '0.00',
   `actual_price` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `status_beli` varchar(50) NOT NULL DEFAULT 'belum',
+  `status_beli` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'belum',
   PRIMARY KEY (`item_id`),
   UNIQUE KEY `uq_spi_planner_ingredient` (`planner_id`,`ingredient_id`),
   KEY `idx_shopping_item_planner_id` (`planner_id`),
@@ -429,25 +413,24 @@ UNLOCK TABLES;
 -- Table structure for table `user_account`
 --
 
--- user_account is pre-created at the top because other tables reference it.
--- DROP TABLE IF EXISTS `user_account`;
+DROP TABLE IF EXISTS `user_account`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE IF NOT EXISTS `user_account` (
+CREATE TABLE `user_account` (
   `user_id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `first_name` varchar(100) NOT NULL,
-  `last_name` varchar(100) DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `first_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `last_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `signup_datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `profile_image_name` varchar(255) DEFAULT NULL,
+  `profile_image_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `tipe_admin` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `uq_user_email` (`email`),
   CONSTRAINT `chk_user_active` CHECK ((`active` in (0,1))),
   CONSTRAINT `chk_user_tipe_admin` CHECK ((`tipe_admin` in (0,1)))
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -456,7 +439,7 @@ CREATE TABLE IF NOT EXISTS `user_account` (
 
 LOCK TABLES `user_account` WRITE;
 /*!40000 ALTER TABLE `user_account` DISABLE KEYS */;
-INSERT IGNORE INTO `user_account` VALUES (1,'user0@example.com','9662760ee4f93f2d023d30ec9d7b8a7de899064b6a76568f213aeb005199d29e','Natalia','Aryani',0,'2025-04-10 20:12:50','profile_0.jpg',1),(2,'user1@example.com','d5f96ef8432f56d800f3091d7fd9ecd88d71df7a0fdbdeff06de2e72594bf298','Asman','Fujiati',0,'2023-06-02 06:07:39','profile_1.jpg',0),(3,'user2@example.com','72bd3a665f6b3defff84daac757840ebb73165258a0cd832717a4fff5a8552d7','Tasdik','Manullang',1,'2022-03-27 20:30:13','profile_2.jpg',0),(4,'user3@example.com','4b3ec25d3aec834fc0a91b14648270712d6d270b48cdebe096e4e5a31a22b153','Paiman','Adriansyah',0,'2023-01-10 11:18:50','profile_3.jpg',0),(5,'user4@example.com','7cbbde34ec0e0eea0a76d1b69e13f72a21378baf4e0a4ff7bb2139d788ff5494','Anom','Purwanti',0,'2024-08-04 00:54:30','profile_4.jpg',0),(6,'user5@example.com','6613a9caec6c9d56d2509abebd419483f283424deccd41175604156da15a78d9','Nasim','Maryati',0,'2022-12-29 00:37:01','profile_5.jpg',0),(7,'user6@example.com','39f58f608d9471a92b2a3eb88a66236a17c9f0b4e5d1fdd8814f1d1020b55b58','Kiandra','Hutagalung',0,'2021-05-11 06:00:09','profile_6.jpg',0),(8,'user7@example.com','6c14f3607da78f1a45b7f755711eb865dce2bd53b53b21a0523ceab9dbbdde2a','Gangsa','Tarihoran',0,'2020-11-25 01:03:31','profile_7.jpg',0),(9,'user8@example.com','2a09347c0b3974c5a55757dd7842d359365718ac767479a0c75f4bb7c36064cb','Shakila','Simbolon',1,'2026-04-11 21:58:26','profile_8.jpg',0),(10,'user9@example.com','e298ddbdd76ad331d72c9373e93bb7758d7843bcbab6e0c9aefad314043a1ee2','Kairav','Usamah',0,'2022-06-20 21:21:43','profile_9.jpg',0),(11,'edgecase@example.com','123','A',NULL,1,'2026-05-05 23:21:50',NULL,0);
+INSERT INTO `user_account` VALUES (0,'admin@nasibergizipajak.com','PBKDF2WithHmacSHA256:65536:Lke2MMfK/Q15mSkcZ0HUnw==:FDTjH4PMjdEnwgsG1p/DbmZXLKBEowAXLJAhhD2j+ok=','Admin','Nasi Bergizi Pajak',1,'2026-05-09 21:01:01',NULL,1),(1,'user0@example.com','9662760ee4f93f2d023d30ec9d7b8a7de899064b6a76568f213aeb005199d29e','Natalia','Aryani',0,'2025-04-10 20:12:50','profile_0.jpg',1),(2,'user1@example.com','d5f96ef8432f56d800f3091d7fd9ecd88d71df7a0fdbdeff06de2e72594bf298','Asman','Fujiati',0,'2023-06-02 06:07:39','profile_1.jpg',0),(3,'user2@example.com','72bd3a665f6b3defff84daac757840ebb73165258a0cd832717a4fff5a8552d7','Tasdik','Manullang',1,'2022-03-27 20:30:13','profile_2.jpg',0),(4,'user3@example.com','4b3ec25d3aec834fc0a91b14648270712d6d270b48cdebe096e4e5a31a22b153','Paiman','Adriansyah',0,'2023-01-10 11:18:50','profile_3.jpg',0),(5,'user4@example.com','7cbbde34ec0e0eea0a76d1b69e13f72a21378baf4e0a4ff7bb2139d788ff5494','Anom','Purwanti',0,'2024-08-04 00:54:30','profile_4.jpg',0),(6,'user5@example.com','6613a9caec6c9d56d2509abebd419483f283424deccd41175604156da15a78d9','Nasim','Maryati',0,'2022-12-29 00:37:01','profile_5.jpg',0),(7,'user6@example.com','39f58f608d9471a92b2a3eb88a66236a17c9f0b4e5d1fdd8814f1d1020b55b58','Kiandra','Hutagalung',0,'2021-05-11 06:00:09','profile_6.jpg',0),(8,'user7@example.com','6c14f3607da78f1a45b7f755711eb865dce2bd53b53b21a0523ceab9dbbdde2a','Gangsa','Tarihoran',0,'2020-11-25 01:03:31','profile_7.jpg',0),(9,'user8@example.com','2a09347c0b3974c5a55757dd7842d359365718ac767479a0c75f4bb7c36064cb','Shakila','Simbolon',1,'2026-04-11 21:58:26','profile_8.jpg',0),(10,'user9@example.com','e298ddbdd76ad331d72c9373e93bb7758d7843bcbab6e0c9aefad314043a1ee2','Kairav','Usamah',0,'2022-06-20 21:21:43','profile_9.jpg',0),(11,'edgecase@example.com','123','A',NULL,1,'2026-05-05 23:21:50',NULL,0);
 /*!40000 ALTER TABLE `user_account` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -474,7 +457,7 @@ CREATE TABLE `weekly_menu` (
   `week_start_date` date NOT NULL,
   `week_end_date` date NOT NULL,
   `total_estimation` decimal(15,2) NOT NULL DEFAULT '0.00',
-  `status_budget` varchar(50) NOT NULL DEFAULT 'draft',
+  `status_budget` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
   `created_datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`menu_id`),
   KEY `idx_weekly_menu_user_id` (`user_id`),
@@ -495,14 +478,6 @@ LOCK TABLES `weekly_menu` WRITE;
 INSERT INTO `weekly_menu` VALUES (1,1,1,'2026-05-04','2026-05-10',62019.54,'completed','2026-05-05 23:21:50'),(2,2,2,'2026-05-11','2026-05-17',831214.37,'draft','2026-05-05 23:21:50'),(3,3,3,'2026-04-28','2026-05-04',461847.23,'completed','2026-05-05 23:21:50'),(4,4,4,'2026-05-08','2026-05-14',653805.85,'completed','2026-05-05 23:21:50'),(5,5,5,'2026-05-11','2026-05-17',721943.21,'completed','2026-05-05 23:21:50'),(6,6,6,'2026-04-28','2026-05-04',217330.11,'overbudget','2026-05-05 23:21:50'),(7,7,7,'2026-05-10','2026-05-16',967200.04,'completed','2026-05-05 23:21:50'),(8,8,8,'2026-04-28','2026-05-04',635116.74,'overbudget','2026-05-05 23:21:50'),(9,9,9,'2026-05-02','2026-05-08',785909.38,'completed','2026-05-05 23:21:50'),(10,10,10,'2026-05-04','2026-05-10',463795.77,'overbudget','2026-05-05 23:21:50');
 /*!40000 ALTER TABLE `weekly_menu` ENABLE KEYS */;
 UNLOCK TABLES;
-
-ALTER TABLE `meal_slot`
-  ADD CONSTRAINT `fk_ms_menu` FOREIGN KEY (`menu_id`) REFERENCES `weekly_menu` (`menu_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_ms_recipe` FOREIGN KEY (`recipe_id`) REFERENCES `recipe` (`recipe_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
-ALTER TABLE `shopping_planner`
-  ADD CONSTRAINT `fk_sp_menu` FOREIGN KEY (`menu_id`) REFERENCES `weekly_menu` (`menu_id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -513,4 +488,4 @@ ALTER TABLE `shopping_planner`
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-05 23:22:41
+-- Dump completed on 2026-05-10  1:03:43
