@@ -44,8 +44,7 @@
                 <Button fx:id="parameterPlannerNavButton" text="Parameter Planner" maxWidth="Infinity" onAction="#showParameterPlannerPage" styleClass="userdash-nav-button"/>
                 <Button fx:id="kitchenStockNavButton" text="Stok Dapur" maxWidth="Infinity" onAction="#handleStokDapur" styleClass="userdash-nav-button"/>
                 <Button fx:id="weeklyMenuNavButton" text="Menu Mingguan" maxWidth="Infinity" onAction="#showWeeklyMenuPage" styleClass="userdash-nav-button"/>
-                <Button text="Shopping Planner" maxWidth="Infinity" styleClass="userdash-nav-button"/>
-                <Button text="Hasil Belanja" maxWidth="Infinity" styleClass="userdash-nav-button"/>
+                <Button fx:id="shoppingPlannerNavButton" text="Shopping Planner" maxWidth="Infinity" onAction="#handleOpenShoppingPlanner" styleClass="userdash-nav-button"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
@@ -274,7 +273,7 @@
                                             <Label text="21 Apr 2024" styleClass="userdash-stock-subtitle"/>
                                         </VBox>
                                         <Region HBox.hgrow="ALWAYS"/>
-                                        <Label text="Dalam Proses" styleClass="userdash-chip-orange"/>
+                                        <Button text="Buka" onAction="#handleOpenShoppingPlanner" styleClass="userdash-small-button"/>
                                     </HBox>
                                 </VBox>
 

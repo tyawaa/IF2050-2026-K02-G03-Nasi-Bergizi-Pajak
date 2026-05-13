@@ -11,8 +11,17 @@ import javafx.stage.Stage;
 import nasi_bergizi_pajak.model.Akun;
 
 public final class AppNavigator {
+    public enum DashboardPage {
+        DASHBOARD,
+        FAMILY_PROFILE,
+        WEEKLY_MENU,
+        RECOMMENDATION,
+        SETTINGS
+    }
+
     private static Stage stage;
     private static Akun currentUser;
+    private static DashboardPage requestedDashboardPage = DashboardPage.DASHBOARD;
 
     private AppNavigator() {
     }
@@ -27,6 +36,12 @@ public final class AppNavigator {
         return currentUser;
     }
 
+    public static DashboardPage consumeRequestedDashboardPage() {
+        DashboardPage page = requestedDashboardPage;
+        requestedDashboardPage = DashboardPage.DASHBOARD;
+        return page;
+    }
+
     public static void showLogin() {
         currentUser = null;
         loadScene("/view/LoginView.fxml", "Nasi Bergizi Pajak - Login");
@@ -37,7 +52,12 @@ public final class AppNavigator {
     }
 
     public static void showDashboard(Akun akun) {
+        showDashboard(akun, DashboardPage.DASHBOARD);
+    }
+
+    public static void showDashboard(Akun akun, DashboardPage page) {
         currentUser = akun;
+        requestedDashboardPage = page == null ? DashboardPage.DASHBOARD : page;
         if (akun != null && akun.isAdmin()) {
             loadScene("/view/AdminDashboardView.fxml", "Nasi Bergizi Pajak - Dashboard Admin");
             return;
@@ -48,6 +68,10 @@ public final class AppNavigator {
 
     public static void showKitchenStock() {
         loadScene("/view/KitchenStockView.fxml", "Nasi Bergizi Pajak - Stok Dapur");
+    }
+
+    public static void showShoppingPlanner() {
+        loadScene("/view/ShoppingPlannerView.fxml", "Nasi Bergizi Pajak - Planner Belanja");
     }
 
     private static void loadScene(String fxmlPath, String title) {
@@ -62,13 +86,18 @@ public final class AppNavigator {
             throw new IOException("Resource tidak ditemukan: " + fxmlPath);
         }
 
+        boolean wasMaximized = stage.isMaximized();
+        double width = stage.getScene() == null ? 1180 : stage.getScene().getWidth();
+        double height = stage.getScene() == null ? 720 : stage.getScene().getHeight();
+
         FXMLLoader loader = new FXMLLoader(resource);
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 1180, 720);
+        Scene scene = new Scene(root, width, height);
 
         stage.setTitle(title);
         stage.setScene(scene);
+        stage.setMaximized(wasMaximized);
         stage.show();
 
     } catch (Exception e) {

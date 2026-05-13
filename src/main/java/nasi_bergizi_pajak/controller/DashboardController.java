@@ -116,6 +116,7 @@ public class DashboardController {
     @FXML private Button budgetResetButton;
     @FXML private Button budgetSaveButton;
     @FXML private Button settingsNavButton;
+    @FXML private Button shoppingPlannerNavButton;
     @FXML private Button profileSettingsTabButton;
     @FXML private Button securitySettingsTabButton;
     @FXML private HBox userProfileMenuButton;
@@ -241,6 +242,17 @@ public class DashboardController {
         setupFamilyTable();
         setupWeeklyPlanner();
         refreshFamilyMembers();
+        openRequestedDashboardPage();
+    }
+
+    private void openRequestedDashboardPage() {
+        switch (AppNavigator.consumeRequestedDashboardPage()) {
+            case FAMILY_PROFILE -> showFamilyProfilePage();
+            case WEEKLY_MENU -> showWeeklyMenuPage();
+            case RECOMMENDATION -> showRecommendationPage();
+            case SETTINGS -> showSettingsPage();
+            case DASHBOARD -> showDashboardPage();
+        }
         refreshBudgets();
     }
 
@@ -2177,6 +2189,10 @@ public class DashboardController {
         refreshWeeklyMenus();
     }
 
+    private void showRecommendationPage() {
+        showWeeklyMenuPage();
+    }
+
     @FXML
     private void handleSavePlannerParameter() {
         updatePlannerPreview();
@@ -2330,6 +2346,8 @@ public class DashboardController {
         setNavClass(budgetNavButton, activeButton == budgetNavButton);
         setNavClass(parameterPlannerNavButton, activeButton == parameterPlannerNavButton);
         setNavClass(weeklyMenuNavButton, activeButton == weeklyMenuNavButton);
+        setNavClass(shoppingPlannerNavButton, activeButton == shoppingPlannerNavButton);
+
         setNavClass(settingsNavButton, activeButton == settingsNavButton);
         setNavClass(kitchenStockNavButton, activeButton == kitchenStockNavButton);
     }
@@ -2822,6 +2840,11 @@ public class DashboardController {
     @FXML
     private void handleLogout() {
         AppNavigator.showLogin();
+    }
+
+    @FXML
+    private void handleOpenShoppingPlanner() {
+        AppNavigator.showShoppingPlanner();
     }
 
     @FXML
