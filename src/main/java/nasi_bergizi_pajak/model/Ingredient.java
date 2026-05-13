@@ -1,13 +1,21 @@
 package nasi_bergizi_pajak.model;
 
+import java.time.LocalDate;
+
 public class Ingredient {
     private int ingredientId;
     private String name;
     private String unit;
     private double pricePerUnit;
+    private LocalDate priceEffectiveDate;
 
-    // Constructors
-    public Ingredient() {}
+    public Ingredient() {
+    }
+
+    public Ingredient(String name, String unit) {
+        this.name = name;
+        this.unit = unit;
+    }
 
     public Ingredient(int ingredientId, String name, String unit) {
         this(ingredientId, name, unit, 0);
@@ -20,7 +28,6 @@ public class Ingredient {
         this.pricePerUnit = pricePerUnit;
     }
 
-    // Getters and Setters
     public int getIngredientId() {
         return ingredientId;
     }
@@ -53,8 +60,37 @@ public class Ingredient {
         this.pricePerUnit = pricePerUnit;
     }
 
+    public double getCurrentPrice() {
+        return pricePerUnit;
+    }
+
+    public void setCurrentPrice(double currentPrice) {
+        this.pricePerUnit = currentPrice;
+    }
+
+    public LocalDate getPriceEffectiveDate() {
+        return priceEffectiveDate;
+    }
+
+    public void setPriceEffectiveDate(LocalDate priceEffectiveDate) {
+        this.priceEffectiveDate = priceEffectiveDate;
+    }
+
     @Override
     public String toString() {
-        return name;
+        return name == null ? "" : name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Ingredient that = (Ingredient) o;
+        return ingredientId == that.ingredientId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(ingredientId);
     }
 }
