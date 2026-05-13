@@ -72,8 +72,14 @@
     </GridPane>
 
     <VBox spacing="10" styleClass="recipe-ingredient-box">
-        <Label text="Bahan Resep"
-               styleClass="mini-section-title"/>
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="Bahan Resep"
+                   styleClass="mini-section-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="+ Bahan Baru"
+                    onAction="#handleAddNewIngredient"
+                    styleClass="button-secondary"/>
+        </HBox>
 
         <GridPane hgap="10" vgap="10">
             <columnConstraints>

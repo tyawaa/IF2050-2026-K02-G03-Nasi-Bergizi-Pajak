@@ -342,11 +342,14 @@
 
 .button-outline,
 .outline-button {
+    -fx-pref-height: 48px;
+    -fx-min-height: 48px;
     -fx-background-color: transparent;
     -fx-border-color: #F28C28;
     -fx-border-radius: 10px;
     -fx-background-radius: 10px;
     -fx-text-fill: #F28C28;
+    -fx-font-size: 15px;
     -fx-font-weight: 800;
     -fx-padding: 10px 18px;
     -fx-cursor: hand;
@@ -751,6 +754,274 @@
     -fx-padding: 6 14;
     -fx-font-weight: 700;
     -fx-alignment: center;
+}
+
+/* =========================
+   KITCHEN STOCK
+   ========================= */
+
+.stat-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 16px;
+    -fx-border-color: #EADCCB;
+    -fx-border-radius: 16px;
+    -fx-border-width: 1px;
+    -fx-padding: 28px 34px;
+    -fx-min-height: 142px;
+    -fx-effect: dropshadow(gaussian, rgba(112, 82, 45, 0.12), 12, 0, 0, 4);
+}
+
+.stat-card-total {
+    -fx-background-color: #FFFFFF;
+}
+
+.stat-card-low {
+    -fx-background-color: #FFFFFF;
+}
+
+.stat-card-expiring {
+    -fx-background-color: #FFFFFF;
+}
+
+.stat-card-expired {
+    -fx-background-color: #FFFFFF;
+}
+
+.stat-number {
+    -fx-font-size: 36px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #E07012;
+}
+
+.stat-card .stat-label {
+    -fx-font-size: 16px;
+    -fx-text-fill: #5F554D;
+}
+
+.stat-card-low .stat-number {
+    -fx-text-fill: #D86A10;
+}
+
+.stat-card-expiring .stat-number {
+    -fx-text-fill: #C99100;
+}
+
+.stat-card-expired .stat-number {
+    -fx-text-fill: #C7463F;
+}
+
+.table-section,
+.form-section {
+    -fx-background-color: white;
+    -fx-background-radius: 14px;
+    -fx-border-color: #E6D9C8;
+    -fx-border-radius: 14px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 10, 0, 0, 4);
+}
+
+.table-section {
+    -fx-padding: 18px 20px;
+}
+
+.form-section {
+    -fx-padding: 22px 24px;
+}
+
+.form-section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2E2A25;
+}
+
+.filter-tab {
+    -fx-background-color: transparent;
+    -fx-border-color: #E6D9C8;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-text-fill: #6F665D;
+    -fx-font-size: 13px;
+    -fx-padding: 6px 14px;
+    -fx-cursor: hand;
+    -fx-border-width: 1px;
+}
+
+.filter-tab:hover {
+    -fx-background-color: #FFF3E8;
+    -fx-text-fill: #F28C28;
+    -fx-border-color: #F28C28;
+}
+
+.filter-tab-active,
+.filter-tab-active:hover {
+    -fx-background-color: #F28C28;
+    -fx-text-fill: white;
+    -fx-border-color: #F28C28;
+    -fx-font-weight: 700;
+}
+
+.stock-table {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-table-cell-border-color: #F0E8DC;
+}
+
+.stock-table .column-header-background {
+    -fx-background-color: #FFF9F0;
+}
+
+.stock-table .column-header .label,
+.stock-table .table-cell {
+    -fx-alignment: CENTER;
+}
+
+.stock-table .column-header .label {
+    -fx-font-weight: 700;
+    -fx-text-fill: #2E2A25;
+    -fx-font-size: 13px;
+}
+
+.stock-table .table-cell {
+    -fx-padding: 7px 10px;
+}
+
+.stock-table .table-row-cell:odd {
+    -fx-background-color: #FDFAF7;
+}
+
+.stock-table .table-row-cell:even {
+    -fx-background-color: white;
+}
+
+.row-expired {
+    -fx-background-color: #FFF5F4 !important;
+}
+
+.row-expiring {
+    -fx-background-color: #FFFCF0 !important;
+}
+
+.row-low {
+    -fx-background-color: #FFF8F2 !important;
+}
+
+.status-good {
+    -fx-background-color: #EEF7EA;
+    -fx-text-fill: #2F6B2D;
+}
+
+.status-low {
+    -fx-background-color: #FFF3E8;
+    -fx-text-fill: #D96A1D;
+}
+
+.status-expiring {
+    -fx-background-color: #FFF8E1;
+    -fx-text-fill: #C9920A;
+}
+
+.status-expired {
+    -fx-background-color: #FFF1F0;
+    -fx-text-fill: #C94A3F;
+}
+
+.btn-edit {
+    -fx-background-color: #EEF7EA;
+    -fx-text-fill: #2F6B2D;
+    -fx-background-radius: 6px;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 4px 10px;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+}
+
+.btn-edit:hover {
+    -fx-background-color: #4F8A3C;
+    -fx-text-fill: white;
+}
+
+.btn-danger {
+    -fx-background-color: #FFF1F0;
+    -fx-text-fill: #C94A3F;
+    -fx-background-radius: 6px;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 4px 10px;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+}
+
+.btn-danger:hover {
+    -fx-background-color: #C94A3F;
+    -fx-text-fill: white;
+}
+
+.auth-input.combo-box {
+    -fx-pref-height: 46px;
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #E6D9C8;
+    -fx-border-width: 1px;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-prompt-text-fill: #9B9187;
+}
+
+.auth-input.combo-box:focused {
+    -fx-border-color: #F28C28;
+    -fx-effect: dropshadow(gaussian, rgba(242, 140, 40, 0.18), 10, 0, 0, 0);
+}
+
+.auth-input.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 0 14px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2E2A25;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.auth-input.combo-box .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 12px 0 8px;
+}
+
+.auth-input.combo-box .arrow {
+    -fx-background-color: #6F665D;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E6D9C8;
+    -fx-border-radius: 10px;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-padding: 10px 14px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2E2A25;
+}
+
+.combo-box-popup .list-view .list-cell:hover,
+.combo-box-popup .list-view .list-cell:filled:selected {
+    -fx-background-color: #FFF3E8;
+    -fx-text-fill: #D96A1D;
+}
+
+.auth-input.date-picker {
+    -fx-pref-height: 46px;
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E6D9C8;
+    -fx-border-width: 1px;
+}
+
+.auth-input.date-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2E2A25;
+    -fx-border-color: transparent;
 }
 
 .table-row-cell {
@@ -2196,6 +2467,57 @@
     -fx-background-color: #D96A1D;
 }
 
+.budget-summary-box {
+    -fx-background-color: #FFF8EF;
+    -fx-background-radius: 10px;
+    -fx-border-color: #F3DFC6;
+    -fx-border-radius: 10px;
+    -fx-padding: 16px;
+}
+
+.budget-date-picker,
+.budget-combo-box {
+    -fx-pref-height: 42px;
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 7px;
+    -fx-border-color: #E6D9C8;
+    -fx-border-radius: 7px;
+    -fx-border-width: 1px;
+    -fx-font-size: 14px;
+}
+
+.budget-date-picker:focused,
+.budget-combo-box:focused {
+    -fx-border-color: #F28C28;
+    -fx-effect: dropshadow(gaussian, rgba(242, 140, 40, 0.16), 8, 0, 0, 0);
+}
+
+.budget-date-picker .arrow-button,
+.budget-combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.budget-status-active,
+.budget-status-inactive {
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-padding: 5px 10px;
+}
+
+.budget-status-active {
+    -fx-background-color: #EAF7E5;
+    -fx-border-color: #BFE2B3;
+    -fx-text-fill: #2F6B2D;
+}
+
+.budget-status-inactive {
+    -fx-background-color: #F6F1EA;
+    -fx-border-color: #E3D6C7;
+    -fx-text-fill: #6F665D;
+}
+
 .family-table {
     -fx-background-color: white;
     -fx-border-color: transparent;
@@ -2524,6 +2846,497 @@
 .settings-input:focused {
     -fx-border-color: #F28C28;
     -fx-effect: dropshadow(gaussian, rgba(242, 140, 40, 0.16), 8, 0, 0, 0);
+}
+
+/* =========================
+   PARAMETER PLANNER
+   ========================= */
+
+.planner-info-banner {
+    -fx-background-color: #FFF2E6;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: #F8C99F;
+    -fx-padding: 36px 30px;
+    -fx-effect: dropshadow(gaussian, rgba(122, 74, 21, 0.08), 9, 0, 0, 2);
+}
+
+.planner-toast {
+    -fx-background-color: #EAF7E7;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #B8DFAF;
+    -fx-padding: 14px 18px;
+    -fx-effect: dropshadow(gaussian, rgba(54, 112, 47, 0.10), 10, 0, 0, 2);
+}
+
+.planner-toast-icon {
+    -fx-pref-width: 28px;
+    -fx-pref-height: 28px;
+    -fx-min-width: 28px;
+    -fx-min-height: 28px;
+    -fx-background-color: #4F8A3C;
+    -fx-background-radius: 999px;
+    -fx-alignment: CENTER;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: 900;
+}
+
+.planner-toast-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #236D28;
+}
+
+.planner-toast-message {
+    -fx-font-size: 13px;
+    -fx-text-fill: #3D7C3A;
+}
+
+.planner-banner-icon {
+    -fx-text-fill: #F28C28;
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-min-width: 28px;
+}
+
+.planner-banner-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #EA7418;
+}
+
+.planner-banner-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #EA7418;
+}
+
+.planner-card,
+.planner-preview-card {
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-padding: 28px;
+    -fx-effect: dropshadow(gaussian, rgba(73, 64, 48, 0.08), 9, 0, 0, 2);
+}
+
+.planner-card {
+    -fx-background-color: white;
+    -fx-border-color: #E6D9C8;
+}
+
+.planner-preview-card {
+    -fx-background-color: #EEF9EC;
+    -fx-border-color: #CFE6C6;
+}
+
+.planner-card-title,
+.planner-preview-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.planner-card-subtitle,
+.planner-preview-subtitle {
+    -fx-font-size: 16px;
+    -fx-text-fill: #6B625A;
+}
+
+.planner-preview-title,
+.planner-preview-icon,
+.planner-preview-subtitle {
+    -fx-text-fill: #2F7E32;
+}
+
+.planner-preview-icon {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.planner-section-title,
+.planner-field-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.planner-field-caption,
+.planner-helper-text,
+.planner-preview-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6B625A;
+}
+
+.planner-input {
+    -fx-pref-height: 42px;
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-border-color: #E6D9C8;
+    -fx-padding: 0 12px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #25211D;
+    -fx-prompt-text-fill: #8A8178;
+}
+
+.planner-input:focused {
+    -fx-border-color: #F28C28;
+    -fx-effect: dropshadow(gaussian, rgba(242, 140, 40, 0.16), 8, 0, 0, 0);
+}
+
+.planner-input .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.planner-input .text-field {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.planner-error-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #C54035;
+}
+
+.planner-primary-button,
+.planner-green-button {
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-padding: 12px 16px;
+    -fx-cursor: hand;
+}
+
+.planner-primary-button {
+    -fx-background-color: #F28C28;
+    -fx-text-fill: white;
+}
+
+.planner-primary-button:hover {
+    -fx-background-color: #D96A1D;
+}
+
+.planner-primary-button:disabled {
+    -fx-opacity: 0.55;
+    -fx-cursor: default;
+}
+
+.planner-preview-row {
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    -fx-padding: 14px 16px;
+}
+
+.planner-preview-label {
+    -fx-min-width: 145px;
+}
+
+.planner-preview-value {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.planner-preview-value-strong {
+    -fx-font-size: 20px;
+    -fx-text-fill: #176B2B;
+}
+
+.planner-preview-separator .line {
+    -fx-border-color: #DCEED8;
+    -fx-border-width: 1 0 0 0;
+}
+
+.planner-green-button {
+    -fx-background-color: #4F8A3C;
+    -fx-text-fill: white;
+}
+
+.planner-green-button:hover {
+    -fx-background-color: #3E732F;
+}
+
+/* =========================
+   WEEKLY MEAL PLANNER
+   ========================= */
+
+.weekly-budget-badge {
+    -fx-background-color: #EEF8EA;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-border-color: #CFE6C6;
+    -fx-padding: 4px 10px;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2F6B2D;
+}
+
+.weekly-period-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.weekly-outline-button {
+    -fx-background-color: #FFFCF7;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-border-color: #E6D9C8;
+    -fx-padding: 10px 14px;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+    -fx-cursor: hand;
+}
+
+.weekly-outline-button:hover {
+    -fx-background-color: #FFF3E8;
+    -fx-border-color: #F3CDA6;
+}
+
+.weekly-planner-card,
+.weekly-summary-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: #E6D9C8;
+    -fx-effect: dropshadow(gaussian, rgba(73, 64, 48, 0.08), 8, 0, 0, 2);
+    -fx-padding: 18px;
+}
+
+.weekly-planner-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+
+.weekly-planner-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.weekly-summary-budget {
+    -fx-background-color: #EEF8EA;
+    -fx-border-color: #D7EBD0;
+}
+
+.weekly-day-header {
+    -fx-background-color: #F3E8D8;
+    -fx-background-radius: 7px;
+    -fx-padding: 8px 6px;
+}
+
+.weekly-day-name {
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #6F665D;
+}
+
+.weekly-day-number {
+    -fx-font-size: 15px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #25211D;
+}
+
+.weekly-meal-row-label {
+    -fx-background-color: #FFF3E8;
+    -fx-background-radius: 7px;
+    -fx-padding: 8px;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #EA6A14;
+}
+
+.weekly-meal-card,
+.weekly-outside-card,
+.weekly-empty-cell {
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 13px 14px;
+    -fx-min-height: 116px;
+    -fx-pref-height: 126px;
+}
+
+.weekly-meal-card {
+    -fx-background-color: #FFFCF7;
+    -fx-border-color: #F2E3D2;
+}
+
+.weekly-outside-card {
+    -fx-background-color: #FFF3E8;
+    -fx-border-color: #FAD1AD;
+}
+
+.weekly-empty-cell {
+    -fx-background-color: #FFF9F1;
+    -fx-border-color: #DDBE98;
+    -fx-border-style: segments(6, 4);
+}
+
+.weekly-empty-plus,
+.weekly-empty-button {
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #8C7864;
+}
+
+.weekly-empty-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 7px;
+    -fx-border-color: transparent;
+    -fx-min-height: 76px;
+    -fx-cursor: hand;
+}
+
+.weekly-empty-button:hover {
+    -fx-background-color: #FFF3E8;
+    -fx-text-fill: #EA6A14;
+}
+
+.weekly-meal-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+    -fx-line-spacing: 1px;
+    -fx-text-overrun: ellipsis;
+}
+
+.weekly-meal-price {
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #EA6A14;
+    -fx-text-overrun: ellipsis;
+}
+
+.weekly-meal-meta,
+.weekly-summary-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6F665D;
+    -fx-text-overrun: ellipsis;
+}
+
+.weekly-summary-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #25211D;
+}
+
+.weekly-summary-value {
+    -fx-font-size: 17px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #25211D;
+}
+
+.weekly-summary-muted-value {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6F665D;
+}
+
+.weekly-status-badge {
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
+    -fx-padding: 5px 12px;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+}
+
+.weekly-status-safe {
+    -fx-background-color: #EEF8EA;
+    -fx-border-color: #CFE6C6;
+    -fx-text-fill: #2F6B2D;
+}
+
+.weekly-status-over {
+    -fx-background-color: #FFF1E7;
+    -fx-border-color: #FFD6B3;
+    -fx-text-fill: #C94A3F;
+}
+
+.weekly-status-empty {
+    -fx-background-color: #F7F1E9;
+    -fx-border-color: #E6D9C8;
+    -fx-text-fill: #6F665D;
+}
+
+.weekly-nutrition-row {
+    -fx-background-color: #FFFCF7;
+    -fx-background-radius: 6px;
+    -fx-padding: 7px 9px;
+}
+
+.weekly-nutrition-highlight {
+    -fx-background-color: #FFF3E8;
+}
+
+.weekly-nutrition-green {
+    -fx-background-color: #EEF8EA;
+}
+
+.weekly-nutrition-value {
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
+}
+
+.weekly-stock-ok {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #4F8A3C;
+    -fx-text-overrun: ellipsis;
+}
+
+.weekly-stock-warning {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #D98E04;
+    -fx-text-overrun: ellipsis;
+}
+
+.weekly-card-action-button,
+.weekly-card-delete-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 0px 3px;
+    -fx-font-size: 9px;
+    -fx-font-weight: 800;
+    -fx-min-height: 24px;
+    -fx-pref-height: 24px;
+    -fx-cursor: hand;
+}
+
+.weekly-card-action-button {
+    -fx-text-fill: #25211D;
+}
+
+.weekly-card-action-button:hover {
+    -fx-background-color: #FFF1E1;
+}
+
+.weekly-card-delete-button {
+    -fx-text-fill: #D9534F;
+}
+
+.weekly-card-delete-button:hover {
+    -fx-background-color: #FFF0F0;
+}
+
+.weekly-slot-dialog {
+    -fx-background-color: #FFFCF7;
+}
+
+.weekly-slot-dialog .label {
+    -fx-text-fill: #25211D;
+}
+
+.weekly-dialog-checkbox {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #25211D;
 }
 
 .settings-primary-button,

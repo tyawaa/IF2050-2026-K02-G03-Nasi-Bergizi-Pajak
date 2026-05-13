@@ -341,15 +341,17 @@ for user_id in user_ids:
 
         sql = """
         INSERT INTO kitchen_stock
-        (user_id,ingredient_id,quantity,
+        (user_id,ingredient_id,quantity,initial_quantity,
          unit,storage_location,expiry_date)
-        VALUES (%s,%s,%s,%s,%s,%s)
+        VALUES (%s,%s,%s,%s,%s,%s,%s)
         """
 
+        quantity = round(random.uniform(0, 20), 2)
         values = (
             user_id,
             ingredient_id,
-            round(random.uniform(0, 20), 2),
+            quantity,
+            quantity,
             random.choice(UNITS),
             random.choice(STORAGE_LOCATIONS),
             rand_date(-10, 30)
@@ -360,11 +362,12 @@ for user_id in user_ids:
 # EDGE CASE: EXPIRED STOCK
 cursor.execute("""
 INSERT INTO kitchen_stock
-(user_id,ingredient_id,quantity,unit,storage_location,expiry_date)
-VALUES (%s,%s,%s,%s,%s,%s)
+(user_id,ingredient_id,quantity,initial_quantity,unit,storage_location,expiry_date)
+VALUES (%s,%s,%s,%s,%s,%s,%s)
 """, (
     user_ids[0],
     ingredient_ids[0],
+    1,
     1,
     "kg",
     "Fridge",

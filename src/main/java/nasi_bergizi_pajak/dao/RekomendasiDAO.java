@@ -194,9 +194,7 @@ public class RekomendasiDAO {
                 FROM budget
                 WHERE user_id = ?
                   AND LOWER(status) = 'active'
-                  AND period_start <= CURDATE()
-                  AND period_end >= CURDATE()
-                ORDER BY period_end DESC, budget_id DESC
+                ORDER BY period_start DESC, budget_id DESC
                 LIMIT 1
                 """;
 
@@ -305,6 +303,16 @@ public class RekomendasiDAO {
             return Double.NaN;
         }
 
+        if (to.equals("100g")) {
+            double grams = convertQuantity(quantity, from, "gram");
+            return Double.isNaN(grams) ? Double.NaN : grams / 100.0;
+        }
+
+        if (to.equals("100ml")) {
+            double milliliters = convertQuantity(quantity, from, "ml");
+            return Double.isNaN(milliliters) ? Double.NaN : milliliters / 100.0;
+        }
+
         if (from.equals(to)) {
             return quantity;
         }
@@ -336,6 +344,8 @@ public class RekomendasiDAO {
         String normalized = unit.trim().toLowerCase(Locale.ROOT);
 
         return switch (normalized) {
+            case "100g", "100 g", "100 gram", "100 grams", "per 100g", "per 100 gram" -> "100g";
+            case "100ml", "100 ml", "100 milliliter", "100 milliliters", "per 100ml", "per 100 ml" -> "100ml";
             case "g", "gr", "gram", "grams" -> "gram";
             case "kg", "kilogram", "kilograms" -> "kg";
             case "ml", "milliliter", "milliliters" -> "ml";

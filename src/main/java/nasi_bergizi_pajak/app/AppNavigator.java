@@ -66,6 +66,10 @@ public final class AppNavigator {
         loadScene("/view/DashboardView.fxml", "Nasi Bergizi Pajak - Dashboard");
     }
 
+    public static void showKitchenStock() {
+        loadScene("/view/KitchenStockView.fxml", "Nasi Bergizi Pajak - Stok Dapur");
+    }
+
     public static void showShoppingPlanner() {
         loadScene("/view/ShoppingPlannerView.fxml", "Nasi Bergizi Pajak - Planner Belanja");
     }

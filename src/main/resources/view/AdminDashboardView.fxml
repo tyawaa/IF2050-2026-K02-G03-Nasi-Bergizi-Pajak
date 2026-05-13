@@ -67,6 +67,7 @@
             </padding>
             <Label fx:id="headerTitle" text="Admin: Kelola Resep" styleClass="admin-page-title"/>
             <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Stok Dapur" onAction="#handleKitchenStock" styleClass="admin-secondary-button"/>
             <Label text="!" styleClass="admin-top-icon"/>
             <Label text="3" styleClass="admin-notif-badge"/>
             <Label text="B" styleClass="admin-avatar"/>

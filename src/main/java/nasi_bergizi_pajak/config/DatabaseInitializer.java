@@ -30,7 +30,10 @@ public class DatabaseInitializer {
 
         ensureAdminColumnExists();
         ensureFamilyMemberSchema();
+        ensureBudgetTableExists();
         ensureNutritionAndPriceTablesExist();
+        ensureKitchenStockTableExists();
+        ensureKitchenStockInitialQuantityExists();
         ensureRecipeIngredientSchema();
         ensureDefaultAdminExists();
     }
@@ -105,6 +108,29 @@ public class DatabaseInitializer {
         }
     }
 
+    private static void ensureBudgetTableExists() throws SQLException {
+        try (Connection connection = DatabaseConnection.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS budget (
+                        budget_id     INT             NOT NULL AUTO_INCREMENT,
+                        user_id       INT             NOT NULL,
+                        name          VARCHAR(100)    NOT NULL,
+                        amount        DECIMAL(15,2)   NOT NULL,
+                        period_start  DATE            NOT NULL,
+                        period_end    DATE            NOT NULL,
+                        status        VARCHAR(50)     NOT NULL DEFAULT 'active',
+                        PRIMARY KEY (budget_id),
+                        KEY idx_budget_user_id (user_id),
+                        CONSTRAINT fk_budget_user FOREIGN KEY (user_id)
+                            REFERENCES user_account(user_id)
+                            ON UPDATE CASCADE
+                            ON DELETE CASCADE
+                    )
+                    """);
+        }
+    }
+
     private static void ensureNutritionAndPriceTablesExist() throws SQLException {
         try (Connection connection = DatabaseConnection.getConnection();
              Statement statement = connection.createStatement()) {
@@ -163,6 +189,51 @@ public class DatabaseInitializer {
                 try (Statement statement = connection.createStatement()) {
                     statement.execute("ALTER TABLE recipe_ingredient ADD COLUMN unit VARCHAR(50) NOT NULL DEFAULT ''");
                 }
+            }
+        }
+    }
+
+    private static void ensureKitchenStockTableExists() throws SQLException {
+        try (Connection connection = DatabaseConnection.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS kitchen_stock (
+                        stock_id          INT             NOT NULL AUTO_INCREMENT,
+                        user_id           INT             NOT NULL,
+                        ingredient_id     INT             NOT NULL,
+                        quantity          DECIMAL(10,2)   NOT NULL,
+                        initial_quantity  DECIMAL(10,2)   NOT NULL DEFAULT 0,
+                        unit              VARCHAR(50)     NOT NULL,
+                        storage_location  VARCHAR(100),
+                        expiry_date       DATE,
+                        PRIMARY KEY (stock_id),
+                        KEY idx_kitchen_stock_user_id (user_id),
+                        KEY idx_kitchen_stock_ingredient_id (ingredient_id),
+                        CONSTRAINT fk_ks_user FOREIGN KEY (user_id)
+                            REFERENCES user_account(user_id)
+                            ON UPDATE CASCADE
+                            ON DELETE CASCADE,
+                        CONSTRAINT fk_ks_ingredient FOREIGN KEY (ingredient_id)
+                            REFERENCES ingredient(ingredient_id)
+                            ON UPDATE CASCADE
+                            ON DELETE CASCADE
+                    )
+                    """);
+        }
+    }
+
+    private static void ensureKitchenStockInitialQuantityExists() throws SQLException {
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            if (!columnExists(connection, "kitchen_stock", "initial_quantity")) {
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute(
+                            "ALTER TABLE kitchen_stock ADD COLUMN initial_quantity DECIMAL(10,2) NOT NULL DEFAULT 0"
+                    );
+                }
+            }
+
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("UPDATE kitchen_stock SET initial_quantity = quantity WHERE initial_quantity = 0");
             }
         }
     }
