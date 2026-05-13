@@ -178,6 +178,7 @@ public class DatabaseInitializer {
                         user_id           INT             NOT NULL,
                         ingredient_id     INT             NOT NULL,
                         quantity          DECIMAL(10,2)   NOT NULL,
+                        initial_quantity  DECIMAL(10,2)   NOT NULL DEFAULT 0,
                         unit              VARCHAR(50)     NOT NULL,
                         storage_location  VARCHAR(100),
                         expiry_date       DATE,
@@ -201,15 +202,14 @@ public class DatabaseInitializer {
         try (Connection connection = DatabaseConnection.getConnection()) {
             if (!columnExists(connection, "kitchen_stock", "initial_quantity")) {
                 try (Statement statement = connection.createStatement()) {
-                    // Tambah kolom initial_quantity
                     statement.execute(
                         "ALTER TABLE kitchen_stock ADD COLUMN initial_quantity DECIMAL(10,2) NOT NULL DEFAULT 0"
                     );
-                    // Isi initial_quantity dari quantity yang sudah ada (data lama)
-                    statement.execute(
-                        "UPDATE kitchen_stock SET initial_quantity = quantity WHERE initial_quantity = 0"
-                    );
                 }
+            }
+
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("UPDATE kitchen_stock SET initial_quantity = quantity WHERE initial_quantity = 0");
             }
         }
     }

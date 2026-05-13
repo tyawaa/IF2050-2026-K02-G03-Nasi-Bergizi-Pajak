@@ -32,7 +32,10 @@ public class KitchenStockDAO {
     }
 
     public boolean updateStock(KitchenStock stock) throws SQLException {
-        String sql = "UPDATE kitchen_stock SET ingredient_id = ?, quantity = ?, unit = ?, storage_location = ?, expiry_date = ? " +
+        String sql = "UPDATE kitchen_stock SET " +
+                    "initial_quantity = CASE WHEN ingredient_id <> ? OR ? > initial_quantity THEN ? ELSE initial_quantity END, " +
+                    "ingredient_id = ?, quantity = ?, " +
+                    "unit = ?, storage_location = ?, expiry_date = ? " +
                     "WHERE stock_id = ? AND user_id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -40,11 +43,14 @@ public class KitchenStockDAO {
 
             pstmt.setInt(1, stock.getIngredientId());
             pstmt.setDouble(2, stock.getQuantity());
-            pstmt.setString(3, stock.getUnit());
-            pstmt.setString(4, stock.getStorageLocation());
-            pstmt.setDate(5, stock.getExpiryDate() != null ? Date.valueOf(stock.getExpiryDate()) : null);
-            pstmt.setInt(6, stock.getStockId());
-            pstmt.setInt(7, stock.getUserId());
+            pstmt.setDouble(3, stock.getQuantity());
+            pstmt.setInt(4, stock.getIngredientId());
+            pstmt.setDouble(5, stock.getQuantity());
+            pstmt.setString(6, stock.getUnit());
+            pstmt.setString(7, stock.getStorageLocation());
+            pstmt.setDate(8, stock.getExpiryDate() != null ? Date.valueOf(stock.getExpiryDate()) : null);
+            pstmt.setInt(9, stock.getStockId());
+            pstmt.setInt(10, stock.getUserId());
 
             return pstmt.executeUpdate() > 0;
         }
@@ -156,13 +162,12 @@ public class KitchenStockDAO {
     }
 
     public List<KitchenStock> getLowStock(int userId, double threshold) throws SQLException {
-        // Stok rendah = quantity sudah mencapai <= 20% dari initial_quantity
         String sql = "SELECT ks.*, i.name as ingredient_name " +
                     "FROM kitchen_stock ks " +
                     "JOIN ingredient i ON ks.ingredient_id = i.ingredient_id " +
                     "WHERE ks.user_id = ? " +
                     "AND ks.initial_quantity > 0 " +
-                    "AND ks.quantity <= ks.initial_quantity * 0.20 " +
+                    "AND ks.quantity <= ks.initial_quantity * ? " +
                     "ORDER BY ks.quantity ASC";
         
         List<KitchenStock> stocks = new ArrayList<>();
@@ -171,6 +176,7 @@ public class KitchenStockDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, userId);
+            pstmt.setDouble(2, threshold);
 
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
@@ -185,6 +191,7 @@ public class KitchenStockDAO {
                     "FROM kitchen_stock ks " +
                     "JOIN ingredient i ON ks.ingredient_id = i.ingredient_id " +
                     "WHERE ks.user_id = ? AND ks.ingredient_id = ? " +
+                    "ORDER BY ks.expiry_date ASC, ks.stock_id ASC " +
                     "LIMIT 1";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -202,14 +209,18 @@ public class KitchenStockDAO {
     }
 
     public boolean updateQuantity(int stockId, int userId, double newQuantity) throws SQLException {
-        String sql = "UPDATE kitchen_stock SET quantity = ? WHERE stock_id = ? AND user_id = ?";
+        String sql = "UPDATE kitchen_stock SET quantity = ?, " +
+                    "initial_quantity = CASE WHEN ? > initial_quantity THEN ? ELSE initial_quantity END " +
+                    "WHERE stock_id = ? AND user_id = ?";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setDouble(1, newQuantity);
-            pstmt.setInt(2, stockId);
-            pstmt.setInt(3, userId);
+            pstmt.setDouble(2, newQuantity);
+            pstmt.setDouble(3, newQuantity);
+            pstmt.setInt(4, stockId);
+            pstmt.setInt(5, userId);
             
             return pstmt.executeUpdate() > 0;
         }

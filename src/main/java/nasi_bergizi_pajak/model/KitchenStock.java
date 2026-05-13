@@ -3,6 +3,8 @@ package nasi_bergizi_pajak.model;
 import java.time.LocalDate;
 
 public class KitchenStock {
+    public static final double LOW_STOCK_THRESHOLD_RATIO = 0.20;
+
     private int stockId;
     private int userId;
     private int ingredientId;
@@ -19,6 +21,7 @@ public class KitchenStock {
         this.userId = userId;
         this.ingredientId = ingredientId;
         this.quantity = quantity;
+        this.initialQuantity = quantity;
         this.unit = unit;
         this.storageLocation = storageLocation;
         this.expiryDate = expiryDate;
@@ -67,7 +70,7 @@ public class KitchenStock {
     /** Stok dianggap rendah jika kurang dari 20% dari stok awal. */
     public boolean isLowStock() {
         if (initialQuantity <= 0) return false;
-        return quantity <= initialQuantity * 0.20;
+        return quantity <= initialQuantity * LOW_STOCK_THRESHOLD_RATIO;
     }
 
     public String getUnit() {

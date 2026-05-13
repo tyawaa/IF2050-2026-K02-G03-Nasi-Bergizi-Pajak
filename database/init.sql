@@ -186,6 +186,7 @@ CREATE TABLE kitchen_stock (
     user_id           INT             NOT NULL,
     ingredient_id     INT             NOT NULL,
     quantity          DOUBLE          NOT NULL DEFAULT 0,
+    initial_quantity  DOUBLE          NOT NULL DEFAULT 0,
     unit              VARCHAR(50)     NOT NULL,
     storage_location  VARCHAR(100),
     expiry_date       DATE,
@@ -198,7 +199,8 @@ CREATE TABLE kitchen_stock (
         REFERENCES ingredient(ingredient_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
-    CONSTRAINT chk_ks_quantity CHECK (quantity >= 0)
+    CONSTRAINT chk_ks_quantity CHECK (quantity >= 0),
+    CONSTRAINT chk_ks_initial_quantity CHECK (initial_quantity >= 0)
 );
 
 -- ------------------------------------------------------------

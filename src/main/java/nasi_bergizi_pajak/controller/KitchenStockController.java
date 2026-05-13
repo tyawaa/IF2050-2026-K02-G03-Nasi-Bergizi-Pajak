@@ -155,7 +155,7 @@ public class KitchenStockController {
             notifications.add(expiringSoon.size() + " item(s) expiring within 3 days");
         }
         
-        List<KitchenStock> lowStock = getLowStock(userId, 1.0);
+        List<KitchenStock> lowStock = getLowStock(userId, KitchenStock.LOW_STOCK_THRESHOLD_RATIO);
         if (!lowStock.isEmpty()) {
             notifications.add(lowStock.size() + " item(s) with low quantity");
         }

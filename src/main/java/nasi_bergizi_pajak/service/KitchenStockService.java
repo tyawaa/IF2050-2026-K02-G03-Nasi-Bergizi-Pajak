@@ -53,7 +53,7 @@ public class KitchenStockService {
     }
 
     public List<KitchenStock> getLowStock(int userId, double threshold) throws SQLException {
-        return stockDAO.getLowStock(userId, threshold);
+        return stockDAO.getLowStock(userId, normalizeLowStockThreshold(threshold));
     }
 
     public boolean updateQuantity(int stockId, int userId, double newQuantity) throws SQLException {
@@ -92,7 +92,7 @@ public class KitchenStockService {
     }
 
     public boolean hasCriticalItems(int userId) throws SQLException {
-        List<KitchenStock> criticalItems = getCriticalStock(userId, 7, 1.0);
+        List<KitchenStock> criticalItems = getCriticalStock(userId, 7, KitchenStock.LOW_STOCK_THRESHOLD_RATIO);
         return !criticalItems.isEmpty();
     }
 
@@ -106,5 +106,12 @@ public class KitchenStockService {
 
     public int getLowStockCount(int userId, double threshold) throws SQLException {
         return getLowStock(userId, threshold).size();
+    }
+
+    private double normalizeLowStockThreshold(double threshold) {
+        if (threshold <= 0 || threshold > 1) {
+            return KitchenStock.LOW_STOCK_THRESHOLD_RATIO;
+        }
+        return threshold;
     }
 }

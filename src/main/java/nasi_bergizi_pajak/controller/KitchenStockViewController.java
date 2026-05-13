@@ -232,7 +232,9 @@ public class KitchenStockViewController {
     private void updateStats(int userId) {
         statTotalLabel.setText(String.valueOf(allStocks.size()));
         try {
-            statLowLabel.setText(String.valueOf(stockController.getLowStockCount(userId, 1.0)));
+            statLowLabel.setText(String.valueOf(
+                    stockController.getLowStockCount(userId, KitchenStock.LOW_STOCK_THRESHOLD_RATIO)
+            ));
             statExpiringLabel.setText(String.valueOf(stockController.getExpiringCount(userId, 7)));
             statExpiredLabel.setText(String.valueOf(stockController.getExpiredCount(userId)));
         } catch (SQLException e) {
