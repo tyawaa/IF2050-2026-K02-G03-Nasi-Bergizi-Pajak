@@ -129,13 +129,8 @@ IF2050-2026-K02-G03-Nasi-Bergizi-Pajak/
 | 8 | Rekomendasi Menu | Menghasilkan rekomendasi menu berdasarkan data resep, gizi, stok dapur, budget, dan alergi pengguna. | `RekomendasiController`, `RekomendasiDAO`, `RekomendasiMenu`, `KebutuhanGizi`, `GiziDAO` |
 | 9 | Kelola Resep Admin | Admin dapat melihat, menambah, mengubah, dan menghapus data resep beserta bahan penyusunnya. | `AdminDashboardController`, `RecipeFormController`, `RecipeDAO`, `RecipeIngredientDAO`, `Recipe`, `RecipeIngredient`, `RecipeFormView.fxml`, `AdminDashboardView.fxml` |
 | 10 | Kelola Bahan, Nutrisi, dan Harga Admin | Admin dapat mengelola data master bahan makanan, kandungan nutrisi, serta riwayat harga bahan. | `IngredientController`, `IngredientService`, `IngredientDAO`, `IngredientNutritionDAO`, `IngredientPriceDAO`, `Ingredient`, `IngredientNutrition`, `IngredientPrice` |
-| 11 | Koneksi dan Inisialisasi Database | Menangani koneksi aplikasi Java ke MySQL dan inisialisasi database. | `DatabaseConnection`, `DatabaseInitializer`, `database/init.sql`, `database/nasi_bergizi_pajak.sql` |
-
-### Modul dalam Proses
-
-| Nama Modul | Status | Keterangan |
-|---|---|---|
-| Shopping Planner / Daftar Belanja | Dalam proses pengembangan | Tabel `shopping_planner` dan `shopping_planner_item` sudah tersedia pada database, tetapi implementasi penuh controller, model, dan tampilan masih dapat dilengkapi setelah modul selesai. |
+| 11 | Shopping Planner / Daftar Belanja | Menyusun daftar belanja dari menu mingguan, menghitung estimasi belanja berdasarkan kebutuhan resep dan stok dapur, mencatat harga aktual, menandai item yang sudah dibeli, serta menyinkronkan hasil belanja ke stok dapur. | `ShoppingPlannerController`, `ShoppingPlannerDAO`, `ShoppingPlanner`, `ShoppingItem`, `WeeklyMenuOption`, `ShoppingPlannerView.fxml` |
+| 12 | Koneksi dan Inisialisasi Database | Menangani koneksi aplikasi Java ke MySQL, inisialisasi database, dan penyesuaian skema saat aplikasi dijalankan. | `DatabaseConnection`, `DatabaseInitializer`, `database/init.sql`, `database/nasi_bergizi_pajak.sql` |
 
 ---
 
@@ -175,11 +170,11 @@ IF2050-2026-K02-G03-Nasi-Bergizi-Pajak/
 
 | Anggota | Modul / Tanggung Jawab | Kelas / Bagian yang Diimplementasikan |
 |---|---|---|
-| Daniel Wicaksono Godjali | Dashboard User, Admin Resep, Integrasi, Belanja/Shopping Planner, Reviewer, Database, GUI Shopping | `DashboardController`, `HalamanDashboard`, `KelolaResepController`, `HalamanKelolaResep`, `Resep`, `ShoppingPlanner`, bagian integrasi antarmodul, review implementasi, serta dukungan implementasi database |
+| Daniel Wicaksana Godjali | Dashboard User, Admin Resep, Integrasi, Belanja/Shopping Planner, Reviewer, Database, GUI Shopping | `DashboardController`, `HalamanDashboard`, `KelolaResepController`, `HalamanKelolaResep`, `Resep`, `ShoppingPlanner`, bagian integrasi antarmodul, review implementasi, serta dukungan implementasi database |
 | Tyara Penelope Lumban Gaol | Login, Register, Akun/Profile, Settings, Profil Keluarga, Parameter Planner, Integrasi, Reviewer, Database, Setup Awal Project, Backend Admin Nutrisi Bahan Harga | `FormLogin`, `LoginController`, `FormRegistrasi`, `RegistrasiController`, `Akun`, `ProfilKeluarga`, `ParameterPlanner`, `IngredientDAO`, `IngredientNutritionDAO`, `IngredientPriceDAO`, `Ingredient`, `IngredientNutrition`, `IngredientPrice`, `BahanMakanan` bagian pengaturan akun/profile/settings, setup awal struktur project, integrasi antarmodul, review implementasi, serta dukungan implementasi database |
 | Adham Sachadeva Purwadi | Budget dan Belanja/Shopping Planner | `Budget`, `ShoppingPlanner`, `ShoppingPlannerController`, serta fitur perhitungan kebutuhan belanja berdasarkan menu dan stok |
 | Muhammad Reyna Athallah Agoes | Menu Mingguan dan Rekomendasi Menu | `HalamanMenuMingguan`, `MenuController`, `MenuMingguan`, `HalamanRekomendasi`, `RekomendasiController`, `Resep`, serta logika rekomendasi menu berdasarkan profil keluarga, budget, stok, dan parameter planner |
-| Ibrahim Ferizarizqi Permana | Backend Stok Dapur, Nutrisi Bahan, dan Harga Bahan | `KitchenStockController`, `KitchenStockViewController`, `KitchenStockService`, `KitchenStockDAO`, `KitchenStock`, `IngredientController`, `IngredientService`, serta query/backend yang mendukung pengelolaan stok, pengolahan data nutrisi bahan
+| Ibrahim Ferizarizqi Permana | Backend Stok Dapur, Nutrisi Bahan, dan Harga Bahan | `KitchenStockController`, `KitchenStockViewController`, `KitchenStockService`, `KitchenStockDAO`, `KitchenStock`, `IngredientController`, `IngredientService`, serta query/backend yang mendukung pengelolaan stok, pengolahan data nutrisi bahan |
 
 ## Build dan Testing
 
