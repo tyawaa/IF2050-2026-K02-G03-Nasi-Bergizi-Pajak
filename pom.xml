@@ -36,6 +36,13 @@
             <version>8.4.0</version>
         </dependency>
 
+        <!-- SQLite JDBC untuk koneksi lokal tanpa server -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.45.3.0</version>
+        </dependency>
+
         <!-- JUnit untuk testing, opsional tapi aman disiapkan -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

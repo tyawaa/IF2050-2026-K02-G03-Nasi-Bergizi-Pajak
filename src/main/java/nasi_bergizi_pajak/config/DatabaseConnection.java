@@ -5,19 +5,24 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static final String DEFAULT_DB_URL = "jdbc:mysql://localhost:3306/nasi_bergizi_pajak"
-            + "?createDatabaseIfNotExist=true"
-            + "&useSSL=false"
-            + "&allowPublicKeyRetrieval=true"
-            + "&serverTimezone=Asia/Jakarta";
-    private static final String DEFAULT_DB_USER = "root";
-    private static final String DEFAULT_DB_PASSWORD = "javatikus";
+    // Default: SQLite (tidak perlu server, file lokal)
+    private static final String DEFAULT_DB_URL = "jdbc:sqlite:database/nasi_bergizi_pajak.db";
+    private static final String DEFAULT_DB_USER = "";
+    private static final String DEFAULT_DB_PASSWORD = "";
+
+    // Untuk pakai MySQL, set env var:
+    //   DB_URL=jdbc:mysql://localhost:3306/nasi_bergizi_pajak?...
+    //   DB_USER=root
+    //   DB_PASSWORD=passwordmu
 
     public static Connection getConnection() throws SQLException {
         String dbUrl = getConfig("DB_URL", "db.url", DEFAULT_DB_URL);
         String dbUser = getConfig("DB_USER", "db.user", DEFAULT_DB_USER);
         String dbPassword = getConfig("DB_PASSWORD", "db.password", DEFAULT_DB_PASSWORD);
 
+        if (dbUrl.startsWith("jdbc:sqlite")) {
+            return DriverManager.getConnection(dbUrl);
+        }
         return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
     }
 

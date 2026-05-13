@@ -68,10 +68,9 @@ public class DatabaseInitializer {
         try (Connection connection = DatabaseConnection.getConnection()) {
             if (!columnExists(connection, "user_account", "tipe_admin")) {
                 try (Statement statement = connection.createStatement()) {
-                    statement.execute("""
-                            ALTER TABLE user_account
-                            ADD COLUMN tipe_admin TINYINT(1) NOT NULL DEFAULT 0
-                            """);
+                    statement.execute(
+                            "ALTER TABLE user_account ADD COLUMN tipe_admin INTEGER NOT NULL DEFAULT 0"
+                    );
                 }
             }
         }
@@ -82,25 +81,22 @@ public class DatabaseInitializer {
              Statement statement = connection.createStatement()) {
             statement.execute("""
                     CREATE TABLE IF NOT EXISTS family_member (
-                        member_id    INT          NOT NULL AUTO_INCREMENT,
-                        user_id      INT          NOT NULL,
+                        member_id    INTEGER      NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        user_id      INTEGER      NOT NULL,
                         name         VARCHAR(100) NOT NULL,
                         relationship VARCHAR(50),
                         birth_date   DATE,
                         height       DOUBLE,
                         weight       DOUBLE,
                         allergy      TEXT,
-                        PRIMARY KEY (member_id),
-                        KEY idx_family_member_user_id (user_id),
-                        CONSTRAINT fk_fm_user FOREIGN KEY (user_id)
-                            REFERENCES user_account(user_id)
-                            ON UPDATE CASCADE
-                            ON DELETE CASCADE
+                        FOREIGN KEY (user_id) REFERENCES user_account(user_id)
+                            ON UPDATE CASCADE ON DELETE CASCADE
                     )
                     """);
 
             if (!columnExists(connection, "family_member", "relationship")) {
-                statement.execute("ALTER TABLE family_member ADD COLUMN relationship VARCHAR(50) AFTER name");
+                // SQLite does not support AFTER — column is added at the end
+                statement.execute("ALTER TABLE family_member ADD COLUMN relationship VARCHAR(50)");
             }
         }
     }
@@ -110,35 +106,27 @@ public class DatabaseInitializer {
              Statement statement = connection.createStatement()) {
             statement.execute("""
                     CREATE TABLE IF NOT EXISTS ingredient_nutrition (
-                        nutrition_id   INT             NOT NULL AUTO_INCREMENT,
-                        ingredient_id  INT             NOT NULL,
+                        nutrition_id   INTEGER         NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        ingredient_id  INTEGER         NOT NULL UNIQUE,
                         calories       DECIMAL(10,2)   NOT NULL DEFAULT 0,
                         protein        DECIMAL(10,2)   NOT NULL DEFAULT 0,
                         carbohydrate   DECIMAL(10,2)   NOT NULL DEFAULT 0,
                         fat            DECIMAL(10,2)   NOT NULL DEFAULT 0,
                         fibre          DECIMAL(10,2)   NOT NULL DEFAULT 0,
                         unit           VARCHAR(50)     NOT NULL,
-                        PRIMARY KEY (nutrition_id),
-                        UNIQUE KEY uq_nutrition_ingredient (ingredient_id),
-                        CONSTRAINT fk_in_ingredient FOREIGN KEY (ingredient_id)
-                            REFERENCES ingredient(ingredient_id)
-                            ON UPDATE CASCADE
-                            ON DELETE CASCADE
+                        FOREIGN KEY (ingredient_id) REFERENCES ingredient(ingredient_id)
+                            ON UPDATE CASCADE ON DELETE CASCADE
                     )
                     """);
 
             statement.execute("""
                     CREATE TABLE IF NOT EXISTS ingredient_price (
-                        price_id        INT             NOT NULL AUTO_INCREMENT,
-                        ingredient_id   INT             NOT NULL,
+                        price_id        INTEGER         NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        ingredient_id   INTEGER         NOT NULL,
                         price           DECIMAL(15,2)   NOT NULL,
                         effective_date  DATE            NOT NULL,
-                        PRIMARY KEY (price_id),
-                        KEY idx_ingredient_price_ingredient_id (ingredient_id),
-                        CONSTRAINT fk_ip_ingredient FOREIGN KEY (ingredient_id)
-                            REFERENCES ingredient(ingredient_id)
-                            ON UPDATE CASCADE
-                            ON DELETE CASCADE
+                        FOREIGN KEY (ingredient_id) REFERENCES ingredient(ingredient_id)
+                            ON UPDATE CASCADE ON DELETE CASCADE
                     )
                     """);
         }
