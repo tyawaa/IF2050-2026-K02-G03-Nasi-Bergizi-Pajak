@@ -8,7 +8,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,7 +125,6 @@ public class BudgetDAO {
                 FROM budget
                 WHERE user_id = ?
                   AND status = 'active'
-                  AND ? BETWEEN period_start AND period_end
                 ORDER BY period_start DESC, budget_id DESC
                 LIMIT 1
                 """;
@@ -134,7 +132,6 @@ public class BudgetDAO {
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, userId);
-            statement.setString(2, LocalDate.now().toString());
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {

@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.NumberFormat;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -60,6 +61,7 @@ public class DashboardController {
     @FXML private Label welcomeLabel;
     @FXML private Label emailLabel;
     @FXML private Label pageTitleLabel;
+    @FXML private Label budgetPeriodBadgeLabel;
     @FXML private Label topbarAvatarText;
     @FXML private Label dashboardFamilyIconCountLabel;
     @FXML private Label dashboardFamilyCountLabel;
@@ -165,6 +167,7 @@ public class DashboardController {
     private final ObservableList<RekomendasiMenu> recommendations = FXCollections.observableArrayList();
     private final RekomendasiController rekomendasiController = new RekomendasiController();
     private final NumberFormat rupiahFormat = NumberFormat.getCurrencyInstance(Locale.of("id", "ID"));
+    private final DateTimeFormatter budgetDateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.of("id", "ID"));
     private Akun currentUser;
     private Budget selectedBudget;
     private ContextMenu profileMenu;
@@ -181,6 +184,7 @@ public class DashboardController {
         setupWeeklyMenuTables();
         setupRecommendationTable();
         refreshFamilyMembers();
+        refreshBudgets();
     }
 
     private void initializeUserInfo() {
@@ -382,6 +386,7 @@ public class DashboardController {
             budgetActiveAmountLabel.setText(rupiahFormat.format(0));
             budgetActivePeriodLabel.setText("-");
             budgetStatusSummaryLabel.setText("Tidak aktif");
+            budgetPeriodBadgeLabel.setText("Budget: Belum aktif");
             return;
         }
 
@@ -389,6 +394,7 @@ public class DashboardController {
         budgetActiveAmountLabel.setText(rupiahFormat.format(activeBudget.getAmount()));
         budgetActivePeriodLabel.setText(formatBudgetPeriod(activeBudget));
         budgetStatusSummaryLabel.setText("Aktif");
+        budgetPeriodBadgeLabel.setText("Budget: " + formatBudgetPeriod(activeBudget));
     }
 
     private void editBudget(Budget budget) {
@@ -442,7 +448,11 @@ public class DashboardController {
         if (budget == null || budget.getPeriodStart() == null || budget.getPeriodEnd() == null) {
             return "-";
         }
-        return budget.getPeriodStart() + " s.d. " + budget.getPeriodEnd();
+        return formatBudgetDate(budget.getPeriodStart()) + " s.d. " + formatBudgetDate(budget.getPeriodEnd());
+    }
+
+    private String formatBudgetDate(LocalDate date) {
+        return date == null ? "-" : budgetDateFormatter.format(date);
     }
 
     private void setupWeeklyMenuTables() {

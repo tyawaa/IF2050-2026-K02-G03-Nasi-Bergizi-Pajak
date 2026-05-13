@@ -66,7 +66,7 @@
                 </padding>
 
                 <Label fx:id="pageTitleLabel" text="Dashboard" styleClass="userdash-page-title"/>
-                <Label text="Budget: 22 Apr - 28 Apr" styleClass="userdash-period-badge"/>
+                <Label fx:id="budgetPeriodBadgeLabel" text="Budget: Belum aktif" styleClass="userdash-period-badge"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <StackPane styleClass="userdash-bell">
                     <Label text="3" styleClass="userdash-bell-badge"/>
