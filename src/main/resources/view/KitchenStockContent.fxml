@@ -14,7 +14,7 @@
     </padding>
 
     <!-- ── STAT CARDS ── -->
-    <HBox spacing="16">
+    <HBox spacing="24">
         <VBox spacing="4" HBox.hgrow="ALWAYS">
             <styleClass>
                 <String fx:value="stat-card"/>

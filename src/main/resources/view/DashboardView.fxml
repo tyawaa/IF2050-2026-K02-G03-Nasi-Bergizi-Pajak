@@ -66,7 +66,7 @@
                 </padding>
 
                 <Label fx:id="pageTitleLabel" text="Dashboard" styleClass="userdash-page-title"/>
-                <Label text="Budget: 22 Apr - 28 Apr" styleClass="userdash-period-badge"/>
+                <Label fx:id="budgetPeriodBadgeLabel" text="Budget: Belum aktif" styleClass="userdash-period-badge"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <StackPane styleClass="userdash-bell">
                     <Label text="3" styleClass="userdash-bell-badge"/>
@@ -355,25 +355,119 @@
                                 <Insets top="18" right="22" bottom="28" left="22"/>
                             </padding>
 
-                            <VBox spacing="18" styleClass="userdash-panel">
-                                <HBox alignment="CENTER_LEFT">
-                                    <VBox spacing="2">
-                                        <Label text="Budget" styleClass="userdash-section-title"/>
-                                        <Label fx:id="budgetSummaryLabel" text="0 budget aktif" styleClass="userdash-section-subtitle"/>
-                                    </VBox>
-                                    <Region HBox.hgrow="ALWAYS"/>
-                                    <Button text="+  Tambah Budget" onAction="#handleAddBudget" styleClass="family-primary-button"/>
-                                </HBox>
+                            <HBox alignment="CENTER_LEFT">
+                                <VBox spacing="2">
+                                    <Label text="Kelola Budget" styleClass="userdash-section-title"/>
+                                    <Label text="Atur budget belanja keluarga per periode dan pilih budget aktif."
+                                           styleClass="userdash-section-subtitle"/>
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button text="Muat Ulang"
+                                        onAction="#handleRefreshBudgets"
+                                        styleClass="family-primary-button"/>
+                            </HBox>
 
-                                <TableView fx:id="budgetTable" prefHeight="360" minHeight="220" VBox.vgrow="ALWAYS" styleClass="family-table">
-                                    <columns>
-                                        <TableColumn fx:id="budgetNameColumn" text="Nama" prefWidth="230"/>
-                                        <TableColumn fx:id="budgetAmountColumn" text="Nominal" prefWidth="160"/>
-                                        <TableColumn fx:id="budgetPeriodColumn" text="Periode" prefWidth="240"/>
-                                        <TableColumn fx:id="budgetStatusColumn" text="Status" prefWidth="120"/>
-                                    </columns>
-                                </TableView>
-                            </VBox>
+                            <HBox spacing="14" fillHeight="true">
+                                <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="budget-summary-box">
+                                    <Label text="Budget Aktif" styleClass="userdash-budget-label"/>
+                                    <Label fx:id="budgetActiveNameLabel" text="Belum ada budget aktif" styleClass="userdash-budget-value-dark"/>
+                                    <Label fx:id="budgetActivePeriodLabel" text="-" styleClass="userdash-section-subtitle"/>
+                                </VBox>
+
+                                <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box-green">
+                                    <Label text="Nominal Aktif" styleClass="userdash-budget-label"/>
+                                    <Label fx:id="budgetActiveAmountLabel" text="Rp0" styleClass="userdash-budget-value-green"/>
+                                </VBox>
+
+                                <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box">
+                                    <Label text="Total Data" styleClass="userdash-budget-label"/>
+                                    <Label fx:id="budgetCountLabel" text="0 budget" styleClass="userdash-budget-value-dark"/>
+                                </VBox>
+
+                                <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box-orange">
+                                    <Label text="Status" styleClass="userdash-budget-label"/>
+                                    <Label fx:id="budgetStatusSummaryLabel" text="Tidak aktif" styleClass="userdash-budget-value-orange"/>
+                                </VBox>
+                            </HBox>
+
+                            <HBox spacing="18" fillHeight="true">
+                                <VBox spacing="14" prefWidth="360" minWidth="320" styleClass="userdash-panel">
+                                    <VBox spacing="2">
+                                        <Label fx:id="budgetFormTitleLabel" text="Tambah Budget" styleClass="userdash-section-title"/>
+                                        <Label text="Gunakan status active untuk menjadikan budget ini sebagai budget utama."
+                                               wrapText="true"
+                                               styleClass="userdash-section-subtitle"/>
+                                    </VBox>
+
+                                    <VBox spacing="7">
+                                        <Label text="Nama Budget" styleClass="settings-label"/>
+                                        <TextField fx:id="budgetNameField"
+                                                   maxWidth="Infinity"
+                                                   promptText="Budget Mei 2026"
+                                                   styleClass="settings-input"/>
+                                    </VBox>
+
+                                    <VBox spacing="7">
+                                        <Label text="Nominal" styleClass="settings-label"/>
+                                        <TextField fx:id="budgetAmountField"
+                                                   maxWidth="Infinity"
+                                                   promptText="1500000"
+                                                   styleClass="settings-input"/>
+                                    </VBox>
+
+                                    <HBox spacing="12">
+                                        <VBox spacing="7" HBox.hgrow="ALWAYS">
+                                            <Label text="Mulai" styleClass="settings-label"/>
+                                            <DatePicker fx:id="budgetStartDatePicker"
+                                                        maxWidth="Infinity"
+                                                        styleClass="budget-date-picker"/>
+                                        </VBox>
+                                        <VBox spacing="7" HBox.hgrow="ALWAYS">
+                                            <Label text="Selesai" styleClass="settings-label"/>
+                                            <DatePicker fx:id="budgetEndDatePicker"
+                                                        maxWidth="Infinity"
+                                                        styleClass="budget-date-picker"/>
+                                        </VBox>
+                                    </HBox>
+
+                                    <VBox spacing="7">
+                                        <Label text="Status" styleClass="settings-label"/>
+                                        <ComboBox fx:id="budgetStatusComboBox"
+                                                  maxWidth="Infinity"
+                                                  styleClass="budget-combo-box"/>
+                                    </VBox>
+
+                                    <HBox alignment="CENTER_RIGHT" spacing="10">
+                                        <Button fx:id="budgetResetButton" text="Reset"
+                                                onAction="#handleResetBudgetForm"
+                                                styleClass="settings-secondary-button"/>
+                                        <Button fx:id="budgetSaveButton" text="Simpan Budget"
+                                                onAction="#handleSaveBudget"
+                                                styleClass="family-primary-button"/>
+                                    </HBox>
+                                </VBox>
+
+                                <VBox spacing="14" HBox.hgrow="ALWAYS" styleClass="userdash-panel">
+                                    <VBox spacing="2">
+                                        <Label text="Daftar Budget" styleClass="userdash-section-title"/>
+                                        <Label text="Gunakan tombol edit untuk mengubah data atau hapus jika budget tidak lagi dipakai."
+                                               styleClass="userdash-section-subtitle"/>
+                                    </VBox>
+
+                                    <TableView fx:id="budgetTable"
+                                               prefHeight="440"
+                                               minHeight="300"
+                                               styleClass="family-table">
+                                        <columns>
+                                            <TableColumn fx:id="budgetNameColumn" text="Nama" prefWidth="190"/>
+                                            <TableColumn fx:id="budgetAmountColumn" text="Nominal" prefWidth="150"/>
+                                            <TableColumn fx:id="budgetPeriodColumn" text="Periode" prefWidth="220"/>
+                                            <TableColumn fx:id="budgetStatusColumn" text="Status" prefWidth="110"/>
+                                            <TableColumn fx:id="budgetActionColumn" text="Aksi" prefWidth="150"/>
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+                            </HBox>
                         </VBox>
 
                         <VBox fx:id="parameterPlannerPage" alignment="TOP_CENTER" spacing="28" visible="false" managed="false" styleClass="userdash-content">

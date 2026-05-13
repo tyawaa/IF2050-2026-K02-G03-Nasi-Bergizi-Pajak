@@ -30,6 +30,7 @@ public class DatabaseInitializer {
 
         ensureAdminColumnExists();
         ensureFamilyMemberSchema();
+        ensureBudgetTableExists();
         ensureNutritionAndPriceTablesExist();
         ensureKitchenStockTableExists();
         ensureKitchenStockInitialQuantityExists();
@@ -104,6 +105,29 @@ public class DatabaseInitializer {
             if (!columnExists(connection, "family_member", "relationship")) {
                 statement.execute("ALTER TABLE family_member ADD COLUMN relationship VARCHAR(50) AFTER name");
             }
+        }
+    }
+
+    private static void ensureBudgetTableExists() throws SQLException {
+        try (Connection connection = DatabaseConnection.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS budget (
+                        budget_id     INT             NOT NULL AUTO_INCREMENT,
+                        user_id       INT             NOT NULL,
+                        name          VARCHAR(100)    NOT NULL,
+                        amount        DECIMAL(15,2)   NOT NULL,
+                        period_start  DATE            NOT NULL,
+                        period_end    DATE            NOT NULL,
+                        status        VARCHAR(50)     NOT NULL DEFAULT 'active',
+                        PRIMARY KEY (budget_id),
+                        KEY idx_budget_user_id (user_id),
+                        CONSTRAINT fk_budget_user FOREIGN KEY (user_id)
+                            REFERENCES user_account(user_id)
+                            ON UPDATE CASCADE
+                            ON DELETE CASCADE
+                    )
+                    """);
         }
     }
 
@@ -203,7 +227,7 @@ public class DatabaseInitializer {
             if (!columnExists(connection, "kitchen_stock", "initial_quantity")) {
                 try (Statement statement = connection.createStatement()) {
                     statement.execute(
-                        "ALTER TABLE kitchen_stock ADD COLUMN initial_quantity DECIMAL(10,2) NOT NULL DEFAULT 0"
+                            "ALTER TABLE kitchen_stock ADD COLUMN initial_quantity DECIMAL(10,2) NOT NULL DEFAULT 0"
                     );
                 }
             }
