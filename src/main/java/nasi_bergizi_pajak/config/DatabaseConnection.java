@@ -10,8 +10,8 @@ public class DatabaseConnection {
             + "&useSSL=false"
             + "&allowPublicKeyRetrieval=true"
             + "&serverTimezone=Asia/Jakarta";
-    private static final String DEFAULT_DB_USER = "nbp_app";
-    private static final String DEFAULT_DB_PASSWORD = "nbp1234";
+    private static final String DEFAULT_DB_USER = "root";
+    private static final String DEFAULT_DB_PASSWORD = "";
 
     public static Connection getConnection() throws SQLException {
         String dbUrl = getConfig("DB_URL", "db.url", DEFAULT_DB_URL);
