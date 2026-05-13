@@ -342,11 +342,14 @@
 
 .button-outline,
 .outline-button {
+    -fx-pref-height: 48px;
+    -fx-min-height: 48px;
     -fx-background-color: transparent;
     -fx-border-color: #F28C28;
     -fx-border-radius: 10px;
     -fx-background-radius: 10px;
     -fx-text-fill: #F28C28;
+    -fx-font-size: 15px;
     -fx-font-weight: 800;
     -fx-padding: 10px 18px;
     -fx-cursor: hand;
