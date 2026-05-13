@@ -31,6 +31,9 @@ public class ShoppingPlannerController {
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.of("id", "ID"));
 
     @FXML private ComboBox<WeeklyMenuOption> menuComboBox;
+    @FXML private Label topbarAvatarText;
+    @FXML private Label welcomeLabel;
+    @FXML private Label emailLabel;
     @FXML private Label plannerStatusLabel;
     @FXML private Label estimationLabel;
     @FXML private Label budgetLabel;
@@ -50,6 +53,7 @@ public class ShoppingPlannerController {
 
     @FXML
     private void initialize() {
+        initializeUserInfo();
         setupTable();
         loadMenus();
 
@@ -149,6 +153,52 @@ public class ShoppingPlannerController {
         AppNavigator.showDashboard(AppNavigator.getCurrentUser());
     }
 
+    @FXML
+    private void handleOpenFamilyProfile() {
+        AppNavigator.showDashboard(AppNavigator.getCurrentUser(), AppNavigator.DashboardPage.FAMILY_PROFILE);
+    }
+
+    @FXML
+    private void handleOpenWeeklyMenu() {
+        AppNavigator.showDashboard(AppNavigator.getCurrentUser(), AppNavigator.DashboardPage.WEEKLY_MENU);
+    }
+
+    @FXML
+    private void handleOpenRecommendation() {
+        AppNavigator.showDashboard(AppNavigator.getCurrentUser(), AppNavigator.DashboardPage.RECOMMENDATION);
+    }
+
+    @FXML
+    private void handleOpenSettings() {
+        AppNavigator.showDashboard(AppNavigator.getCurrentUser(), AppNavigator.DashboardPage.SETTINGS);
+    }
+
+    @FXML
+    private void handleLogout() {
+        AppNavigator.showLogin();
+    }
+
+    private void initializeUserInfo() {
+        Akun akun = AppNavigator.getCurrentUser();
+        if (akun == null) {
+            welcomeLabel.setText("User");
+            emailLabel.setText("");
+            topbarAvatarText.setText("N");
+            return;
+        }
+
+        String name = akun.getFirstName() == null || akun.getFirstName().isBlank()
+                ? "User"
+                : akun.getFirstName();
+        if (akun.getLastName() != null && !akun.getLastName().isBlank()) {
+            name += " " + akun.getLastName();
+        }
+
+        welcomeLabel.setText(name);
+        emailLabel.setText(akun.getEmail() == null ? "" : akun.getEmail());
+        topbarAvatarText.setText(name.substring(0, 1).toUpperCase());
+    }
+
     private void setupTable() {
         ingredientColumn.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getIngredientName()));
         quantityColumn.setCellValueFactory(cell -> new SimpleStringProperty(
@@ -241,11 +291,11 @@ public class ShoppingPlannerController {
     }
 
     private void showPlannerSummary() {
-        plannerStatusLabel.setText("Status: " + activePlanner.getStatus());
-        estimationLabel.setText("Estimasi: " + formatCurrency(activePlanner.getTotalEstimation()));
+        plannerStatusLabel.setText(activePlanner.getStatus());
+        estimationLabel.setText(formatCurrency(activePlanner.getTotalEstimation()));
         budgetLabel.setText(activePlanner.getBudgetAmount() == null
-                ? "Budget: belum terhubung"
-                : "Budget: " + formatCurrency(activePlanner.getBudgetAmount()));
+                ? "Belum terhubung"
+                : formatCurrency(activePlanner.getBudgetAmount()));
         updateActualPreview();
 
         if (activePlanner.isOverBudget()) {
@@ -254,10 +304,10 @@ public class ShoppingPlannerController {
     }
 
     private void showEmptySummary() {
-        plannerStatusLabel.setText("Status: -");
-        estimationLabel.setText("Estimasi: -");
-        budgetLabel.setText("Budget: -");
-        actualLabel.setText("Aktual dipilih: -");
+        plannerStatusLabel.setText("-");
+        estimationLabel.setText("-");
+        budgetLabel.setText("-");
+        actualLabel.setText("-");
         processButton.setDisable(true);
     }
 
@@ -268,7 +318,7 @@ public class ShoppingPlannerController {
                 total = total.add(item.getActualPrice());
             }
         }
-        actualLabel.setText("Aktual dipilih: " + formatCurrency(total));
+        actualLabel.setText(formatCurrency(total));
     }
 
     private BigDecimal parseAmount(String rawValue) {

@@ -151,6 +151,17 @@ public class DashboardController {
         setupWeeklyMenuTables();
         setupRecommendationTable();
         refreshFamilyMembers();
+        openRequestedDashboardPage();
+    }
+
+    private void openRequestedDashboardPage() {
+        switch (AppNavigator.consumeRequestedDashboardPage()) {
+            case FAMILY_PROFILE -> showFamilyProfilePage();
+            case WEEKLY_MENU -> showWeeklyMenuPage();
+            case RECOMMENDATION -> showRecommendationPage();
+            case SETTINGS -> showSettingsPage();
+            case DASHBOARD -> showDashboardPage();
+        }
     }
 
     private void initializeUserInfo() {
