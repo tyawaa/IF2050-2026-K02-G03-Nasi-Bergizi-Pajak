@@ -786,21 +786,52 @@ public class DashboardController {
         emptyCell.setCursor(Cursor.HAND);
         emptyCell.getStyleClass().add("weekly-empty-cell");
         emptyCell.setOnMouseClicked(event -> openWeeklySlotDialog(mealDate, mealTime, null));
-
         Button plusButton = new Button("+");
         plusButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        plusButton.setMinHeight(52);
+        plusButton.setMinHeight(42);
         plusButton.getStyleClass().add("weekly-empty-button");
         plusButton.setOnAction(event -> {
             event.consume();
             openWeeklySlotDialog(mealDate, mealTime, null);
         });
+
+        Label recommendationHint = new Label("Pilih rekomendasi menu");
+        recommendationHint.getStyleClass().add("weekly-meal-meta");
+
+        Button recommendationButton = new Button("Rekomendasi");
+        recommendationButton.setMaxWidth(Double.MAX_VALUE);
+        recommendationButton.setMinHeight(28);
+        recommendationButton.getStyleClass().add("weekly-outline-button");
+        recommendationButton.setOnAction(event -> {
+            event.consume();
+            openWeeklyRecommendationDialog(mealDate, mealTime);
+        });
+
         VBox.setVgrow(plusButton, Priority.ALWAYS);
-        emptyCell.getChildren().add(plusButton);
+        emptyCell.setSpacing(6);
+        emptyCell.getChildren().addAll(plusButton, recommendationHint, recommendationButton);
         return emptyCell;
     }
 
+
+    private void openWeeklyRecommendationDialog(LocalDate mealDate, String mealTime) {
+        List<Recipe> recommendedRecipes = loadRecommendedRecipeOptions();
+
+        if (recommendedRecipes.isEmpty()) {
+            showWarning(
+                    "Rekomendasi menu belum tersedia",
+                    "Lengkapi profil keluarga dan pastikan data resep admin sudah memadai untuk menghasilkan rekomendasi."
+            );
+            return;
+        }
+
+        openWeeklySlotDialog(mealDate, mealTime, null, true);
+    }
     private void openWeeklySlotDialog(LocalDate mealDate, String mealTime, SlotMakan existingSlot) {
+        openWeeklySlotDialog(mealDate, mealTime, existingSlot, false);
+    }
+
+    private void openWeeklySlotDialog(LocalDate mealDate, String mealTime, SlotMakan existingSlot, boolean preferRecommendations) {
         if (getSelectedBudgetOption().budgetId() <= 0) {
             showWarning("Budget aktif belum tersedia",
                     "Tambahkan atau aktifkan budget dulu, lalu simpan Parameter Planner sebelum menambah menu.");
