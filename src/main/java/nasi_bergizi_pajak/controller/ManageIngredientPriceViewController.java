@@ -6,15 +6,14 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import nasi_bergizi_pajak.app.AppNavigator;
-import nasi_bergizi_pajak.config.DatabaseConnection;
+import nasi_bergizi_pajak.dao.IngredientDAO;
 import nasi_bergizi_pajak.model.Ingredient;
-import nasi_bergizi_pajak.service.IngredientService;
 
-import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class ManageIngredientPriceViewController {
 
@@ -34,14 +33,13 @@ public class ManageIngredientPriceViewController {
     @FXML private Button btnSimpan;
     @FXML private Label labelStatus;
 
-    private IngredientService ingredientService;
+    private final IngredientDAO ingredientDAO = new IngredientDAO();
     private final ObservableList<Ingredient> ingredientList = FXCollections.observableArrayList();
+    private List<Ingredient> allIngredients;
     private Ingredient selectedIngredient;
 
     @FXML
     private void initialize() {
-        ingredientService = new IngredientService(DatabaseConnection::getConnection);
-
         setupTableColumns();
         ingredientTable.setItems(ingredientList);
 
@@ -66,21 +64,19 @@ public class ManageIngredientPriceViewController {
                 new SimpleStringProperty(cd.getValue().getUnit()));
 
         colPrice.setCellValueFactory(cd -> {
-            double p = cd.getValue().getCurrentPrice();
+            double p = cd.getValue().getPricePerUnit();
             return new SimpleStringProperty(p > 0 ? formatRupiah(p) : "—");
         });
 
-        colDate.setCellValueFactory(cd -> {
-            LocalDate date = cd.getValue().getPriceEffectiveDate();
-            return new SimpleStringProperty(date != null ? date.toString() : "—");
-        });
+        colDate.setCellValueFactory(cd ->
+                new SimpleStringProperty("—"));
     }
 
     private void loadIngredients() {
         try {
-            List<Ingredient> data = ingredientService.getAllIngredients();
-            ingredientList.setAll(data);
-        } catch (SQLException e) {
+            allIngredients = ingredientDAO.listAllIngredients();
+            ingredientList.setAll(allIngredients);
+        } catch (IllegalStateException e) {
             showError("Gagal memuat data bahan: " + e.getMessage());
         }
     }
@@ -99,8 +95,8 @@ public class ManageIngredientPriceViewController {
 
         labelNamaBahan.setText(ingredient.getName() + "  (" + ingredient.getUnit() + ")");
         labelHargaSaatIni.setText(
-                ingredient.getCurrentPrice() > 0
-                        ? formatRupiah(ingredient.getCurrentPrice())
+                ingredient.getPricePerUnit() > 0
+                        ? formatRupiah(ingredient.getPricePerUnit())
                         : "Belum ada harga");
         fieldHargaBaru.clear();
         btnSimpan.setDisable(false);
@@ -108,12 +104,14 @@ public class ManageIngredientPriceViewController {
 
     @FXML
     private void handleSearch() {
-        String term = searchField.getText().trim();
-        try {
-            List<Ingredient> results = ingredientService.searchIngredients(term);
-            ingredientList.setAll(results);
-        } catch (SQLException e) {
-            showError("Gagal mencari bahan: " + e.getMessage());
+        String term = searchField.getText().trim().toLowerCase();
+        if (term.isEmpty()) {
+            ingredientList.setAll(allIngredients);
+        } else {
+            List<Ingredient> filtered = allIngredients.stream()
+                    .filter(i -> i.getName().toLowerCase().contains(term))
+                    .collect(Collectors.toList());
+            ingredientList.setAll(filtered);
         }
     }
 
@@ -129,7 +127,6 @@ public class ManageIngredientPriceViewController {
 
         double hargaBaru;
         try {
-            // Accept both "15000" and "15.000" (thousands separator) formats
             hargaBaru = Double.parseDouble(hargaStr.replace(".", "").replace(",", "."));
             if (hargaBaru < 0) {
                 showError("Harga tidak boleh negatif.");
@@ -147,7 +144,7 @@ public class ManageIngredientPriceViewController {
         }
 
         try {
-            ingredientService.updateIngredientPrice(
+            ingredientDAO.addIngredientPrice(
                     selectedIngredient.getIngredientId(), hargaBaru, tanggal);
 
             showSuccess("Harga " + selectedIngredient.getName()
@@ -156,18 +153,16 @@ public class ManageIngredientPriceViewController {
             fieldHargaBaru.clear();
             loadIngredients();
 
-            // Re-select the same ingredient so the panel refreshes
+            final int selectedId = selectedIngredient.getIngredientId();
             ingredientTable.getItems().stream()
-                    .filter(i -> i.getIngredientId() == selectedIngredient.getIngredientId())
+                    .filter(i -> i.getIngredientId() == selectedId)
                     .findFirst()
                     .ifPresent(i -> {
                         ingredientTable.getSelectionModel().select(i);
                         ingredientTable.scrollTo(i);
                     });
 
-        } catch (IllegalArgumentException e) {
-            showError(e.getMessage());
-        } catch (SQLException e) {
+        } catch (IllegalStateException e) {
             showError("Gagal menyimpan harga: " + e.getMessage());
         }
     }

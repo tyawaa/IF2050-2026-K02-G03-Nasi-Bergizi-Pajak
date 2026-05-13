@@ -1,175 +1,143 @@
 package nasi_bergizi_pajak.dao;
 
-import nasi_bergizi_pajak.config.DatabaseConfig;
+import nasi_bergizi_pajak.config.DatabaseConnection;
 import nasi_bergizi_pajak.model.Ingredient;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class IngredientDAO {
-    private final DatabaseConfig dbConfig;
+    private static final String SELECT_WITH_LATEST_PRICE = """
+            SELECT i.ingredient_id,
+                   i.name,
+                   i.unit,
+                   COALESCE((
+                       SELECT ip.price
+                       FROM ingredient_price ip
+                       WHERE ip.ingredient_id = i.ingredient_id
+                          AND ip.effective_date <= CURDATE()
+                       ORDER BY ip.effective_date DESC, ip.price_id DESC
+                       LIMIT 1
+                   ), 0) AS price_per_unit
+            FROM ingredient i
+            """;
 
-    public IngredientDAO(DatabaseConfig dbConfig) {
-        this.dbConfig = dbConfig;
+    public List<Ingredient> listAllIngredients() {
+        List<Ingredient> ingredients = new ArrayList<>();
+        String query = SELECT_WITH_LATEST_PRICE + " ORDER BY i.name";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Ingredient ingredient = new Ingredient();
+                ingredient.setIngredientId(rs.getInt("ingredient_id"));
+                ingredient.setName(rs.getString("name"));
+                ingredient.setUnit(rs.getString("unit"));
+                ingredient.setPricePerUnit(rs.getDouble("price_per_unit"));
+                ingredients.add(ingredient);
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Gagal memuat daftar bahan.", e);
+        }
+        return ingredients;
     }
 
-    public boolean addIngredient(Ingredient ingredient) throws SQLException {
-        String sql = "INSERT INTO ingredient (name, unit) VALUES (?, ?)";
-        
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
-            pstmt.setString(1, ingredient.getName());
-            pstmt.setString(2, ingredient.getUnit());
-            
-            int affectedRows = pstmt.executeUpdate();
-            
-            if (affectedRows > 0) {
-                ResultSet generatedKeys = pstmt.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    ingredient.setIngredientId(generatedKeys.getInt(1));
-                    return true;
+    public int insertIngredient(Ingredient ingredient) {
+        String ingredientQuery = "INSERT INTO ingredient (name, unit) VALUES (?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement stmt = conn.prepareStatement(ingredientQuery, Statement.RETURN_GENERATED_KEYS)) {
+                stmt.setString(1, ingredient.getName());
+                stmt.setString(2, ingredient.getUnit());
+                stmt.executeUpdate();
+
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int ingredientId = generatedKeys.getInt(1);
+                        ingredient.setIngredientId(ingredientId);
+                        insertIngredientPrice(conn, ingredientId, ingredient.getPricePerUnit(), LocalDate.now());
+                        conn.commit();
+                        return ingredientId;
+                    }
+                }
+
+                throw new SQLException("Gagal mengambil ID bahan baru.");
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Gagal menyimpan bahan.", e);
+        }
+    }
+
+    public void updateIngredient(Ingredient ingredient) {
+        updateIngredientDetails(ingredient);
+        addIngredientPrice(ingredient.getIngredientId(), ingredient.getPricePerUnit(), LocalDate.now());
+    }
+
+    public void updateIngredientDetails(Ingredient ingredient) {
+        String query = "UPDATE ingredient SET name = ?, unit = ? WHERE ingredient_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, ingredient.getName());
+            stmt.setString(2, ingredient.getUnit());
+            stmt.setInt(3, ingredient.getIngredientId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("Gagal memperbarui bahan.", e);
+        }
+    }
+
+    public void deleteIngredient(int ingredientId) {
+        String query = "DELETE FROM ingredient WHERE ingredient_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, ingredientId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("Gagal menghapus bahan. Bahan mungkin masih dipakai pada resep.", e);
+        }
+    }
+
+    public Ingredient getIngredientById(int ingredientId) {
+        String query = SELECT_WITH_LATEST_PRICE + " WHERE i.ingredient_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, ingredientId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Ingredient ingredient = new Ingredient();
+                    ingredient.setIngredientId(rs.getInt("ingredient_id"));
+                    ingredient.setName(rs.getString("name"));
+                    ingredient.setUnit(rs.getString("unit"));
+                    ingredient.setPricePerUnit(rs.getDouble("price_per_unit"));
+                    return ingredient;
                 }
             }
-            return false;
-        }
-    }
-
-    public boolean updateIngredient(Ingredient ingredient) throws SQLException {
-        String sql = "UPDATE ingredient SET name = ?, unit = ? WHERE ingredient_id = ?";
-        
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, ingredient.getName());
-            pstmt.setString(2, ingredient.getUnit());
-            pstmt.setInt(3, ingredient.getIngredientId());
-            
-            return pstmt.executeUpdate() > 0;
-        }
-    }
-
-    public boolean deleteIngredient(int ingredientId) throws SQLException {
-        String sql = "DELETE FROM ingredient WHERE ingredient_id = ?";
-        
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setInt(1, ingredientId);
-            
-            return pstmt.executeUpdate() > 0;
-        }
-    }
-
-    public Ingredient getIngredientById(int ingredientId) throws SQLException {
-        String sql = "SELECT i.*, ip.price as current_price, ip.effective_date " +
-                    "FROM ingredient i " +
-                    "LEFT JOIN ingredient_price ip ON i.ingredient_id = ip.ingredient_id " +
-                    "WHERE i.ingredient_id = ? " +
-                    "ORDER BY ip.effective_date DESC " +
-                    "LIMIT 1";
-        
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setInt(1, ingredientId);
-            
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return mapResultSetToIngredient(rs);
-            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Gagal memuat bahan.", e);
         }
         return null;
     }
 
-    public Ingredient getIngredientByName(String name) throws SQLException {
-        String sql = "SELECT i.*, ip.price as current_price, ip.effective_date " +
-                    "FROM ingredient i " +
-                    "LEFT JOIN ingredient_price ip ON i.ingredient_id = ip.ingredient_id " +
-                    "WHERE i.name = ? " +
-                    "ORDER BY ip.effective_date DESC " +
-                    "LIMIT 1";
-        
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, name);
-            
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return mapResultSetToIngredient(rs);
-            }
+    public void addIngredientPrice(int ingredientId, double price, LocalDate effectiveDate) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            insertIngredientPrice(conn, ingredientId, price, effectiveDate);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Gagal menyimpan harga bahan.", e);
         }
-        return null;
     }
 
-    public List<Ingredient> getAllIngredients() throws SQLException {
-        String sql = "SELECT i.*, ip.price as current_price, ip.effective_date " +
-                    "FROM ingredient i " +
-                    "LEFT JOIN ingredient_price ip ON i.ingredient_id = ip.ingredient_id " +
-                    "WHERE ip.effective_date = (" +
-                    "    SELECT MAX(effective_date) " +
-                    "    FROM ingredient_price ip2 " +
-                    "    WHERE ip2.ingredient_id = i.ingredient_id" +
-                    ") OR ip.effective_date IS NULL " +
-                    "ORDER BY i.name ASC";
-        
-        List<Ingredient> ingredients = new ArrayList<>();
-        
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                ingredients.add(mapResultSetToIngredient(rs));
-            }
+    private void insertIngredientPrice(Connection conn, int ingredientId, double price, LocalDate effectiveDate) throws SQLException {
+        String query = "INSERT INTO ingredient_price (ingredient_id, price, effective_date) VALUES (?, ?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, ingredientId);
+            stmt.setDouble(2, price);
+            stmt.setDate(3, Date.valueOf(effectiveDate));
+            stmt.executeUpdate();
         }
-        return ingredients;
-    }
-
-    public List<Ingredient> searchIngredients(String searchTerm) throws SQLException {
-        String sql = "SELECT i.*, ip.price as current_price, ip.effective_date " +
-                    "FROM ingredient i " +
-                    "LEFT JOIN ingredient_price ip ON i.ingredient_id = ip.ingredient_id " +
-                    "WHERE i.name LIKE ? " +
-                    "AND (ip.effective_date = (" +
-                    "    SELECT MAX(effective_date) " +
-                    "    FROM ingredient_price ip2 " +
-                    "    WHERE ip2.ingredient_id = i.ingredient_id" +
-                    ") OR ip.effective_date IS NULL) " +
-                    "ORDER BY i.name ASC";
-        
-        List<Ingredient> ingredients = new ArrayList<>();
-        
-        try (Connection conn = dbConfig.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, "%" + searchTerm + "%");
-            
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                ingredients.add(mapResultSetToIngredient(rs));
-            }
-        }
-        return ingredients;
-    }
-
-    private Ingredient mapResultSetToIngredient(ResultSet rs) throws SQLException {
-        Ingredient ingredient = new Ingredient();
-        ingredient.setIngredientId(rs.getInt("ingredient_id"));
-        ingredient.setName(rs.getString("name"));
-        ingredient.setUnit(rs.getString("unit"));
-        
-        double price = rs.getDouble("current_price");
-        if (!rs.wasNull()) {
-            ingredient.setCurrentPrice(price);
-            String effectiveDateStr = rs.getString("effective_date");
-            if (effectiveDateStr != null && !effectiveDateStr.isEmpty()) {
-                ingredient.setPriceEffectiveDate(java.time.LocalDate.parse(effectiveDateStr));
-            }
-        }
-        
-        return ingredient;
     }
 }

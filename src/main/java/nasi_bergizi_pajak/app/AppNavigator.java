@@ -46,6 +46,10 @@ public final class AppNavigator {
         loadScene("/view/DashboardView.fxml", "Nasi Bergizi Pajak - Dashboard");
     }
 
+    public static void showManageIngredientPrice() {
+        loadScene("/view/ManageIngredientPriceView.fxml", "Nasi Bergizi Pajak - Manajemen Harga Bahan");
+    }
+
     private static void loadScene(String fxmlPath, String title) {
         if (stage == null) {
             throw new IllegalStateException("Stage belum diset.");
@@ -53,23 +57,30 @@ public final class AppNavigator {
 
         try {
             URL resource = AppNavigator.class.getResource(fxmlPath);
+
             if (resource == null) {
                 throw new IOException("Resource tidak ditemukan: " + fxmlPath);
             }
 
-            Parent root = FXMLLoader.load(resource);
+            FXMLLoader loader = new FXMLLoader(resource);
+            Parent root = loader.load();
+
             Scene scene = new Scene(root, 1180, 720);
+
             stage.setTitle(title);
             stage.setScene(scene);
             stage.show();
-        } catch (IOException e) {
-            showFatalError("Gagal membuka halaman", e.getMessage());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            showFatalError(
+                "Gagal membuka halaman",
+                e.getClass().getSimpleName() + "\n\n" + e.getMessage()
+            );
+
             throw new IllegalStateException(e);
         }
-    }
-
-    public static void showManageIngredientPrice() {
-        loadScene("/view/ManageIngredientPriceView.fxml", "Nasi Bergizi Pajak - Manajemen Harga Bahan");
     }
 
     public static void showFatalError(String title, String message) {
@@ -79,4 +90,9 @@ public final class AppNavigator {
         alert.setContentText(message == null ? "Terjadi kesalahan tidak diketahui." : message);
         alert.showAndWait();
     }
+
+    public static void showRecipeForm() {
+    loadScene("/view/RecipeFormView.fxml",
+              "Form Resep");
+}
 }
