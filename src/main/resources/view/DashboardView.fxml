@@ -45,7 +45,6 @@
                 <Button fx:id="kitchenStockNavButton" text="Stok Dapur" maxWidth="Infinity" onAction="#handleStokDapur" styleClass="userdash-nav-button"/>
                 <Button fx:id="weeklyMenuNavButton" text="Menu Mingguan" maxWidth="Infinity" onAction="#showWeeklyMenuPage" styleClass="userdash-nav-button"/>
                 <Button fx:id="shoppingPlannerNavButton" text="Shopping Planner" maxWidth="Infinity" onAction="#handleOpenShoppingPlanner" styleClass="userdash-nav-button"/>
-                <Button text="Hasil Belanja" maxWidth="Infinity" onAction="#handleOpenShoppingPlanner" styleClass="userdash-nav-button"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>

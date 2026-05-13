@@ -42,9 +42,7 @@
                 <Button text="Parameter Planner" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Stok Dapur" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Menu Mingguan" maxWidth="Infinity" onAction="#handleOpenWeeklyMenu" styleClass="userdash-nav-button"/>
-                <Button text="Rekomendasi Menu" maxWidth="Infinity" onAction="#handleOpenRecommendation" styleClass="userdash-nav-button"/>
                 <Button text="Shopping Planner" maxWidth="Infinity" styleClass="userdash-nav-active"/>
-                <Button text="Hasil Belanja" maxWidth="Infinity" styleClass="userdash-nav-button"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
@@ -64,7 +62,7 @@
                 </padding>
 
                 <Label text="Shopping Planner" styleClass="userdash-page-title"/>
-                <Label text="UC11 &amp; UC12" styleClass="userdash-period-badge"/>
+                <Label fx:id="budgetPeriodBadgeLabel" text="Budget: -" styleClass="userdash-period-badge"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <StackPane styleClass="userdash-bell">
                     <Label text="3" styleClass="userdash-bell-badge"/>

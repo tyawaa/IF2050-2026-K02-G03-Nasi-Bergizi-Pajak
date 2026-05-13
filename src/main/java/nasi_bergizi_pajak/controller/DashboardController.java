@@ -2189,6 +2189,10 @@ public class DashboardController {
         refreshWeeklyMenus();
     }
 
+    private void showRecommendationPage() {
+        showWeeklyMenuPage();
+    }
+
     @FXML
     private void handleSavePlannerParameter() {
         updatePlannerPreview();

@@ -3,6 +3,8 @@ package nasi_bergizi_pajak.controller;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,11 +31,13 @@ import nasi_bergizi_pajak.model.WeeklyMenuOption;
 public class ShoppingPlannerController {
     private final ShoppingPlannerDAO shoppingPlannerDAO = new ShoppingPlannerDAO();
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.of("id", "ID"));
+    private final DateTimeFormatter badgeDateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.of("id", "ID"));
 
     @FXML private ComboBox<WeeklyMenuOption> menuComboBox;
     @FXML private Label topbarAvatarText;
     @FXML private Label welcomeLabel;
     @FXML private Label emailLabel;
+    @FXML private Label budgetPeriodBadgeLabel;
     @FXML private Label plannerStatusLabel;
     @FXML private Label estimationLabel;
     @FXML private Label budgetLabel;
@@ -247,9 +251,11 @@ public class ShoppingPlannerController {
                 menuComboBox.getSelectionModel().selectFirst();
                 loadExistingPlanner(menus.getFirst());
             } else {
+                updateBudgetPeriodBadge(null);
                 showMessage("Belum ada menu mingguan untuk akun ini.", true);
             }
         } catch (SQLException e) {
+            updateBudgetPeriodBadge(null);
             showMessage("Gagal memuat menu: " + e.getMessage(), true);
         }
     }
@@ -263,6 +269,7 @@ public class ShoppingPlannerController {
     }
 
     private void loadExistingPlanner(WeeklyMenuOption menu) {
+        updateBudgetPeriodBadge(menu);
         try {
             Akun akun = AppNavigator.getCurrentUser();
             activePlanner = shoppingPlannerDAO.cariPlannerUntukMenu(akun.getUserId(), menu.getMenuId());
@@ -279,6 +286,22 @@ public class ShoppingPlannerController {
         } catch (SQLException e) {
             showMessage("Gagal memuat planner: " + e.getMessage(), true);
         }
+    }
+
+    private void updateBudgetPeriodBadge(WeeklyMenuOption menu) {
+        if (menu == null || menu.getBudgetStartDate() == null || menu.getBudgetEndDate() == null) {
+            budgetPeriodBadgeLabel.setText("Budget: -");
+            return;
+        }
+
+        budgetPeriodBadgeLabel.setText("Budget: "
+                + formatBadgeDate(menu.getBudgetStartDate())
+                + " - "
+                + formatBadgeDate(menu.getBudgetEndDate()));
+    }
+
+    private String formatBadgeDate(LocalDate date) {
+        return date.format(badgeDateFormatter);
     }
 
     private void refreshItems() throws SQLException {

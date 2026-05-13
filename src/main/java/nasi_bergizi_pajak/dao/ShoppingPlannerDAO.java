@@ -19,10 +19,14 @@ import nasi_bergizi_pajak.model.WeeklyMenuOption;
 public class ShoppingPlannerDAO {
     public List<WeeklyMenuOption> cariMenuMingguanUser(int userId) throws SQLException {
         String sql = """
-                SELECT menu_id, week_start_date, week_end_date, status_budget
-                FROM weekly_menu
-                WHERE user_id = ?
-                ORDER BY week_start_date DESC, menu_id DESC
+                SELECT wm.menu_id, wm.week_start_date, wm.week_end_date, wm.status_budget,
+                       b.period_start AS budget_start_date,
+                       b.period_end AS budget_end_date
+                FROM weekly_menu wm
+                LEFT JOIN parameter_planner pp ON pp.parameter_id = wm.parameter_id
+                LEFT JOIN budget b ON b.budget_id = pp.budget_id
+                WHERE wm.user_id = ?
+                ORDER BY wm.week_start_date DESC, wm.menu_id DESC
                 """;
         List<WeeklyMenuOption> menus = new ArrayList<>();
 
@@ -36,6 +40,12 @@ public class ShoppingPlannerDAO {
                             resultSet.getInt("menu_id"),
                             resultSet.getDate("week_start_date").toLocalDate(),
                             resultSet.getDate("week_end_date").toLocalDate(),
+                            resultSet.getDate("budget_start_date") == null
+                                    ? null
+                                    : resultSet.getDate("budget_start_date").toLocalDate(),
+                            resultSet.getDate("budget_end_date") == null
+                                    ? null
+                                    : resultSet.getDate("budget_end_date").toLocalDate(),
                             resultSet.getString("status_budget")
                     ));
                 }
