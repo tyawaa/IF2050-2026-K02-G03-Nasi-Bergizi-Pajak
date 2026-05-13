@@ -180,6 +180,27 @@ public class KitchenStockDAO {
         return stocks;
     }
 
+    public KitchenStock getStockByUserAndIngredient(int userId, int ingredientId) throws SQLException {
+        String sql = "SELECT ks.*, i.name as ingredient_name " +
+                    "FROM kitchen_stock ks " +
+                    "JOIN ingredient i ON ks.ingredient_id = i.ingredient_id " +
+                    "WHERE ks.user_id = ? AND ks.ingredient_id = ? " +
+                    "LIMIT 1";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, userId);
+            pstmt.setInt(2, ingredientId);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return mapResultSetToStock(rs);
+            }
+        }
+        return null;
+    }
+
     public boolean updateQuantity(int stockId, int userId, double newQuantity) throws SQLException {
         String sql = "UPDATE kitchen_stock SET quantity = ? WHERE stock_id = ? AND user_id = ?";
         

@@ -314,11 +314,21 @@ public class KitchenStockViewController {
             return;
         }
 
-        String unit     = unitField.getText().trim();
-        String location = locationField.getText().trim();
+        String unit      = unitField.getText().trim();
+        String location  = locationField.getText().trim();
         LocalDate expiry = expiryDatePicker.getValue();
 
         try {
+            // Kalau mode tambah, cek apakah bahan ini sudah ada di stok user
+            if (editingStockId <= 0) {
+                KitchenStock existing = stockController.getStockByUserAndIngredient(
+                        user.getUserId(), ingredient.getIngredientId());
+                if (existing != null) {
+                    // Otomatis switch ke mode edit untuk entri yang sudah ada
+                    editingStockId = existing.getStockId();
+                }
+            }
+
             KitchenStock stock = new KitchenStock(
                 user.getUserId(), ingredient.getIngredientId(),
                 quantity, unit, location, expiry

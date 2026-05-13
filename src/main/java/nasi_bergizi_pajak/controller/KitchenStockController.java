@@ -50,6 +50,14 @@ public class KitchenStockController {
         }
     }
 
+    public KitchenStock getStockByUserAndIngredient(int userId, int ingredientId) throws SQLException {
+        try {
+            return stockService.getStockByUserAndIngredient(userId, ingredientId);
+        } catch (SQLException e) {
+            throw new SQLException("Failed to retrieve stock by ingredient: " + e.getMessage(), e);
+        }
+    }
+
     public List<KitchenStock> getAllStockByUser(int userId) throws SQLException {
         try {
             return stockService.getAllStockByUser(userId);

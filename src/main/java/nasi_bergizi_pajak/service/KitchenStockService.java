@@ -36,6 +36,10 @@ public class KitchenStockService {
         return stockDAO.getStockById(stockId, userId);
     }
 
+    public KitchenStock getStockByUserAndIngredient(int userId, int ingredientId) throws SQLException {
+        return stockDAO.getStockByUserAndIngredient(userId, ingredientId);
+    }
+
     public List<KitchenStock> getAllStockByUser(int userId) throws SQLException {
         return stockDAO.getAllStockByUser(userId);
     }
