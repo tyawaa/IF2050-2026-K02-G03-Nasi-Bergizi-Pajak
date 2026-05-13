@@ -129,6 +129,21 @@ public class IngredientService {
         return price != null ? price.getPrice() : 0.0;
     }
 
+    public boolean validateIngredientData(Ingredient ingredient) {
+        if (ingredient == null) return false;
+        if (ingredient.getName() == null || ingredient.getName().trim().isEmpty()) return false;
+        if (ingredient.getUnit() == null || ingredient.getUnit().trim().isEmpty()) return false;
+        return true;
+    }
+
+    public boolean validatePriceData(IngredientPrice price) {
+        if (price == null) return false;
+        if (price.getPrice() < 0) return false;
+        if (price.getEffectiveDate() == null) return false;
+        if (price.getEffectiveDate().isAfter(LocalDate.now().plusDays(30))) return false;
+        return true;
+    }
+
     public List<Ingredient> getIngredientsWithCurrentPrices() throws SQLException {
         List<Ingredient> ingredients = getAllIngredients();
         for (Ingredient ingredient : ingredients) {

@@ -1,5 +1,6 @@
 package nasi_bergizi_pajak.controller;
 
+import nasi_bergizi_pajak.config.DatabaseConfig;
 import nasi_bergizi_pajak.model.Ingredient;
 import nasi_bergizi_pajak.model.IngredientPrice;
 import nasi_bergizi_pajak.service.IngredientService;

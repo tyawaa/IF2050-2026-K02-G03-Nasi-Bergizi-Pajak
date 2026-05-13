@@ -180,7 +180,7 @@ public class ManageIngredientPriceViewController {
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private String formatRupiah(double amount) {
-        NumberFormat fmt = NumberFormat.getNumberInstance(new Locale("id", "ID"));
+        NumberFormat fmt = NumberFormat.getNumberInstance(Locale.of("id", "ID"));
         return "Rp " + fmt.format((long) amount);
     }
 
