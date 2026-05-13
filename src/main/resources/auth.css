@@ -620,6 +620,12 @@
     -fx-font-weight: 700;
     -fx-text-fill: #2E2A25;
     -fx-font-size: 13px;
+    -fx-alignment: CENTER;
+}
+
+.stock-table .table-cell {
+    -fx-alignment: CENTER;
+    -fx-padding: 7px 10px;
 }
 
 .stock-table .table-row-cell:odd {
@@ -732,16 +738,50 @@
     -fx-border-radius: 10px;
     -fx-border-color: #E6D9C8;
     -fx-border-width: 1px;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-prompt-text-fill: #9B9187;
 }
 
 .auth-input.combo-box:focused {
     -fx-border-color: #F28C28;
+    -fx-effect: dropshadow(gaussian, rgba(242, 140, 40, 0.18), 10, 0, 0, 0);
 }
 
 .auth-input.combo-box .list-cell {
+    -fx-background-color: transparent;
     -fx-padding: 0 14px;
     -fx-font-size: 14px;
     -fx-text-fill: #2E2A25;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.auth-input.combo-box .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 12px 0 8px;
+}
+
+.auth-input.combo-box .arrow {
+    -fx-background-color: #6F665D;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E6D9C8;
+    -fx-border-radius: 10px;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-padding: 10px 14px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2E2A25;
+}
+
+.combo-box-popup .list-view .list-cell:hover,
+.combo-box-popup .list-view .list-cell:filled:selected {
+    -fx-background-color: #FFF3E8;
+    -fx-text-fill: #D96A1D;
 }
 
 /* DatePicker styled like auth-input */

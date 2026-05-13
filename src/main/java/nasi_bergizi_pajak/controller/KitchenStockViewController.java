@@ -119,7 +119,7 @@ public class KitchenStockViewController {
                     default              -> "status-good";
                 });
                 setGraphic(badge);
-                setAlignment(Pos.CENTER_LEFT);
+                setAlignment(Pos.CENTER);
             }
         });
 
@@ -131,7 +131,7 @@ public class KitchenStockViewController {
             {
                 editBtn.getStyleClass().add("btn-edit");
                 delBtn.getStyleClass().add("btn-danger");
-                box.setAlignment(Pos.CENTER_LEFT);
+                box.setAlignment(Pos.CENTER);
 
                 editBtn.setOnAction(e -> {
                     KitchenStock s = getTableView().getItems().get(getIndex());
@@ -286,22 +286,10 @@ public class KitchenStockViewController {
         Akun user = AppNavigator.getCurrentUser();
         if (user == null) { AppNavigator.showLogin(); return; }
 
-        // Resolve ingredient (selected from list or typed)
         Ingredient ingredient = ingredientCombo.getValue();
         if (ingredient == null) {
-            String typed = ingredientCombo.getEditor().getText().trim();
-            if (typed.isEmpty()) { showMessage("Pilih atau masukkan nama bahan.", false); return; }
-            try {
-                ingredient = ingredientDAO.getIngredientByName(typed);
-                if (ingredient == null) {
-                    ingredient = new Ingredient(typed, unitField.getText().trim());
-                    ingredientDAO.addIngredient(ingredient);
-                    loadIngredients();
-                }
-            } catch (SQLException e) {
-                showMessage("Gagal memproses bahan: " + e.getMessage(), false);
-                return;
-            }
+            showMessage("Pilih bahan dari daftar bahan makanan.", false);
+            return;
         }
 
         // Validate quantity
@@ -377,7 +365,6 @@ public class KitchenStockViewController {
         editingStockId = -1;
         formTitleLabel.setText("Tambah Stok Baru");
         ingredientCombo.setValue(null);
-        ingredientCombo.getEditor().clear();
         quantityField.clear();
         unitField.clear();
         locationField.clear();
@@ -392,12 +379,7 @@ public class KitchenStockViewController {
         ingredientCombo.getItems().stream()
             .filter(i -> i.getIngredientId() == stock.getIngredientId())
             .findFirst()
-            .ifPresentOrElse(
-                ingredientCombo::setValue,
-                () -> ingredientCombo.getEditor().setText(
-                    stock.getIngredientName() != null ? stock.getIngredientName() : ""
-                )
-            );
+            .ifPresent(ingredientCombo::setValue);
 
         quantityField.setText(String.valueOf(stock.getQuantity()));
         unitField.setText(stock.getUnit() != null ? stock.getUnit() : "");
