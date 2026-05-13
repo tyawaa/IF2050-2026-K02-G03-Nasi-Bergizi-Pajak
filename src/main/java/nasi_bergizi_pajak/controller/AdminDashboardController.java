@@ -103,6 +103,11 @@ public class AdminDashboardController {
     }
 
     @FXML
+    private void handleKitchenStock() {
+        AppNavigator.showKitchenStock();
+    }
+
+    @FXML
     private void handleLogout() {
         AppNavigator.showLogin();
     }
