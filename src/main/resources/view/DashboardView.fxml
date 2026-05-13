@@ -437,10 +437,10 @@
                                 </VBox>
 
                                 <HBox alignment="CENTER_RIGHT" spacing="10">
-                                    <Button text="Reset"
+                                    <Button fx:id="budgetResetButton" text="Reset"
                                             onAction="#handleResetBudgetForm"
                                             styleClass="settings-secondary-button"/>
-                                    <Button text="Simpan Budget"
+                                    <Button fx:id="budgetSaveButton" text="Simpan Budget"
                                             onAction="#handleSaveBudget"
                                             styleClass="family-primary-button"/>
                                 </HBox>
