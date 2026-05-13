@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.NumberFormat;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -23,6 +24,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.DatePicker;
@@ -48,6 +50,7 @@ import nasi_bergizi_pajak.app.AppNavigator;
 import nasi_bergizi_pajak.dao.AkunDAO;
 import nasi_bergizi_pajak.dao.FamilyMemberDAO;
 import nasi_bergizi_pajak.model.Akun;
+import nasi_bergizi_pajak.model.Budget;
 import nasi_bergizi_pajak.model.FamilyMember;
 import nasi_bergizi_pajak.model.RekomendasiMenu;
 import nasi_bergizi_pajak.model.MenuMingguan;
@@ -58,17 +61,25 @@ public class DashboardController {
     @FXML private Label welcomeLabel;
     @FXML private Label emailLabel;
     @FXML private Label pageTitleLabel;
+    @FXML private Label budgetPeriodBadgeLabel;
     @FXML private Label topbarAvatarText;
     @FXML private Label dashboardFamilyIconCountLabel;
     @FXML private Label dashboardFamilyCountLabel;
     @FXML private Button dashboardNavButton;
     @FXML private Button familyProfileNavButton;
+    @FXML private Button budgetNavButton;
+    @FXML private Button kitchenStockNavButton;
+    @FXML private Button budgetResetButton;
+    @FXML private Button budgetSaveButton;
     @FXML private Button settingsNavButton;
     @FXML private Button profileSettingsTabButton;
     @FXML private Button securitySettingsTabButton;
     @FXML private HBox userProfileMenuButton;
     @FXML private VBox dashboardPage;
     @FXML private VBox familyProfilePage;
+    @FXML private VBox budgetPage;
+    @FXML private VBox kitchenStockPage;
+    @FXML private KitchenStockViewController kitchenStockContentController;
     @FXML private VBox settingsPage;
     @FXML private VBox profileSettingsPane;
     @FXML private VBox securitySettingsPane;
@@ -86,6 +97,24 @@ public class DashboardController {
     @FXML private TableColumn<FamilyMember, String> weightColumn;
     @FXML private TableColumn<FamilyMember, String> allergyColumn;
     @FXML private TableColumn<FamilyMember, FamilyMember> actionColumn;
+
+    @FXML private TextField budgetNameField;
+    @FXML private TextField budgetAmountField;
+    @FXML private DatePicker budgetStartDatePicker;
+    @FXML private DatePicker budgetEndDatePicker;
+    @FXML private ComboBox<String> budgetStatusComboBox;
+    @FXML private Label budgetFormTitleLabel;
+    @FXML private Label budgetActiveNameLabel;
+    @FXML private Label budgetActiveAmountLabel;
+    @FXML private Label budgetActivePeriodLabel;
+    @FXML private Label budgetCountLabel;
+    @FXML private Label budgetStatusSummaryLabel;
+    @FXML private TableView<Budget> budgetTable;
+    @FXML private TableColumn<Budget, String> budgetNameColumn;
+    @FXML private TableColumn<Budget, String> budgetAmountColumn;
+    @FXML private TableColumn<Budget, String> budgetPeriodColumn;
+    @FXML private TableColumn<Budget, String> budgetStatusColumn;
+    @FXML private TableColumn<Budget, Budget> budgetActionColumn;
 
     @FXML private Button weeklyMenuNavButton;
     @FXML private VBox weeklyMenuPage;
@@ -116,9 +145,6 @@ public class DashboardController {
     @FXML private Label passwordErrorLabel;
     @FXML private Button recommendationNavButton;
     @FXML private VBox recommendationPage;
-    @FXML private Button kitchenStockNavButton;
-    @FXML private VBox kitchenStockPage;
-    @FXML private KitchenStockViewController kitchenStockContentController;
     @FXML private Label recommendationCountLabel;
     @FXML private Label recommendationStatusLabel;
     @FXML private TableView<RekomendasiMenu> recommendationTable;
@@ -133,13 +159,17 @@ public class DashboardController {
     private final AkunDAO akunDAO = new AkunDAO();
     private final FamilyMemberDAO familyMemberDAO = new FamilyMemberDAO();
     private final ObservableList<FamilyMember> familyMembers = FXCollections.observableArrayList();
+    private final ObservableList<Budget> budgets = FXCollections.observableArrayList();
+    private final BudgetController budgetController = new BudgetController();
     private final ObservableList<MenuMingguan> weeklyMenus = FXCollections.observableArrayList();
     private final ObservableList<SlotMakan> weeklySlots = FXCollections.observableArrayList();
     private final MenuController menuController = new MenuController();
     private final ObservableList<RekomendasiMenu> recommendations = FXCollections.observableArrayList();
     private final RekomendasiController rekomendasiController = new RekomendasiController();
-    private final NumberFormat rupiahFormat = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
+    private final NumberFormat rupiahFormat = NumberFormat.getCurrencyInstance(Locale.of("id", "ID"));
+    private final DateTimeFormatter budgetDateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.of("id", "ID"));
     private Akun currentUser;
+    private Budget selectedBudget;
     private ContextMenu profileMenu;
     private PauseTransition settingsToastTimer;
 
@@ -150,9 +180,11 @@ public class DashboardController {
         initializeSettingsForm();
         setupProfileMenu();
         setupFamilyTable();
+        setupBudgetPage();
         setupWeeklyMenuTables();
         setupRecommendationTable();
         refreshFamilyMembers();
+        refreshBudgets();
     }
 
     private void initializeUserInfo() {
@@ -219,6 +251,208 @@ public class DashboardController {
 
         profileMenu = new ContextMenu(headerItem, new SeparatorMenuItem(), settingsItem, new SeparatorMenuItem(), logoutItem);
         profileMenu.getStyleClass().add("profile-dropdown-menu");
+    }
+
+    private void setupBudgetPage() {
+        budgetStatusComboBox.setItems(FXCollections.observableArrayList("active", "inactive"));
+        budgetStatusComboBox.getSelectionModel().select("active");
+        budgetStartDatePicker.setValue(LocalDate.now());
+        budgetEndDatePicker.setValue(LocalDate.now().plusMonths(1));
+
+        budgetTable.setItems(budgets);
+        budgetTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        budgetTable.setPlaceholder(createBudgetEmptyState());
+
+        budgetNameColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(data.getValue().getName()));
+        budgetAmountColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(rupiahFormat.format(data.getValue().getAmount())));
+        budgetPeriodColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(formatBudgetPeriod(data.getValue())));
+        budgetStatusColumn.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(formatStatus(data.getValue().getStatus())));
+        budgetActionColumn.setCellValueFactory(data ->
+                new javafx.beans.property.ReadOnlyObjectWrapper<>(data.getValue()));
+        budgetStatusColumn.getStyleClass().add("family-center-column");
+        budgetActionColumn.getStyleClass().add("family-center-column");
+        budgetStatusColumn.setCellFactory(column -> new BudgetStatusCell());
+        budgetActionColumn.setCellFactory(column -> new BudgetActionCell());
+    }
+
+    private Node createBudgetEmptyState() {
+        VBox box = new VBox(6);
+        box.setAlignment(Pos.CENTER);
+        box.getStyleClass().add("family-empty-state");
+
+        Label title = new Label("Belum ada budget");
+        title.getStyleClass().add("family-empty-title");
+        Label subtitle = new Label("Tambahkan budget aktif untuk mengatur batas belanja keluarga.");
+        subtitle.getStyleClass().add("userdash-section-subtitle");
+
+        box.getChildren().addAll(title, subtitle);
+        return box;
+    }
+
+    @FXML
+    private void handleSaveBudget() {
+        if (currentUser == null) {
+            showWarning("User tidak ditemukan", "Silakan login ulang sebelum mengelola budget.");
+            return;
+        }
+
+        try {
+            Budget budget = readBudgetForm();
+            if (selectedBudget == null) {
+                budgetController.setBudget(budget);
+            } else {
+                budgetController.updateBudget(selectedBudget.getBudgetId(), budget);
+            }
+
+            resetBudgetForm();
+            refreshBudgets();
+        } catch (IllegalArgumentException e) {
+            showWarning("Data budget belum valid", e.getMessage());
+        } catch (SQLException e) {
+            showError("Gagal menyimpan budget", e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleResetBudgetForm() {
+        resetBudgetForm();
+    }
+
+    @FXML
+    private void handleRefreshBudgets() {
+        refreshBudgets();
+    }
+
+    private Budget readBudgetForm() {
+        String name = budgetNameField.getText() == null ? "" : budgetNameField.getText().trim();
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("Nama budget wajib diisi.");
+        }
+
+        double amount = parseBudgetAmount(budgetAmountField.getText());
+        LocalDate startDate = budgetStartDatePicker.getValue();
+        LocalDate endDate = budgetEndDatePicker.getValue();
+        String status = budgetStatusComboBox.getValue();
+
+        return new Budget(currentUser.getUserId(), name, amount, startDate, endDate, status);
+    }
+
+    private double parseBudgetAmount(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nominal budget wajib diisi.");
+        }
+
+        String normalized = text.trim()
+                .replace("Rp", "")
+                .replace("rp", "")
+                .replace(" ", "")
+                .replace(".", "")
+                .replace(",", ".");
+
+        try {
+            return Double.parseDouble(normalized);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Nominal budget harus berupa angka.");
+        }
+    }
+
+    private void refreshBudgets() {
+        if (currentUser == null) {
+            budgets.clear();
+            updateBudgetSummary(null);
+            return;
+        }
+
+        try {
+            List<Budget> loadedBudgets = budgetController.getDaftarBudget(currentUser.getUserId());
+            budgets.setAll(loadedBudgets);
+            updateBudgetSummary(budgetController.getBudgetAktif(currentUser.getUserId()));
+        } catch (SQLException e) {
+            budgets.clear();
+            updateBudgetSummary(null);
+            showError("Gagal memuat budget", e.getMessage());
+        }
+    }
+
+    private void updateBudgetSummary(Budget activeBudget) {
+        budgetCountLabel.setText(budgets.size() + " budget");
+
+        if (activeBudget == null) {
+            budgetActiveNameLabel.setText("Belum ada budget aktif");
+            budgetActiveAmountLabel.setText(rupiahFormat.format(0));
+            budgetActivePeriodLabel.setText("-");
+            budgetStatusSummaryLabel.setText("Tidak aktif");
+            budgetPeriodBadgeLabel.setText("Budget: Belum aktif");
+            return;
+        }
+
+        budgetActiveNameLabel.setText(activeBudget.getName());
+        budgetActiveAmountLabel.setText(rupiahFormat.format(activeBudget.getAmount()));
+        budgetActivePeriodLabel.setText(formatBudgetPeriod(activeBudget));
+        budgetStatusSummaryLabel.setText("Aktif");
+        budgetPeriodBadgeLabel.setText("Budget: " + formatBudgetPeriod(activeBudget));
+    }
+
+    private void editBudget(Budget budget) {
+        selectedBudget = budget;
+        budgetFormTitleLabel.setText("Ubah Budget");
+        budgetSaveButton.setText("Perbarui Budget");
+        budgetResetButton.setText("Batal Edit");
+        budgetNameField.setText(budget.getName());
+        budgetAmountField.setText(String.valueOf(Math.round(budget.getAmount())));
+        budgetStartDatePicker.setValue(budget.getPeriodStart());
+        budgetEndDatePicker.setValue(budget.getPeriodEnd());
+        budgetStatusComboBox.getSelectionModel().select(budget.getStatus());
+    }
+
+    private void deleteBudget(Budget budget) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Hapus Budget");
+        confirm.setHeaderText("Hapus " + budget.getName() + "?");
+        confirm.setContentText("Data budget ini akan dihapus dari daftar budget keluarga.");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
+        try {
+            budgetController.hapusBudget(budget.getBudgetId(), budget.getUserId());
+            if (selectedBudget != null && selectedBudget.getBudgetId() == budget.getBudgetId()) {
+                resetBudgetForm();
+            }
+            refreshBudgets();
+        } catch (SQLException e) {
+            showError("Gagal menghapus budget", e.getMessage());
+        }
+    }
+
+    private void resetBudgetForm() {
+        selectedBudget = null;
+        budgetFormTitleLabel.setText("Tambah Budget");
+        budgetSaveButton.setText("Simpan Budget");
+        budgetResetButton.setText("Reset");
+        budgetNameField.clear();
+        budgetAmountField.clear();
+        budgetStartDatePicker.setValue(LocalDate.now());
+        budgetEndDatePicker.setValue(LocalDate.now().plusMonths(1));
+        budgetStatusComboBox.getSelectionModel().select("active");
+        budgetTable.getSelectionModel().clearSelection();
+    }
+
+    private String formatBudgetPeriod(Budget budget) {
+        if (budget == null || budget.getPeriodStart() == null || budget.getPeriodEnd() == null) {
+            return "-";
+        }
+        return formatBudgetDate(budget.getPeriodStart()) + " s.d. " + formatBudgetDate(budget.getPeriodEnd());
+    }
+
+    private String formatBudgetDate(LocalDate date) {
+        return date == null ? "-" : budgetDateFormatter.format(date);
     }
 
     private void setupWeeklyMenuTables() {
@@ -375,7 +609,25 @@ public class DashboardController {
         refreshFamilyMembers();
     }
 
-@FXML
+    @FXML
+    private void showBudgetPage() {
+        pageTitleLabel.setText("Budget");
+        showPage(budgetPage);
+        setActiveNav(budgetNavButton);
+        refreshBudgets();
+    }
+
+    @FXML
+    private void handleStokDapur() {
+        pageTitleLabel.setText("Stok Dapur");
+        showPage(kitchenStockPage);
+        setActiveNav(kitchenStockNavButton);
+        if (kitchenStockContentController != null) {
+            kitchenStockContentController.refreshData();
+        }
+    }
+
+    @FXML
     private void showSettingsPage() {
         pageTitleLabel.setText("Pengaturan");
         showPage(settingsPage);
@@ -419,6 +671,12 @@ public class DashboardController {
         familyProfilePage.setVisible(page == familyProfilePage);
         familyProfilePage.setManaged(page == familyProfilePage);
 
+        budgetPage.setVisible(page == budgetPage);
+        budgetPage.setManaged(page == budgetPage);
+
+        kitchenStockPage.setVisible(page == kitchenStockPage);
+        kitchenStockPage.setManaged(page == kitchenStockPage);
+
         weeklyMenuPage.setVisible(page == weeklyMenuPage);
         weeklyMenuPage.setManaged(page == weeklyMenuPage);
 
@@ -427,19 +685,17 @@ public class DashboardController {
 
         recommendationPage.setVisible(page == recommendationPage);
         recommendationPage.setManaged(page == recommendationPage);
-
-        kitchenStockPage.setVisible(page == kitchenStockPage);
-        kitchenStockPage.setManaged(page == kitchenStockPage);
     }
 
     private void setActiveNav(Button activeButton) {
         setNavClass(dashboardNavButton, activeButton == dashboardNavButton);
         setNavClass(familyProfileNavButton, activeButton == familyProfileNavButton);
+        setNavClass(budgetNavButton, activeButton == budgetNavButton);
+        setNavClass(kitchenStockNavButton, activeButton == kitchenStockNavButton);
         setNavClass(weeklyMenuNavButton, activeButton == weeklyMenuNavButton);
 
         setNavClass(settingsNavButton, activeButton == settingsNavButton);
         setNavClass(recommendationNavButton, activeButton == recommendationNavButton);
-        setNavClass(kitchenStockNavButton, activeButton == kitchenStockNavButton);
     }
 
     private void setNavClass(Button button, boolean active) {
@@ -968,16 +1224,6 @@ public class DashboardController {
     }
 
     @FXML
-    private void handleStokDapur() {
-        pageTitleLabel.setText("Stok Dapur");
-        showPage(kitchenStockPage);
-        setActiveNav(kitchenStockNavButton);
-        if (kitchenStockContentController != null) {
-            kitchenStockContentController.refreshData();
-        }
-    }
-
-    @FXML
     private void handleLogout() {
         AppNavigator.showLogin();
     }
@@ -1031,6 +1277,55 @@ public class DashboardController {
             FlowPane badges = createAllergyBadges(item);
             badges.setPrefWrapLength(Math.max(120, allergyColumn.getWidth() - 26));
             setGraphic(badges);
+        }
+    }
+
+    private static class BudgetStatusCell extends TableCell<Budget, String> {
+        private BudgetStatusCell() {
+            setAlignment(Pos.CENTER);
+        }
+
+        @Override
+        protected void updateItem(String item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty || item == null) {
+                setText(null);
+                setGraphic(null);
+                return;
+            }
+
+            Label badge = new Label(item);
+            badge.getStyleClass().add("active".equalsIgnoreCase(item) || "Aktif".equalsIgnoreCase(item)
+                    ? "budget-status-active"
+                    : "budget-status-inactive");
+            setText(null);
+            setGraphic(badge);
+        }
+    }
+
+    private class BudgetActionCell extends TableCell<Budget, Budget> {
+        private final Button editButton = new Button("Edit");
+        private final Button deleteButton = new Button("Hapus");
+        private final HBox actions = new HBox(8, editButton, deleteButton);
+
+        private BudgetActionCell() {
+            setAlignment(Pos.CENTER);
+            actions.setAlignment(Pos.CENTER);
+            editButton.getStyleClass().add("family-edit-button");
+            deleteButton.getStyleClass().add("family-delete-button");
+        }
+
+        @Override
+        protected void updateItem(Budget budget, boolean empty) {
+            super.updateItem(budget, empty);
+            if (empty || budget == null) {
+                setGraphic(null);
+                return;
+            }
+
+            editButton.setOnAction(event -> editBudget(budget));
+            deleteButton.setOnAction(event -> deleteBudget(budget));
+            setGraphic(actions);
         }
     }
 

@@ -194,9 +194,7 @@ public class RekomendasiDAO {
                 FROM budget
                 WHERE user_id = ?
                   AND LOWER(status) = 'active'
-                  AND period_start <= CURDATE()
-                  AND period_end >= CURDATE()
-                ORDER BY period_end DESC, budget_id DESC
+                ORDER BY period_start DESC, budget_id DESC
                 LIMIT 1
                 """;
 
