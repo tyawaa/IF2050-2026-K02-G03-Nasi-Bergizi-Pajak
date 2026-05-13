@@ -66,6 +66,8 @@ public class DashboardController {
     @FXML private Button dashboardNavButton;
     @FXML private Button familyProfileNavButton;
     @FXML private Button budgetNavButton;
+    @FXML private Button budgetResetButton;
+    @FXML private Button budgetSaveButton;
     @FXML private Button settingsNavButton;
     @FXML private Button profileSettingsTabButton;
     @FXML private Button securitySettingsTabButton;
@@ -389,6 +391,8 @@ public class DashboardController {
     private void editBudget(Budget budget) {
         selectedBudget = budget;
         budgetFormTitleLabel.setText("Ubah Budget");
+        budgetSaveButton.setText("Perbarui Budget");
+        budgetResetButton.setText("Batal Edit");
         budgetNameField.setText(budget.getName());
         budgetAmountField.setText(String.valueOf(Math.round(budget.getAmount())));
         budgetStartDatePicker.setValue(budget.getPeriodStart());
@@ -421,6 +425,8 @@ public class DashboardController {
     private void resetBudgetForm() {
         selectedBudget = null;
         budgetFormTitleLabel.setText("Tambah Budget");
+        budgetSaveButton.setText("Simpan Budget");
+        budgetResetButton.setText("Reset");
         budgetNameField.clear();
         budgetAmountField.clear();
         budgetStartDatePicker.setValue(LocalDate.now());
