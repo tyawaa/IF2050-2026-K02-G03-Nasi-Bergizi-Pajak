@@ -1,4 +1,4 @@
-package nasi_bergizi_pajak.controller;sdfsdf
+package nasi_bergizi_pajak.controller;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
