@@ -392,8 +392,8 @@ public class KitchenStockViewController {
         locationField.setText(stock.getStorageLocation() != null ? stock.getStorageLocation() : "");
         expiryDatePicker.setValue(stock.getExpiryDate());
 
-        // scroll to form
-        formTitleLabel.getParent().getParent().requestFocus();
+        // scroll focus to form
+        formTitleLabel.requestFocus();
     }
 
     // ═══════════════════════════════════════════════

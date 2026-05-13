@@ -32,19 +32,20 @@ public class KitchenStockDAO {
     }
 
     public boolean updateStock(KitchenStock stock) throws SQLException {
-        String sql = "UPDATE kitchen_stock SET quantity = ?, unit = ?, storage_location = ?, expiry_date = ? " +
+        String sql = "UPDATE kitchen_stock SET ingredient_id = ?, quantity = ?, unit = ?, storage_location = ?, expiry_date = ? " +
                     "WHERE stock_id = ? AND user_id = ?";
-        
+
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setDouble(1, stock.getQuantity());
-            pstmt.setString(2, stock.getUnit());
-            pstmt.setString(3, stock.getStorageLocation());
-            pstmt.setDate(4, stock.getExpiryDate() != null ? Date.valueOf(stock.getExpiryDate()) : null);
-            pstmt.setInt(5, stock.getStockId());
-            pstmt.setInt(6, stock.getUserId());
-            
+
+            pstmt.setInt(1, stock.getIngredientId());
+            pstmt.setDouble(2, stock.getQuantity());
+            pstmt.setString(3, stock.getUnit());
+            pstmt.setString(4, stock.getStorageLocation());
+            pstmt.setDate(5, stock.getExpiryDate() != null ? Date.valueOf(stock.getExpiryDate()) : null);
+            pstmt.setInt(6, stock.getStockId());
+            pstmt.setInt(7, stock.getUserId());
+
             return pstmt.executeUpdate() > 0;
         }
     }
