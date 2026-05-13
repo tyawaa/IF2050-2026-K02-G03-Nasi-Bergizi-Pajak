@@ -44,6 +44,7 @@ CREATE TABLE family_member (
     member_id   INT             NOT NULL AUTO_INCREMENT,
     user_id     INT             NOT NULL,
     name        VARCHAR(100)    NOT NULL,
+    relationship VARCHAR(50),
     birth_date  DATE,
     height      DOUBLE,
     weight      DOUBLE,
@@ -242,7 +243,7 @@ CREATE TABLE recipe_ingredient (
 CREATE TABLE meal_slot (
     slot_id        INT             NOT NULL AUTO_INCREMENT,
     menu_id        INT             NOT NULL,
-    recipe_id      INT             NOT NULL,
+    recipe_id      INT             NULL,
     meal_date      DATE            NOT NULL,
     meal_time      VARCHAR(50)     NOT NULL,
     is_eating_out  TINYINT(1)      NOT NULL DEFAULT 0,
@@ -253,11 +254,14 @@ CREATE TABLE meal_slot (
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     CONSTRAINT fk_ms_recipe FOREIGN KEY (recipe_id)
-        REFERENCES recipe(recipe_id)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT,
+        REFERENCES recipe(recipe_id),
     CONSTRAINT chk_ms_is_eating_out CHECK (is_eating_out IN (0, 1)),
-    CONSTRAINT chk_ms_outside_cost  CHECK (outside_cost >= 0)
+    CONSTRAINT chk_ms_outside_cost  CHECK (outside_cost >= 0),
+    CONSTRAINT chk_ms_recipe_or_eating_out CHECK (
+        (is_eating_out = 0 AND recipe_id IS NOT NULL)
+        OR
+        (is_eating_out = 1 AND recipe_id IS NULL)
+    )
 );
 
 -- ------------------------------------------------------------

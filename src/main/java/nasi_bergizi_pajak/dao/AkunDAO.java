@@ -83,6 +83,21 @@ public class AkunDAO {
         return null;
     }
 
+    public void updatePassword(int userId, String passwordHash) throws SQLException {
+        String sql = """
+                UPDATE user_account
+                SET password = ?
+                WHERE user_id = ?
+                """;
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, passwordHash);
+            statement.setInt(2, userId);
+            statement.executeUpdate();
+        }
+    }
+
     private Akun mapRowToAkun(ResultSet resultSet) throws SQLException {
         return new Akun(
                 resultSet.getInt("user_id"),

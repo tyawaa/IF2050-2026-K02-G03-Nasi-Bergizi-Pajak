@@ -29,6 +29,7 @@ public class DatabaseInitializer {
         }
 
         ensureAdminColumnExists();
+        ensureFamilyMemberSchema();
         ensureNutritionAndPriceTablesExist();
         ensureKitchenStockTableExists();
         ensureRecipeIngredientSchema();
@@ -73,6 +74,34 @@ public class DatabaseInitializer {
                             ADD COLUMN tipe_admin TINYINT(1) NOT NULL DEFAULT 0
                             """);
                 }
+            }
+        }
+    }
+
+    private static void ensureFamilyMemberSchema() throws SQLException {
+        try (Connection connection = DatabaseConnection.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS family_member (
+                        member_id    INT          NOT NULL AUTO_INCREMENT,
+                        user_id      INT          NOT NULL,
+                        name         VARCHAR(100) NOT NULL,
+                        relationship VARCHAR(50),
+                        birth_date   DATE,
+                        height       DOUBLE,
+                        weight       DOUBLE,
+                        allergy      TEXT,
+                        PRIMARY KEY (member_id),
+                        KEY idx_family_member_user_id (user_id),
+                        CONSTRAINT fk_fm_user FOREIGN KEY (user_id)
+                            REFERENCES user_account(user_id)
+                            ON UPDATE CASCADE
+                            ON DELETE CASCADE
+                    )
+                    """);
+
+            if (!columnExists(connection, "family_member", "relationship")) {
+                statement.execute("ALTER TABLE family_member ADD COLUMN relationship VARCHAR(50) AFTER name");
             }
         }
     }
