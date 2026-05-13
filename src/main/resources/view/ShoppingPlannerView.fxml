@@ -22,7 +22,7 @@
                         <Rectangle2D minX="33" minY="30" width="86" height="86"/>
                     </viewport>
                     <image>
-                        <Image url="@../img/logo_nasibergizipajak.png"/>sdsd
+                        <Image url="@../img/logo_nasibergizipajak.png"/>
                     </image>
                 </ImageView>
             </StackPane>
