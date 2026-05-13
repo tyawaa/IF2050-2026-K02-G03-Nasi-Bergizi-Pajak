@@ -2784,6 +2784,16 @@
     -fx-padding: 18px;
 }
 
+.weekly-planner-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0;
+}
+
+.weekly-planner-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
 .weekly-summary-budget {
     -fx-background-color: #EEF8EA;
     -fx-border-color: #D7EBD0;
@@ -2811,6 +2821,8 @@
     -fx-background-color: #FFF3E8;
     -fx-background-radius: 7px;
     -fx-padding: 8px;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
     -fx-font-size: 12px;
     -fx-font-weight: 800;
     -fx-text-fill: #EA6A14;
@@ -2821,7 +2833,9 @@
 .weekly-empty-cell {
     -fx-background-radius: 7px;
     -fx-border-radius: 7px;
-    -fx-padding: 8px;
+    -fx-padding: 13px 14px;
+    -fx-min-height: 116px;
+    -fx-pref-height: 126px;
 }
 
 .weekly-meal-card {
@@ -2835,22 +2849,23 @@
 }
 
 .weekly-empty-cell {
-    -fx-background-color: #FFFCF7;
-    -fx-border-color: #EBDDCB;
+    -fx-background-color: #FFF9F1;
+    -fx-border-color: #DDBE98;
     -fx-border-style: segments(6, 4);
 }
 
 .weekly-empty-plus,
 .weekly-empty-button {
-    -fx-font-size: 18px;
-    -fx-font-weight: 500;
-    -fx-text-fill: #A79A8C;
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #8C7864;
 }
 
 .weekly-empty-button {
     -fx-background-color: transparent;
     -fx-background-radius: 7px;
     -fx-border-color: transparent;
+    -fx-min-height: 76px;
     -fx-cursor: hand;
 }
 
@@ -2860,21 +2875,25 @@
 }
 
 .weekly-meal-title {
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-font-weight: 800;
     -fx-text-fill: #25211D;
+    -fx-line-spacing: 1px;
+    -fx-text-overrun: ellipsis;
 }
 
 .weekly-meal-price {
-    -fx-font-size: 11px;
-    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
     -fx-text-fill: #EA6A14;
+    -fx-text-overrun: ellipsis;
 }
 
 .weekly-meal-meta,
 .weekly-summary-label {
     -fx-font-size: 12px;
     -fx-text-fill: #6F665D;
+    -fx-text-overrun: ellipsis;
 }
 
 .weekly-summary-title {
@@ -2945,12 +2964,14 @@
     -fx-font-size: 11px;
     -fx-font-weight: 800;
     -fx-text-fill: #4F8A3C;
+    -fx-text-overrun: ellipsis;
 }
 
 .weekly-stock-warning {
     -fx-font-size: 11px;
     -fx-font-weight: 800;
     -fx-text-fill: #D98E04;
+    -fx-text-overrun: ellipsis;
 }
 
 .weekly-card-action-button,
@@ -2958,9 +2979,11 @@
     -fx-background-color: transparent;
     -fx-background-radius: 6px;
     -fx-border-radius: 6px;
-    -fx-padding: 2px 5px;
-    -fx-font-size: 10px;
+    -fx-padding: 0px 3px;
+    -fx-font-size: 9px;
     -fx-font-weight: 800;
+    -fx-min-height: 24px;
+    -fx-pref-height: 24px;
     -fx-cursor: hand;
 }
 

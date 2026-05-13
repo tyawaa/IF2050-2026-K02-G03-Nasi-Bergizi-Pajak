@@ -40,7 +40,7 @@
                 <Label text="MENU UTAMA" styleClass="userdash-menu-title"/>
                 <Button fx:id="dashboardNavButton" text="Dashboard" maxWidth="Infinity" onAction="#showDashboardPage" styleClass="userdash-nav-active"/>
                 <Button fx:id="familyProfileNavButton" text="Profil Keluarga" maxWidth="Infinity" onAction="#showFamilyProfilePage" styleClass="userdash-nav-button"/>
-                <Button text="Budget" maxWidth="Infinity" styleClass="userdash-nav-button"/>
+                <Button fx:id="budgetNavButton" text="Budget" maxWidth="Infinity" onAction="#showBudgetPage" styleClass="userdash-nav-button"/>
                 <Button fx:id="parameterPlannerNavButton" text="Parameter Planner" maxWidth="Infinity" onAction="#showParameterPlannerPage" styleClass="userdash-nav-button"/>
                 <Button text="Stok Dapur" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button fx:id="weeklyMenuNavButton" text="Menu Mingguan" maxWidth="Infinity" onAction="#showWeeklyMenuPage" styleClass="userdash-nav-button"/>
@@ -154,7 +154,7 @@
                                             <Label text="Periode: 22 Apr - 28 Apr 2024" styleClass="userdash-section-subtitle"/>
                                         </VBox>
                                         <Region HBox.hgrow="ALWAYS"/>
-                                        <Button text="Kelola  >" styleClass="userdash-small-button"/>
+                                        <Button text="Kelola  >" onAction="#showBudgetPage" styleClass="userdash-small-button"/>
                                     </HBox>
 
                                     <HBox spacing="12">
@@ -349,6 +349,33 @@
                                 </VBox>
                             </HBox>
                         </VBox>
+
+                        <VBox fx:id="budgetPage" spacing="18" visible="false" managed="false" styleClass="userdash-content">
+                            <padding>
+                                <Insets top="18" right="22" bottom="28" left="22"/>
+                            </padding>
+
+                            <VBox spacing="18" styleClass="userdash-panel">
+                                <HBox alignment="CENTER_LEFT">
+                                    <VBox spacing="2">
+                                        <Label text="Budget" styleClass="userdash-section-title"/>
+                                        <Label fx:id="budgetSummaryLabel" text="0 budget aktif" styleClass="userdash-section-subtitle"/>
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="+  Tambah Budget" onAction="#handleAddBudget" styleClass="family-primary-button"/>
+                                </HBox>
+
+                                <TableView fx:id="budgetTable" prefHeight="360" minHeight="220" VBox.vgrow="ALWAYS" styleClass="family-table">
+                                    <columns>
+                                        <TableColumn fx:id="budgetNameColumn" text="Nama" prefWidth="230"/>
+                                        <TableColumn fx:id="budgetAmountColumn" text="Nominal" prefWidth="160"/>
+                                        <TableColumn fx:id="budgetPeriodColumn" text="Periode" prefWidth="240"/>
+                                        <TableColumn fx:id="budgetStatusColumn" text="Status" prefWidth="120"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                        </VBox>
+
                         <VBox fx:id="parameterPlannerPage" alignment="TOP_CENTER" spacing="28" visible="false" managed="false" styleClass="userdash-content">
                             <padding>
                                 <Insets top="18" right="22" bottom="28" left="22"/>
@@ -525,10 +552,18 @@
 
                         <HBox spacing="18" fillHeight="true">
                             <VBox spacing="14" HBox.hgrow="ALWAYS" styleClass="weekly-planner-card">
-                                <GridPane fx:id="weeklyPlannerGrid"
-                                          hgap="8"
-                                          vgap="8"
-                                          maxWidth="Infinity"/>
+                                <ScrollPane fitToHeight="true"
+                                            fitToWidth="false"
+                                            hbarPolicy="AS_NEEDED"
+                                            vbarPolicy="NEVER"
+                                            pannable="true"
+                                            styleClass="weekly-planner-scroll">
+                                    <content>
+                                        <GridPane fx:id="weeklyPlannerGrid"
+                                                  hgap="8"
+                                                  vgap="8"/>
+                                    </content>
+                                </ScrollPane>
                             </VBox>
 
                             <VBox spacing="14" prefWidth="320" minWidth="300">
