@@ -1,6 +1,7 @@
 package nasi_bergizi_pajak.controller;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.sql.Connection;
 import java.sql.Date;
@@ -14,10 +15,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.prefs.Preferences;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -48,6 +51,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -74,14 +78,18 @@ import nasi_bergizi_pajak.app.AppNavigator;
 import nasi_bergizi_pajak.config.DatabaseConnection;
 import nasi_bergizi_pajak.dao.AkunDAO;
 import nasi_bergizi_pajak.dao.FamilyMemberDAO;
+import nasi_bergizi_pajak.dao.KitchenStockDAO;
 import nasi_bergizi_pajak.dao.RecipeDAO;
+import nasi_bergizi_pajak.dao.ShoppingPlannerDAO;
 import nasi_bergizi_pajak.model.Akun;
 import nasi_bergizi_pajak.model.Budget;
 import nasi_bergizi_pajak.model.FamilyMember;
+import nasi_bergizi_pajak.model.KitchenStock;
 import nasi_bergizi_pajak.model.Recipe;
 import nasi_bergizi_pajak.model.RekomendasiMenu;
 import nasi_bergizi_pajak.model.MenuMingguan;
 import nasi_bergizi_pajak.model.SlotMakan;
+import nasi_bergizi_pajak.model.ShoppingPlanner;
 import nasi_bergizi_pajak.util.PasswordUtil;
 
 public class DashboardController {
@@ -107,8 +115,27 @@ public class DashboardController {
     @FXML private Label pageTitleLabel;
     @FXML private Label budgetPeriodBadgeLabel;
     @FXML private Label topbarAvatarText;
+    @FXML private Label topbarNotificationCountLabel;
     @FXML private Label dashboardFamilyIconCountLabel;
     @FXML private Label dashboardFamilyCountLabel;
+    @FXML private Label dashboardRemainingBudgetLabel;
+    @FXML private Label dashboardStockIconCountLabel;
+    @FXML private Label dashboardStockCountLabel;
+    @FXML private Label dashboardStockSafeCountLabel;
+    @FXML private Label dashboardWeeklyIconCountLabel;
+    @FXML private Label dashboardWeeklySlotCountLabel;
+    @FXML private Label dashboardBudgetPeriodLabel;
+    @FXML private Label dashboardBudgetTotalLabel;
+    @FXML private Label dashboardBudgetUsedLabel;
+    @FXML private Label dashboardBudgetRemainingLabel;
+    @FXML private Label dashboardBudgetUsagePercentLabel;
+    @FXML private ProgressBar dashboardBudgetProgressBar;
+    @FXML private Label dashboardBudgetStatusLabel;
+    @FXML private VBox dashboardNotificationBox;
+    @FXML private VBox dashboardStockWarningBox;
+    @FXML private Label dashboardActivityMenuPeriodLabel;
+    @FXML private Label dashboardActivityMenuEstimationLabel;
+    @FXML private Label dashboardActivityShoppingDateLabel;
     @FXML private Button dashboardNavButton;
     @FXML private Button familyProfileNavButton;
     @FXML private Button budgetNavButton;
@@ -207,6 +234,8 @@ public class DashboardController {
 
     private final AkunDAO akunDAO = new AkunDAO();
     private final FamilyMemberDAO familyMemberDAO = new FamilyMemberDAO();
+    private final KitchenStockDAO kitchenStockDAO = new KitchenStockDAO();
+    private final ShoppingPlannerDAO shoppingPlannerDAO = new ShoppingPlannerDAO();
     private final ObservableList<FamilyMember> familyMembers = FXCollections.observableArrayList();
     private final ObservableList<Budget> budgets = FXCollections.observableArrayList();
     private final BudgetController budgetController = new BudgetController();
@@ -2021,11 +2050,299 @@ public class DashboardController {
         return box;
     }
 
+    private void refreshDashboardData() {
+        if (currentUser == null) {
+            resetDashboardData();
+            return;
+        }
+
+        try {
+            Budget activeBudget = budgetController.getBudgetAktif(currentUser.getUserId());
+            MenuMingguan dashboardMenu = loadDashboardMenu(activeBudget);
+            List<SlotMakan> dashboardSlots = dashboardMenu == null
+                    ? List.of()
+                    : menuController.ambilSlotMakan(dashboardMenu.getMenuId());
+            List<KitchenStock> allStock = kitchenStockDAO.getAllStockByUser(currentUser.getUserId());
+            List<KitchenStock> expiringStock = kitchenStockDAO.getExpiringStock(currentUser.getUserId(), 7);
+            List<KitchenStock> lowStock = kitchenStockDAO.getLowStock(
+                    currentUser.getUserId(),
+                    KitchenStock.LOW_STOCK_THRESHOLD_RATIO
+            );
+
+            double usedBudget = calculateActualBudgetUsed(currentUser.getUserId(), dashboardMenu);
+            updateDashboardBudget(activeBudget, usedBudget);
+            updateDashboardWeeklyMenu(dashboardMenu, dashboardSlots);
+            updateDashboardStock(allStock, expiringStock, lowStock);
+            updateDashboardActivity(dashboardMenu, loadLatestShoppingPlannerDate(currentUser.getUserId()));
+        } catch (SQLException e) {
+            resetDashboardData();
+            showError("Gagal memuat data dashboard", e.getMessage());
+        }
+    }
+
+    private void resetDashboardData() {
+        updateDashboardBudget(null, 0);
+        updateDashboardWeeklyMenu(null, List.of());
+        updateDashboardStock(List.of(), List.of(), List.of());
+        updateDashboardActivity(null, null);
+    }
+
+    private double calculateActualBudgetUsed(int userId, MenuMingguan dashboardMenu) {
+        if (dashboardMenu == null) {
+            return 0;
+        }
+
+        try {
+            // Try to get the shopping planner for this menu
+            ShoppingPlanner planner = shoppingPlannerDAO.cariPlannerUntukMenu(userId, dashboardMenu.getMenuId());
+            
+            if (planner != null && planner.getTotalActual() != null) {
+                BigDecimal totalActual = planner.getTotalActual();
+                // Use actual spending if available and completed, otherwise use estimation
+                if (totalActual.compareTo(BigDecimal.ZERO) > 0 && "completed".equalsIgnoreCase(planner.getStatus())) {
+                    return totalActual.doubleValue();
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Gagal mengambil data shopping planner: " + e.getMessage());
+        }
+
+        // Fall back to estimation if no completed shopping planner or error
+        return dashboardMenu.getTotalEstimation();
+    }
+
+    private MenuMingguan loadDashboardMenu(Budget activeBudget) throws SQLException {
+        if (currentUser == null) {
+            return null;
+        }
+
+        String sql = """
+                SELECT wm.menu_id, wm.user_id, wm.parameter_id, wm.week_start_date, wm.week_end_date,
+                       wm.total_estimation, wm.status_budget
+                FROM weekly_menu wm
+                LEFT JOIN parameter_planner pp ON pp.parameter_id = wm.parameter_id
+                WHERE wm.user_id = ?
+                """;
+        if (activeBudget != null) {
+            sql += " AND pp.budget_id = ?\n";
+        }
+        sql += """
+                ORDER BY
+                    CASE WHEN CURDATE() BETWEEN wm.week_start_date AND wm.week_end_date THEN 0 ELSE 1 END,
+                    wm.week_start_date DESC,
+                    wm.menu_id DESC
+                LIMIT 1
+                """;
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, currentUser.getUserId());
+            if (activeBudget != null) {
+                stmt.setInt(2, activeBudget.getBudgetId());
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    MenuMingguan menu = new MenuMingguan();
+                    menu.setMenuId(rs.getInt("menu_id"));
+                    menu.setUserId(rs.getInt("user_id"));
+                    menu.setParameterId(rs.getInt("parameter_id"));
+                    menu.setWeekStartDate(rs.getDate("week_start_date").toLocalDate());
+                    menu.setWeekEndDate(rs.getDate("week_end_date").toLocalDate());
+                    menu.setTotalEstimation(rs.getDouble("total_estimation"));
+                    menu.setStatusBudget(rs.getString("status_budget"));
+                    return menu;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private LocalDate loadLatestShoppingPlannerDate(int userId) throws SQLException {
+        String sql = """
+                SELECT DATE(sp.created_datetime) AS planner_date
+                FROM shopping_planner sp
+                JOIN weekly_menu wm ON wm.menu_id = sp.menu_id
+                WHERE wm.user_id = ?
+                ORDER BY sp.created_datetime DESC, sp.planner_id DESC
+                LIMIT 1
+                """;
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next() && rs.getDate("planner_date") != null) {
+                    return rs.getDate("planner_date").toLocalDate();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private void updateDashboardBudget(Budget activeBudget, double usedBudget) {
+        double totalBudget = activeBudget == null ? 0 : activeBudget.getAmount();
+        double remainingBudget = Math.max(0, totalBudget - usedBudget);
+        double usageRatio = totalBudget <= 0 ? 0 : Math.min(1, usedBudget / totalBudget);
+        int usagePercent = totalBudget <= 0 ? 0 : (int) Math.round((usedBudget / totalBudget) * 100);
+        boolean overBudget = totalBudget > 0 && usedBudget > totalBudget;
+
+        dashboardRemainingBudgetLabel.setText(formatRupiahCompact(remainingBudget));
+        dashboardBudgetTotalLabel.setText(formatRupiahCompact(totalBudget));
+        dashboardBudgetUsedLabel.setText(formatRupiahCompact(usedBudget));
+        dashboardBudgetRemainingLabel.setText(formatRupiahCompact(remainingBudget));
+        dashboardBudgetUsagePercentLabel.setText(usagePercent + "%");
+        dashboardBudgetProgressBar.setProgress(usageRatio);
+        dashboardBudgetPeriodLabel.setText(activeBudget == null
+                ? "Periode: -"
+                : "Periode: " + formatBudgetPeriod(activeBudget));
+        dashboardBudgetStatusLabel.setText(activeBudget == null ? "Belum aktif" : overBudget ? "Melebihi Budget" : "Aman");
+    }
+
+    private void updateDashboardWeeklyMenu(MenuMingguan menu, List<SlotMakan> slots) {
+        int filledSlots = countVisiblePlannerSlots(slots);
+        int totalSlots = menu == null
+                ? WEEKLY_TOTAL_SLOTS
+                : getPlannerDates(menu).size() * getPlannerMealDefinitions().size();
+
+        dashboardWeeklyIconCountLabel.setText(String.valueOf(filledSlots));
+        dashboardWeeklySlotCountLabel.setText(filledSlots + "/" + totalSlots);
+    }
+
+    private void updateDashboardStock(List<KitchenStock> allStock,
+                                      List<KitchenStock> expiringStock,
+                                      List<KitchenStock> lowStock) {
+        Set<Integer> warningStockIds = new HashSet<>();
+        expiringStock.forEach(stock -> warningStockIds.add(stock.getStockId()));
+        lowStock.forEach(stock -> warningStockIds.add(stock.getStockId()));
+
+        int totalStock = allStock.size();
+        int safeStock = Math.max(0, totalStock - warningStockIds.size());
+        dashboardStockIconCountLabel.setText(String.valueOf(totalStock));
+        dashboardStockCountLabel.setText(String.valueOf(totalStock));
+        dashboardStockSafeCountLabel.setText("(" + safeStock + " aman)");
+        topbarNotificationCountLabel.setText(String.valueOf(warningStockIds.size()));
+
+        renderDashboardNotifications(expiringStock.size(), lowStock.size());
+        renderDashboardStockWarnings(expiringStock, lowStock);
+    }
+
+    private void renderDashboardNotifications(int expiringCount, int lowCount) {
+        dashboardNotificationBox.getChildren().clear();
+        dashboardNotificationBox.getChildren().add(createDashboardNotificationRow(
+                "Bahan Hampir Kadaluarsa",
+                expiringCount + " bahan perlu diperhatikan"
+        ));
+        dashboardNotificationBox.getChildren().add(createDashboardNotificationRow(
+                "Stok Bahan Hampir Habis",
+                lowCount + " bahan perlu diisi ulang"
+        ));
+    }
+
+    private Node createDashboardNotificationRow(String title, String subtitle) {
+        VBox row = new VBox(3);
+        row.getStyleClass().add("userdash-alert-row");
+
+        Label titleLabel = new Label(title);
+        titleLabel.getStyleClass().add("userdash-alert-title");
+        Label subtitleLabel = new Label(subtitle);
+        subtitleLabel.getStyleClass().add("userdash-alert-subtitle");
+
+        row.getChildren().addAll(titleLabel, subtitleLabel);
+        return row;
+    }
+
+    private void renderDashboardStockWarnings(List<KitchenStock> expiringStock, List<KitchenStock> lowStock) {
+        dashboardStockWarningBox.getChildren().clear();
+
+        if (expiringStock.isEmpty() && lowStock.isEmpty()) {
+            dashboardStockWarningBox.getChildren().add(createDashboardEmptyRow("Tidak ada peringatan stok"));
+            return;
+        }
+
+        if (!expiringStock.isEmpty()) {
+            dashboardStockWarningBox.getChildren().add(createDashboardGroupLabel("HAMPIR KADALUARSA"));
+            expiringStock.stream()
+                    .limit(3)
+                    .map(stock -> createDashboardStockRow(stock, "Hampir Kadaluarsa", true))
+                    .forEach(row -> dashboardStockWarningBox.getChildren().add(row));
+        }
+
+        if (!lowStock.isEmpty()) {
+            dashboardStockWarningBox.getChildren().add(createDashboardGroupLabel("STOK MENIPIS"));
+            lowStock.stream()
+                    .limit(3)
+                    .map(stock -> createDashboardStockRow(stock, "Hampir Habis", false))
+                    .forEach(row -> dashboardStockWarningBox.getChildren().add(row));
+        }
+    }
+
+    private Label createDashboardGroupLabel(String text) {
+        Label label = new Label(text);
+        label.getStyleClass().add("userdash-group-label");
+        return label;
+    }
+
+    private Node createDashboardStockRow(KitchenStock stock, String chipText, boolean expiring) {
+        HBox row = new HBox(12);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getStyleClass().add(expiring ? "userdash-stock-row-orange" : "userdash-stock-row");
+
+        VBox info = new VBox(2);
+        Label name = new Label(stock.getIngredientName() == null ? "Bahan" : stock.getIngredientName());
+        name.getStyleClass().add("userdash-stock-title");
+        Label quantity = new Label(formatStockQuantity(stock));
+        quantity.getStyleClass().add("userdash-stock-subtitle");
+        info.getChildren().addAll(name, quantity);
+
+        Label chip = new Label(chipText);
+        chip.getStyleClass().add("userdash-chip-orange");
+        row.getChildren().addAll(info, createSpacer(), chip);
+        HBox.setHgrow(info, Priority.ALWAYS);
+        return row;
+    }
+
+    private Node createDashboardEmptyRow(String text) {
+        HBox row = new HBox(12);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getStyleClass().add("userdash-stock-row");
+
+        Label label = new Label(text);
+        label.getStyleClass().add("userdash-stock-subtitle");
+        row.getChildren().add(label);
+        return row;
+    }
+
+    private String formatStockQuantity(KitchenStock stock) {
+        return formatDecimalCompact(stock.getQuantity()) + " " + (stock.getUnit() == null ? "" : stock.getUnit());
+    }
+
+    private String formatDecimalCompact(double value) {
+        if (value == Math.rint(value)) {
+            return String.valueOf((long) value);
+        }
+        return String.format(Locale.US, "%.2f", value);
+    }
+
+    private void updateDashboardActivity(MenuMingguan menu, LocalDate latestPlannerDate) {
+        dashboardActivityMenuPeriodLabel.setText(menu == null
+                ? "-"
+                : formatDateRangeShort(menu.getWeekStartDate(), menu.getWeekEndDate()));
+        dashboardActivityMenuEstimationLabel.setText(formatRupiahCompact(menu == null ? 0 : menu.getTotalEstimation()));
+        dashboardActivityShoppingDateLabel.setText(latestPlannerDate == null
+                ? "-"
+                : formatBudgetDate(latestPlannerDate));
+    }
+
     @FXML
     private void showDashboardPage() {
         pageTitleLabel.setText("Dashboard");
         showPage(dashboardPage);
         setActiveNav(dashboardNavButton);
+        refreshDashboardData();
     }
 
     @FXML

@@ -67,7 +67,7 @@
                 <Label fx:id="budgetPeriodBadgeLabel" text="Budget: Belum aktif" styleClass="userdash-period-badge"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <StackPane styleClass="userdash-bell">
-                    <Label text="3" styleClass="userdash-bell-badge"/>
+                    <Label fx:id="topbarNotificationCountLabel" text="0" styleClass="userdash-bell-badge"/>
                 </StackPane>
                 <HBox fx:id="userProfileMenuButton" alignment="CENTER_LEFT" spacing="8" onMouseClicked="#toggleProfileMenu" styleClass="userdash-profile-trigger">
                     <StackPane styleClass="userdash-avatar">
@@ -112,31 +112,31 @@
                                 </StackPane>
                                 <VBox spacing="4">
                                     <Label text="Sisa Budget" styleClass="userdash-card-title"/>
-                                    <Label text="Rp385.000" styleClass="userdash-card-value-green"/>
+                                    <Label fx:id="dashboardRemainingBudgetLabel" text="Rp0" styleClass="userdash-card-value-green"/>
                                 </VBox>
                             </HBox>
 
                             <HBox alignment="CENTER_LEFT" spacing="14" HBox.hgrow="ALWAYS" styleClass="userdash-summary-card">
                                 <StackPane styleClass="userdash-icon-soft-green">
-                                    <Label text="6" styleClass="userdash-icon-number-green"/>
+                                    <Label fx:id="dashboardStockIconCountLabel" text="0" styleClass="userdash-icon-number-green"/>
                                 </StackPane>
                                 <VBox spacing="4">
                                     <Label text="Stok Dapur" styleClass="userdash-card-title"/>
                                     <HBox spacing="5" alignment="BOTTOM_LEFT">
-                                        <Label text="6" styleClass="userdash-card-value"/>
-                                        <Label text="(3 aman)" styleClass="userdash-card-caption"/>
+                                        <Label fx:id="dashboardStockCountLabel" text="0" styleClass="userdash-card-value"/>
+                                        <Label fx:id="dashboardStockSafeCountLabel" text="(0 aman)" styleClass="userdash-card-caption"/>
                                     </HBox>
                                 </VBox>
                             </HBox>
 
                             <HBox alignment="CENTER_LEFT" spacing="14" HBox.hgrow="ALWAYS" styleClass="userdash-summary-card">
                                 <StackPane styleClass="userdash-icon-soft-orange">
-                                    <Label text="18" styleClass="userdash-icon-number"/>
+                                    <Label fx:id="dashboardWeeklyIconCountLabel" text="0" styleClass="userdash-icon-number"/>
                                 </StackPane>
                                 <VBox spacing="4">
                                     <Label text="Menu Minggu Ini" styleClass="userdash-card-title"/>
                                     <HBox spacing="4" alignment="BOTTOM_LEFT">
-                                        <Label text="18/28" styleClass="userdash-card-value"/>
+                                        <Label fx:id="dashboardWeeklySlotCountLabel" text="0/0" styleClass="userdash-card-value"/>
                                         <Label text="slot" styleClass="userdash-card-caption"/>
                                     </HBox>
                                 </VBox>
@@ -149,7 +149,7 @@
                                     <HBox alignment="CENTER_LEFT">
                                         <VBox spacing="2">
                                             <Label text="Status Budget" styleClass="userdash-section-title"/>
-                                            <Label text="Periode: 22 Apr - 28 Apr 2024" styleClass="userdash-section-subtitle"/>
+                                            <Label fx:id="dashboardBudgetPeriodLabel" text="Periode: -" styleClass="userdash-section-subtitle"/>
                                         </VBox>
                                         <Region HBox.hgrow="ALWAYS"/>
                                         <Button text="Kelola  >" onAction="#showBudgetPage" styleClass="userdash-small-button"/>
@@ -158,15 +158,15 @@
                                     <HBox spacing="12">
                                         <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box">
                                             <Label text="Total Budget" styleClass="userdash-budget-label"/>
-                                            <Label text="Rp500.000" styleClass="userdash-budget-value-dark"/>
+                                            <Label fx:id="dashboardBudgetTotalLabel" text="Rp0" styleClass="userdash-budget-value-dark"/>
                                         </VBox>
                                         <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box-orange">
                                             <Label text="Terpakai" styleClass="userdash-budget-label"/>
-                                            <Label text="Rp115.000" styleClass="userdash-budget-value-orange"/>
+                                            <Label fx:id="dashboardBudgetUsedLabel" text="Rp0" styleClass="userdash-budget-value-orange"/>
                                         </VBox>
                                         <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box-green">
                                             <Label text="Sisa" styleClass="userdash-budget-label"/>
-                                            <Label text="Rp385.000" styleClass="userdash-budget-value-green"/>
+                                            <Label fx:id="dashboardBudgetRemainingLabel" text="Rp0" styleClass="userdash-budget-value-green"/>
                                         </VBox>
                                     </HBox>
 
@@ -174,15 +174,15 @@
                                         <HBox alignment="CENTER_LEFT">
                                             <Label text="Penggunaan" styleClass="userdash-section-subtitle"/>
                                             <Region HBox.hgrow="ALWAYS"/>
-                                            <Label text="23%" styleClass="userdash-percent"/>
+                                            <Label fx:id="dashboardBudgetUsagePercentLabel" text="0%" styleClass="userdash-percent"/>
                                         </HBox>
-                                        <ProgressBar progress="0.23" maxWidth="Infinity" styleClass="userdash-progress"/>
+                                        <ProgressBar fx:id="dashboardBudgetProgressBar" progress="0" maxWidth="Infinity" styleClass="userdash-progress"/>
                                     </VBox>
 
                                     <HBox alignment="CENTER_LEFT">
                                         <Label text="Status" styleClass="userdash-section-subtitle"/>
                                         <Region HBox.hgrow="ALWAYS"/>
-                                        <Label text="Aman" styleClass="userdash-safe-badge"/>
+                                        <Label fx:id="dashboardBudgetStatusLabel" text="-" styleClass="userdash-safe-badge"/>
                                     </HBox>
                                 </VBox>
                             </VBox>
@@ -193,16 +193,7 @@
                                     <Label text="Notifikasi Sistem" styleClass="userdash-section-title"/>
                                 </HBox>
 
-                                <VBox spacing="0">
-                                    <VBox spacing="3" styleClass="userdash-alert-row">
-                                        <Label text="Bahan Hampir Kadaluarsa" styleClass="userdash-alert-title"/>
-                                        <Label text="2 bahan perlu diperhatikan" styleClass="userdash-alert-subtitle"/>
-                                    </VBox>
-                                    <VBox spacing="3" styleClass="userdash-alert-row">
-                                        <Label text="Stok Bahan Hampir Habis" styleClass="userdash-alert-title"/>
-                                        <Label text="1 bahan perlu diisi ulang" styleClass="userdash-alert-subtitle"/>
-                                    </VBox>
-                                </VBox>
+                                <VBox fx:id="dashboardNotificationBox" spacing="0"/>
                             </VBox>
                         </HBox>
 
@@ -214,38 +205,10 @@
                                         <Label text="Bahan yang perlu diperhatikan" styleClass="userdash-section-subtitle"/>
                                     </VBox>
                                     <Region HBox.hgrow="ALWAYS"/>
-                                    <Button text="Lihat Semua" styleClass="userdash-small-button"/>
+                                    <Button text="Lihat Semua" onAction="#handleStokDapur" styleClass="userdash-small-button"/>
                                 </HBox>
 
-                                <VBox spacing="8">
-                                    <Label text="HAMPIR KADALUARSA" styleClass="userdash-group-label"/>
-                                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="userdash-stock-row-orange">
-                                        <VBox spacing="2">
-                                            <Label text="Ayam" styleClass="userdash-stock-title"/>
-                                            <Label text="0.5 kg" styleClass="userdash-stock-subtitle"/>
-                                        </VBox>
-                                        <Region HBox.hgrow="ALWAYS"/>
-                                        <Label text="Hampir Kadaluarsa" styleClass="userdash-chip-orange"/>
-                                    </HBox>
-                                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="userdash-stock-row-orange">
-                                        <VBox spacing="2">
-                                            <Label text="Bayam" styleClass="userdash-stock-title"/>
-                                            <Label text="1 ikat" styleClass="userdash-stock-subtitle"/>
-                                        </VBox>
-                                        <Region HBox.hgrow="ALWAYS"/>
-                                        <Label text="Hampir Kadaluarsa" styleClass="userdash-chip-orange"/>
-                                    </HBox>
-
-                                    <Label text="STOK MENIPIS" styleClass="userdash-group-label"/>
-                                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="userdash-stock-row">
-                                        <VBox spacing="2">
-                                            <Label text="Telur" styleClass="userdash-stock-title"/>
-                                            <Label text="6 butir" styleClass="userdash-stock-subtitle"/>
-                                        </VBox>
-                                        <Region HBox.hgrow="ALWAYS"/>
-                                        <Label text="Hampir Habis" styleClass="userdash-chip-orange"/>
-                                    </HBox>
-                                </VBox>
+                                <VBox fx:id="dashboardStockWarningBox" spacing="8"/>
                             </VBox>
 
                             <VBox spacing="18" HBox.hgrow="ALWAYS" styleClass="userdash-panel">
@@ -258,11 +221,11 @@
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="userdash-activity-row">
                                         <VBox spacing="2">
                                             <Label text="Menu Mingguan" styleClass="userdash-stock-title"/>
-                                            <Label text="22 Apr - 28 Apr" styleClass="userdash-stock-subtitle"/>
+                                            <Label fx:id="dashboardActivityMenuPeriodLabel" text="-" styleClass="userdash-stock-subtitle"/>
                                         </VBox>
                                         <Region HBox.hgrow="ALWAYS"/>
                                         <VBox alignment="CENTER_RIGHT" spacing="2">
-                                            <Label text="Rp385.000" styleClass="userdash-budget-value-orange-small"/>
+                                            <Label fx:id="dashboardActivityMenuEstimationLabel" text="Rp0" styleClass="userdash-budget-value-orange-small"/>
                                             <Label text="estimasi" styleClass="userdash-stock-subtitle"/>
                                         </VBox>
                                     </HBox>
@@ -270,7 +233,7 @@
                                     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="userdash-activity-row">
                                         <VBox spacing="2">
                                             <Label text="Shopping Planner" styleClass="userdash-stock-title"/>
-                                            <Label text="21 Apr 2024" styleClass="userdash-stock-subtitle"/>
+                                            <Label fx:id="dashboardActivityShoppingDateLabel" text="-" styleClass="userdash-stock-subtitle"/>
                                         </VBox>
                                         <Region HBox.hgrow="ALWAYS"/>
                                         <Button text="Buka" onAction="#handleOpenShoppingPlanner" styleClass="userdash-small-button"/>

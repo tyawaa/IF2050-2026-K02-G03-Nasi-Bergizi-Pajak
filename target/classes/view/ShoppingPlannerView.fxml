@@ -10,83 +10,176 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="nasi_bergizi_pajak.controller.ShoppingPlannerController"
             stylesheets="@../auth.css"
-            styleClass="dashboard-root">
-    <top>
-        <HBox alignment="CENTER_LEFT" spacing="14" styleClass="dashboard-header">
+            styleClass="userdash-root">
+    <left>
+        <VBox spacing="18" styleClass="userdash-sidebar">
             <padding>
-                <Insets top="18" right="28" bottom="18" left="28"/>
+                <Insets top="18" right="10" bottom="16" left="10"/>
             </padding>
-            <StackPane styleClass="brand-image-mark-small">
-                <ImageView fitWidth="44" fitHeight="44" preserveRatio="true" styleClass="brand-logo-image">
-                    <viewport>
-                        <Rectangle2D minX="33" minY="30" width="86" height="86"/>
-                    </viewport>
-                    <image>
-                        <Image url="@../img/logo_nasibergizipajak.png"/>
-                    </image>
-                </ImageView>
-            </StackPane>
-            <VBox spacing="0">
-                <Label text="Financial &amp; Shopping Planner" styleClass="dashboard-brand"/>
-                <Label text="UC11 daftar belanja dan UC12 hasil belanja" styleClass="dashboard-subtitle"/>
+
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <StackPane styleClass="userdash-logo-box">
+                    <ImageView fitWidth="34" fitHeight="34" preserveRatio="true">
+                        <viewport>
+                            <Rectangle2D minX="33" minY="30" width="86" height="86"/>
+                        </viewport>
+                        <image>
+                            <Image url="@../img/logo_nasibergizipajak.png"/>
+                        </image>
+                    </ImageView>
+                </StackPane>
+                <VBox spacing="0">
+                    <Label text="Nasi Bergizi" styleClass="userdash-brand-title"/>
+                    <Label text="Pajak" styleClass="userdash-brand-subtitle"/>
+                </VBox>
+            </HBox>
+
+            <VBox spacing="8">
+                <Label text="MENU UTAMA" styleClass="userdash-menu-title"/>
+                <Button text="Dashboard" maxWidth="Infinity" onAction="#handleBackToDashboard" styleClass="userdash-nav-button"/>
+                <Button text="Profil Keluarga" maxWidth="Infinity" onAction="#handleOpenFamilyProfile" styleClass="userdash-nav-button"/>
+                <Button text="Budget" maxWidth="Infinity" styleClass="userdash-nav-button"/>
+                <Button text="Parameter Planner" maxWidth="Infinity" styleClass="userdash-nav-button"/>
+                <Button text="Stok Dapur" maxWidth="Infinity" styleClass="userdash-nav-button"/>
+                <Button text="Menu Mingguan" maxWidth="Infinity" onAction="#handleOpenWeeklyMenu" styleClass="userdash-nav-button"/>
+                <Button text="Shopping Planner" maxWidth="Infinity" styleClass="userdash-nav-active"/>
             </VBox>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Dashboard" onAction="#handleBackToDashboard" styleClass="button-outline"/>
-        </HBox>
-    </top>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <VBox spacing="8" styleClass="userdash-sidebar-footer">
+                <Button text="Pengaturan" maxWidth="Infinity" onAction="#handleOpenSettings" styleClass="userdash-nav-button"/>
+                <Button text="Logout" maxWidth="Infinity" onAction="#handleLogout" styleClass="userdash-nav-button"/>
+            </VBox>
+        </VBox>
+    </left>
+
     <center>
-        <VBox spacing="18" styleClass="shopping-page">
-            <padding>
-                <Insets top="24" right="28" bottom="24" left="28"/>
-            </padding>
+        <VBox spacing="0" styleClass="userdash-main-area">
+            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="userdash-topbar">
+                <padding>
+                    <Insets top="14" right="22" bottom="14" left="22"/>
+                </padding>
 
-            <HBox alignment="CENTER_LEFT" spacing="14">
-                <VBox spacing="6" HBox.hgrow="ALWAYS">
-                    <Label text="Menu mingguan" styleClass="input-label"/>
-                    <ComboBox fx:id="menuComboBox" maxWidth="Infinity" onAction="#handleMenuChanged" styleClass="auth-input"/>
-                </VBox>
-                <Button text="Susun Daftar Belanja" onAction="#handleGenerateShoppingList" styleClass="button-primary"/>
-            </HBox>
-
-            <GridPane hgap="12" vgap="12">
-                <columnConstraints>
-                    <ColumnConstraints percentWidth="25"/>
-                    <ColumnConstraints percentWidth="25"/>
-                    <ColumnConstraints percentWidth="25"/>
-                    <ColumnConstraints percentWidth="25"/>
-                </columnConstraints>
-                <Label fx:id="plannerStatusLabel" text="Status: -" styleClass="summary-tile" GridPane.columnIndex="0"/>
-                <Label fx:id="estimationLabel" text="Estimasi: -" styleClass="summary-tile" GridPane.columnIndex="1"/>
-                <Label fx:id="budgetLabel" text="Budget: -" styleClass="summary-tile" GridPane.columnIndex="2"/>
-                <Label fx:id="actualLabel" text="Aktual dipilih: -" styleClass="summary-tile" GridPane.columnIndex="3"/>
-            </GridPane>
-
-            <Label fx:id="messageLabel" text="" wrapText="true" styleClass="message-success"/>
-
-            <TableView fx:id="itemTable" editable="true" VBox.vgrow="ALWAYS" styleClass="shopping-table">
-                <columns>
-                    <TableColumn fx:id="ingredientColumn" text="Bahan" prefWidth="250"/>
-                    <TableColumn fx:id="quantityColumn" text="Jumlah Beli" prefWidth="150"/>
-                    <TableColumn fx:id="estimationColumn" text="Estimasi" prefWidth="170"/>
-                    <TableColumn fx:id="actualColumn" text="Harga Aktual" prefWidth="170"/>
-                    <TableColumn fx:id="boughtColumn" text="Dibeli" prefWidth="90"/>
-                </columns>
-                <columnResizePolicy>
-                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-                </columnResizePolicy>
-            </TableView>
-
-            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="shopping-editor">
-                <VBox spacing="6">
-                    <Label text="Harga aktual item terpilih" styleClass="input-label"/>
-                    <TextField fx:id="actualPriceField" promptText="contoh: 25000" styleClass="auth-input"/>
-                </VBox>
-                <CheckBox fx:id="boughtCheckBox" text="Sudah dibeli" styleClass="small-check"/>
-                <Button text="Terapkan Item" onAction="#handleApplySelectedActual" styleClass="button-outline"/>
+                <Label text="Shopping Planner" styleClass="userdash-page-title"/>
+                <Label fx:id="budgetPeriodBadgeLabel" text="Budget: -" styleClass="userdash-period-badge"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="Pakai Estimasi" onAction="#handleUseEstimationAsActual" styleClass="button-outline"/>
-                <Button fx:id="processButton" text="Proses Hasil Belanja" onAction="#handleProcessShoppingResult" styleClass="button-secondary"/>
+                <StackPane styleClass="userdash-bell">
+                    <Label text="3" styleClass="userdash-bell-badge"/>
+                </StackPane>
+                <HBox alignment="CENTER_LEFT" spacing="8" styleClass="userdash-profile-trigger">
+                    <StackPane styleClass="userdash-avatar">
+                        <Label fx:id="topbarAvatarText" text="N" styleClass="userdash-avatar-text"/>
+                    </StackPane>
+                    <VBox spacing="0">
+                        <Label fx:id="welcomeLabel" text="User" styleClass="userdash-user-name"/>
+                        <Label fx:id="emailLabel" text="" styleClass="userdash-user-email"/>
+                    </VBox>
+                </HBox>
             </HBox>
+
+            <ScrollPane fitToWidth="true"
+                        hbarPolicy="NEVER"
+                        VBox.vgrow="ALWAYS"
+                        styleClass="userdash-scroll">
+                <content>
+                    <VBox spacing="18" styleClass="userdash-content">
+                        <padding>
+                            <Insets top="18" right="22" bottom="28" left="22"/>
+                        </padding>
+
+                        <HBox alignment="CENTER_LEFT">
+                            <VBox spacing="2">
+                                <Label text="Financial &amp; Shopping Planner" styleClass="userdash-section-title"/>
+                                <Label text="Susun daftar belanja dari menu mingguan, isi harga aktual, lalu proses hasil belanja."
+                                       styleClass="userdash-section-subtitle"/>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="Susun Daftar Belanja"
+                                    onAction="#handleGenerateShoppingList"
+                                    styleClass="family-primary-button"/>
+                        </HBox>
+
+                        <VBox spacing="14" styleClass="userdash-panel">
+                            <VBox spacing="6">
+                                <Label text="Menu Mingguan" styleClass="userdash-budget-label"/>
+                                <ComboBox fx:id="menuComboBox"
+                                          maxWidth="Infinity"
+                                          onAction="#handleMenuChanged"
+                                          styleClass="settings-input"/>
+                            </VBox>
+
+                            <GridPane hgap="14" vgap="14">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+                                    <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+                                    <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+                                    <ColumnConstraints percentWidth="25" hgrow="ALWAYS"/>
+                                </columnConstraints>
+
+                                <VBox spacing="5" styleClass="userdash-budget-box" GridPane.columnIndex="0">
+                                    <Label text="Status" styleClass="userdash-budget-label"/>
+                                    <Label fx:id="plannerStatusLabel" text="-" styleClass="userdash-budget-value-dark"/>
+                                </VBox>
+                                <VBox spacing="5" styleClass="userdash-budget-box-orange" GridPane.columnIndex="1">
+                                    <Label text="Estimasi" styleClass="userdash-budget-label"/>
+                                    <Label fx:id="estimationLabel" text="-" styleClass="userdash-budget-value-orange"/>
+                                </VBox>
+                                <VBox spacing="5" styleClass="userdash-budget-box" GridPane.columnIndex="2">
+                                    <Label text="Budget" styleClass="userdash-budget-label"/>
+                                    <Label fx:id="budgetLabel" text="-" styleClass="userdash-budget-value-dark"/>
+                                </VBox>
+                                <VBox spacing="5" styleClass="userdash-budget-box-green" GridPane.columnIndex="3">
+                                    <Label text="Aktual Dipilih" styleClass="userdash-budget-label"/>
+                                    <Label fx:id="actualLabel" text="-" styleClass="userdash-budget-value-green"/>
+                                </VBox>
+                            </GridPane>
+
+                            <Label fx:id="messageLabel" text="" wrapText="true" styleClass="message-success"/>
+                        </VBox>
+
+                        <VBox spacing="14" styleClass="userdash-panel">
+                            <VBox spacing="2">
+                                <Label text="Daftar Belanja" styleClass="userdash-section-title"/>
+                                <Label text="Pilih item untuk memperbarui harga aktual dan status pembelian."
+                                       styleClass="userdash-section-subtitle"/>
+                            </VBox>
+
+                            <TableView fx:id="itemTable"
+                                       editable="true"
+                                       prefHeight="380"
+                                       minHeight="260"
+                                       styleClass="family-table">
+                                <columns>
+                                    <TableColumn fx:id="ingredientColumn" text="Bahan" prefWidth="250"/>
+                                    <TableColumn fx:id="quantityColumn" text="Jumlah Beli" prefWidth="150"/>
+                                    <TableColumn fx:id="estimationColumn" text="Estimasi" prefWidth="170"/>
+                                    <TableColumn fx:id="actualColumn" text="Harga Aktual" prefWidth="170"/>
+                                    <TableColumn fx:id="boughtColumn" text="Dibeli" prefWidth="90"/>
+                                </columns>
+                                <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                </columnResizePolicy>
+                            </TableView>
+                        </VBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="userdash-panel">
+                            <VBox spacing="6" prefWidth="220">
+                                <Label text="Harga aktual item terpilih" styleClass="userdash-budget-label"/>
+                                <TextField fx:id="actualPriceField" promptText="contoh: 25000" styleClass="settings-input"/>
+                            </VBox>
+                            <CheckBox fx:id="boughtCheckBox" text="Sudah dibeli" styleClass="small-check"/>
+                            <Button text="Terapkan Item" onAction="#handleApplySelectedActual" styleClass="userdash-small-button"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="Pakai Estimasi" onAction="#handleUseEstimationAsActual" styleClass="userdash-small-button"/>
+                            <Button fx:id="processButton"
+                                    text="Proses Hasil Belanja"
+                                    onAction="#handleProcessShoppingResult"
+                                    styleClass="family-primary-button"/>
+                        </HBox>
+                    </VBox>
+                </content>
+            </ScrollPane>
         </VBox>
     </center>
 </BorderPane>
