@@ -7,6 +7,7 @@ public class KitchenStock {
     private int userId;
     private int ingredientId;
     private double quantity;
+    private double initialQuantity;
     private String unit;
     private String storageLocation;
     private LocalDate expiryDate;
@@ -53,6 +54,20 @@ public class KitchenStock {
 
     public void setQuantity(double quantity) {
         this.quantity = quantity;
+    }
+
+    public double getInitialQuantity() {
+        return initialQuantity;
+    }
+
+    public void setInitialQuantity(double initialQuantity) {
+        this.initialQuantity = initialQuantity;
+    }
+
+    /** Stok dianggap rendah jika kurang dari 20% dari stok awal. */
+    public boolean isLowStock() {
+        if (initialQuantity <= 0) return false;
+        return quantity <= initialQuantity * 0.20;
     }
 
     public String getUnit() {

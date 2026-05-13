@@ -13,19 +13,20 @@ public class KitchenStockDAO {
     }
 
     public boolean addStock(KitchenStock stock) throws SQLException {
-        String sql = "INSERT INTO kitchen_stock (user_id, ingredient_id, quantity, unit, storage_location, expiry_date) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
-        
+        String sql = "INSERT INTO kitchen_stock (user_id, ingredient_id, quantity, initial_quantity, unit, storage_location, expiry_date) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+
             pstmt.setInt(1, stock.getUserId());
             pstmt.setInt(2, stock.getIngredientId());
             pstmt.setDouble(3, stock.getQuantity());
-            pstmt.setString(4, stock.getUnit());
-            pstmt.setString(5, stock.getStorageLocation());
-            pstmt.setDate(6, stock.getExpiryDate() != null ? Date.valueOf(stock.getExpiryDate()) : null);
-            
+            pstmt.setDouble(4, stock.getQuantity()); // initial_quantity = quantity saat pertama ditambahkan
+            pstmt.setString(5, stock.getUnit());
+            pstmt.setString(6, stock.getStorageLocation());
+            pstmt.setDate(7, stock.getExpiryDate() != null ? Date.valueOf(stock.getExpiryDate()) : null);
+
             return pstmt.executeUpdate() > 0;
         }
     }
@@ -154,21 +155,22 @@ public class KitchenStockDAO {
     }
 
     public List<KitchenStock> getLowStock(int userId, double threshold) throws SQLException {
+        // Stok rendah = quantity sudah mencapai <= 20% dari initial_quantity
         String sql = "SELECT ks.*, i.name as ingredient_name " +
                     "FROM kitchen_stock ks " +
                     "JOIN ingredient i ON ks.ingredient_id = i.ingredient_id " +
                     "WHERE ks.user_id = ? " +
-                    "AND ks.quantity <= ? " +
+                    "AND ks.initial_quantity > 0 " +
+                    "AND ks.quantity <= ks.initial_quantity * 0.20 " +
                     "ORDER BY ks.quantity ASC";
         
         List<KitchenStock> stocks = new ArrayList<>();
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+
             pstmt.setInt(1, userId);
-            pstmt.setDouble(2, threshold);
-            
+
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 stocks.add(mapResultSetToStock(rs));
@@ -197,6 +199,7 @@ public class KitchenStockDAO {
         stock.setUserId(rs.getInt("user_id"));
         stock.setIngredientId(rs.getInt("ingredient_id"));
         stock.setQuantity(rs.getDouble("quantity"));
+        stock.setInitialQuantity(rs.getDouble("initial_quantity"));
         stock.setUnit(rs.getString("unit"));
         stock.setStorageLocation(rs.getString("storage_location"));
         

@@ -400,6 +400,9 @@ public class KitchenStockViewController {
     // NAVIGATION
     // ═══════════════════════════════════════════════
 
+    /** Dipanggil oleh DashboardController setiap kali halaman Stok Dapur dibuka. */
+    public void refreshData() { loadStockData(); }
+
     @FXML private void handleRefresh() { loadStockData(); }
 
     @FXML private void handleLogout() { AppNavigator.showLogin(); }

@@ -79,7 +79,8 @@ public class KitchenStockService {
             return "Expired";
         } else if (stock.isExpiringSoon(3)) {
             return "Expiring Soon";
-        } else if (stock.getQuantity() <= 1.0) {
+        } else if (stock.isLowStock()) {
+            // Stok rendah = quantity sudah <= 20% dari initial_quantity
             return "Low Stock";
         } else {
             return "Good";

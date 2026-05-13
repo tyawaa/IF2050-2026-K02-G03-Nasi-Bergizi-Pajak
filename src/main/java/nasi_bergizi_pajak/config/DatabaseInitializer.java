@@ -32,6 +32,7 @@ public class DatabaseInitializer {
         ensureFamilyMemberSchema();
         ensureNutritionAndPriceTablesExist();
         ensureKitchenStockTableExists();
+        ensureKitchenStockInitialQuantityExists();
         ensureRecipeIngredientSchema();
         ensureDefaultAdminExists();
     }
@@ -193,6 +194,23 @@ public class DatabaseInitializer {
                             ON DELETE CASCADE
                     )
                     """);
+        }
+    }
+
+    private static void ensureKitchenStockInitialQuantityExists() throws SQLException {
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            if (!columnExists(connection, "kitchen_stock", "initial_quantity")) {
+                try (Statement statement = connection.createStatement()) {
+                    // Tambah kolom initial_quantity
+                    statement.execute(
+                        "ALTER TABLE kitchen_stock ADD COLUMN initial_quantity DECIMAL(10,2) NOT NULL DEFAULT 0"
+                    );
+                    // Isi initial_quantity dari quantity yang sudah ada (data lama)
+                    statement.execute(
+                        "UPDATE kitchen_stock SET initial_quantity = quantity WHERE initial_quantity = 0"
+                    );
+                }
+            }
         }
     }
 
