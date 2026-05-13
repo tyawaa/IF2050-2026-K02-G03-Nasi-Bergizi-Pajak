@@ -44,7 +44,6 @@
                 <Button fx:id="parameterPlannerNavButton" text="Parameter Planner" maxWidth="Infinity" onAction="#showParameterPlannerPage" styleClass="userdash-nav-button"/>
                 <Button fx:id="kitchenStockNavButton" text="Stok Dapur" maxWidth="Infinity" onAction="#handleStokDapur" styleClass="userdash-nav-button"/>
                 <Button fx:id="weeklyMenuNavButton" text="Menu Mingguan" maxWidth="Infinity" onAction="#showWeeklyMenuPage" styleClass="userdash-nav-button"/>
-                <Button fx:id="recommendationNavButton" text="Rekomendasi Menu" maxWidth="Infinity" onAction="#showRecommendationPage" styleClass="userdash-nav-button"/>
                 <Button text="Shopping Planner" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Hasil Belanja" maxWidth="Infinity" styleClass="userdash-nav-button"/>
             </VBox>
@@ -281,7 +280,7 @@
 
                                 <HBox spacing="10">
                                     <Button text="Profil Keluarga" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#showFamilyProfilePage" styleClass="userdash-quick-button"/>
-                                    <Button text="Rekomendasi" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="userdash-quick-button"/>
+                                    <Button text="Rekomendasi" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#showWeeklyMenuPage" styleClass="userdash-quick-button"/>
                                 </HBox>
                             </VBox>
                         </HBox>
@@ -470,6 +469,7 @@
                             </HBox>
                         </VBox>
 
+
                         <VBox fx:id="parameterPlannerPage" alignment="TOP_CENTER" spacing="28" visible="false" managed="false" styleClass="userdash-content">
                             <padding>
                                 <Insets top="18" right="22" bottom="28" left="22"/>
@@ -636,9 +636,6 @@
                                 <Label fx:id="weeklyProgressLabel" text="0 dari 28 slot terisi" styleClass="userdash-section-subtitle"/>
                             </VBox>
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="Rekomendasi Menu"
-                                    onAction="#showRecommendationPage"
-                                    styleClass="weekly-outline-button"/>
                             <Button text="Simpan Menu"
                                     onAction="#handleSaveWeeklyMenu"
                                     styleClass="family-primary-button"/>
@@ -735,6 +732,8 @@
                                 </VBox>
                             </VBox>
                         </HBox>
+
+
                     </VBox>
 
                         <VBox fx:id="settingsPage" spacing="18" visible="false" managed="false" styleClass="userdash-content">
@@ -825,54 +824,6 @@
                             </StackPane>
                         </VBox>
 
-                        <VBox fx:id="recommendationPage" spacing="18" visible="false" managed="false" styleClass="userdash-content">
-                            <padding>
-                                <Insets top="18" right="22" bottom="28" left="22"/>
-                            </padding>
-
-                            <HBox alignment="CENTER_LEFT">
-                                <VBox spacing="2">
-                                    <Label text="Rekomendasi Menu" styleClass="userdash-section-title"/>
-                                    <Label text="Rekomendasi berdasarkan profil keluarga, budget aktif, stok dapur, dan data resep admin."
-                                           styleClass="userdash-section-subtitle"/>
-                                </VBox>
-                                <Region HBox.hgrow="ALWAYS"/>
-                                <Button text="Muat Ulang Rekomendasi"
-                                        onAction="#handleRefreshRecommendations"
-                                        styleClass="family-primary-button"/>
-                            </HBox>
-
-                            <HBox spacing="14" fillHeight="true">
-                                <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box">
-                                    <Label text="Total Rekomendasi" styleClass="userdash-budget-label"/>
-                                    <Label fx:id="recommendationCountLabel" text="0 menu" styleClass="userdash-budget-value-dark"/>
-                                </VBox>
-
-                                <VBox spacing="5" HBox.hgrow="ALWAYS" styleClass="userdash-budget-box-green">
-                                    <Label text="Status Fitur" styleClass="userdash-budget-label"/>
-                                    <Label fx:id="recommendationStatusLabel" text="Siap dimuat" styleClass="userdash-budget-value-green"/>
-                                </VBox>
-                            </HBox>
-
-                            <VBox spacing="14" styleClass="userdash-panel">
-                                <Label text="Daftar Rekomendasi" styleClass="userdash-section-title"/>
-
-                                <TableView fx:id="recommendationTable"
-                                           prefHeight="420"
-                                           minHeight="300"
-                                           styleClass="family-table">
-                                    <columns>
-                                        <TableColumn fx:id="recommendationRecipeColumn" text="Resep" prefWidth="230"/>
-                                        <TableColumn fx:id="recommendationServingColumn" text="Porsi" prefWidth="90"/>
-                                        <TableColumn fx:id="recommendationPriceColumn" text="Estimasi Harga" prefWidth="150"/>
-                                        <TableColumn fx:id="recommendationNutritionColumn" text="Status Gizi" prefWidth="125"/>
-                                        <TableColumn fx:id="recommendationBudgetColumn" text="Budget" prefWidth="160"/>
-                                        <TableColumn fx:id="recommendationStockColumn" text="Stok" prefWidth="160"/>
-                                        <TableColumn fx:id="recommendationScoreColumn" text="Skor" prefWidth="100"/>
-                                    </columns>
-                                </TableView>
-                            </VBox>
-                        </VBox>
                         <VBox fx:id="kitchenStockPage" visible="false" managed="false">
                             <fx:include source="KitchenStockContent.fxml" fx:id="kitchenStockContent"/>
                         </VBox>

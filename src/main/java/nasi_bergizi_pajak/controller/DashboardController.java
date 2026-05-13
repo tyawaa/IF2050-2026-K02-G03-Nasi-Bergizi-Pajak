@@ -184,21 +184,9 @@ public class DashboardController {
     @FXML private PasswordField newPasswordField;
     @FXML private PasswordField confirmPasswordField;
     @FXML private Label passwordErrorLabel;
-    @FXML private Button recommendationNavButton;
-    @FXML private VBox recommendationPage;
     @FXML private Button kitchenStockNavButton;
     @FXML private VBox kitchenStockPage;
     @FXML private KitchenStockViewController kitchenStockContentController;
-    @FXML private Label recommendationCountLabel;
-    @FXML private Label recommendationStatusLabel;
-    @FXML private TableView<RekomendasiMenu> recommendationTable;
-    @FXML private TableColumn<RekomendasiMenu, String> recommendationRecipeColumn;
-    @FXML private TableColumn<RekomendasiMenu, String> recommendationServingColumn;
-    @FXML private TableColumn<RekomendasiMenu, String> recommendationPriceColumn;
-    @FXML private TableColumn<RekomendasiMenu, String> recommendationNutritionColumn;
-    @FXML private TableColumn<RekomendasiMenu, String> recommendationBudgetColumn;
-    @FXML private TableColumn<RekomendasiMenu, String> recommendationStockColumn;
-    @FXML private TableColumn<RekomendasiMenu, String> recommendationScoreColumn;
     @FXML private ComboBox<BudgetOption> plannerBudgetCombo;
     @FXML private Label plannerBudgetHelperLabel;
     @FXML private DatePicker plannerStartDatePicker;
@@ -227,7 +215,6 @@ public class DashboardController {
     private final RecipeDAO recipeDAO = new RecipeDAO();
     private final Map<Integer, Recipe> weeklyRecipeCache = new HashMap<>();
     private final Map<Integer, RecipeNutrition> weeklyNutritionCache = new HashMap<>();
-    private final ObservableList<RekomendasiMenu> recommendations = FXCollections.observableArrayList();
     private final RekomendasiController rekomendasiController = new RekomendasiController();
     private final NumberFormat rupiahFormat = NumberFormat.getCurrencyInstance(INDONESIAN_LOCALE);
     private final DateTimeFormatter budgetDateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", INDONESIAN_LOCALE);
@@ -253,7 +240,6 @@ public class DashboardController {
         setupBudgetPage();
         setupFamilyTable();
         setupWeeklyPlanner();
-        setupRecommendationTable();
         refreshFamilyMembers();
         refreshBudgets();
     }
@@ -835,16 +821,6 @@ public class DashboardController {
 
 
     private void openWeeklyRecommendationDialog(LocalDate mealDate, String mealTime) {
-        List<Recipe> recommendedRecipes = loadRecommendedRecipeOptions();
-
-        if (recommendedRecipes.isEmpty()) {
-            showWarning(
-                    "Rekomendasi menu belum tersedia",
-                    "Lengkapi profil keluarga dan pastikan data resep admin sudah memadai untuk menghasilkan rekomendasi."
-            );
-            return;
-        }
-
         openWeeklySlotDialog(mealDate, mealTime, null, true);
     }
     private void openWeeklySlotDialog(LocalDate mealDate, String mealTime, SlotMakan existingSlot) {
@@ -2056,6 +2032,8 @@ public class DashboardController {
         refreshBudgetPage();
     }
 
+
+
     @FXML
     private void handleAddBudget() {
         if (currentUser == null) {
@@ -2197,13 +2175,6 @@ public class DashboardController {
         showPage(weeklyMenuPage);
         setActiveNav(weeklyMenuNavButton);
         refreshWeeklyMenus();
-    }
-    @FXML
-    private void showRecommendationPage() {
-        pageTitleLabel.setText("Rekomendasi Menu");
-        showPage(recommendationPage);
-        setActiveNav(recommendationNavButton);
-        refreshRecommendations();
     }
 
     @FXML
@@ -2349,9 +2320,6 @@ public class DashboardController {
         settingsPage.setVisible(page == settingsPage);
         settingsPage.setManaged(page == settingsPage);
 
-        recommendationPage.setVisible(page == recommendationPage);
-        recommendationPage.setManaged(page == recommendationPage);
-
         kitchenStockPage.setVisible(page == kitchenStockPage);
         kitchenStockPage.setManaged(page == kitchenStockPage);
     }
@@ -2362,9 +2330,7 @@ public class DashboardController {
         setNavClass(budgetNavButton, activeButton == budgetNavButton);
         setNavClass(parameterPlannerNavButton, activeButton == parameterPlannerNavButton);
         setNavClass(weeklyMenuNavButton, activeButton == weeklyMenuNavButton);
-
         setNavClass(settingsNavButton, activeButton == settingsNavButton);
-        setNavClass(recommendationNavButton, activeButton == recommendationNavButton);
         setNavClass(kitchenStockNavButton, activeButton == kitchenStockNavButton);
     }
 
@@ -2513,65 +2479,7 @@ public class DashboardController {
         passwordErrorLabel.setManaged(false);
     }
 
-    private void setupRecommendationTable() {
-        recommendationTable.setItems(recommendations);
-        recommendationTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
-        recommendationRecipeColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(data.getValue().getRecipe().getName()));
-
-        recommendationServingColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(String.valueOf(data.getValue().getRecipe().getServingSize())));
-
-        recommendationPriceColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(rupiahFormat.format(data.getValue().getEstimasiHarga())));
-
-        recommendationNutritionColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(formatStatus(data.getValue().getStatus())));
-
-        recommendationBudgetColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(formatStatus(data.getValue().getStatusBudget())));
-
-        recommendationStockColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(
-                        formatStatus(data.getValue().getStatusStok())
-                                + " (" + String.format(Locale.US, "%.0f", data.getValue().getPersentaseStok() * 100) + "%)"
-                ));
-
-        recommendationScoreColumn.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(String.format(Locale.US, "%.2f", data.getValue().getSkor())));
-    }
-
-    @FXML
-    private void handleRefreshRecommendations() {
-        refreshRecommendations();
-    }
-
-    private void refreshRecommendations() {
-        if (currentUser == null) {
-            recommendations.clear();
-            recommendationCountLabel.setText("0 menu");
-            recommendationStatusLabel.setText("User tidak ditemukan");
-            return;
-        }
-
-        try {
-            List<RekomendasiMenu> hasil = rekomendasiController.buatRekomendasiMenu(currentUser.getUserId());
-            recommendations.setAll(hasil);
-            recommendationCountLabel.setText(hasil.size() + " menu");
-            recommendationStatusLabel.setText(hasil.isEmpty() ? "Belum ada data cocok" : "Rekomendasi siap");
-        } catch (IllegalStateException e) {
-            recommendations.clear();
-            recommendationCountLabel.setText("0 menu");
-            recommendationStatusLabel.setText("Data belum lengkap");
-            showWarning("Rekomendasi belum tersedia", e.getMessage());
-        } catch (SQLException e) {
-            recommendations.clear();
-            recommendationCountLabel.setText("0 menu");
-            recommendationStatusLabel.setText("Gagal memuat");
-            showError("Gagal memuat rekomendasi", e.getMessage());
-        }
-    }
 
     private String formatStatus(String status) {
         if (status == null || status.isBlank()) {
