@@ -28,6 +28,11 @@ public class DashboardController {
     }
 
     @FXML
+    private void handleStokDapur() {
+        AppNavigator.showKitchenStock();
+    }
+
+    @FXML
     private void handleLogout() {
         AppNavigator.showLogin();
     }

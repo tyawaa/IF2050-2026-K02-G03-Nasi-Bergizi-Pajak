@@ -1,32 +1,32 @@
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\app\AppNavigator.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\config\DatabaseConnection.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\config\DatabaseInitializer.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\AdminDashboardController.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\DashboardController.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\IngredientController.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\KitchenStockController.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\KitchenStockViewController.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\LoginController.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\RecipeFormController.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\RegistrasiController.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\AkunDAO.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\IngredientDAO.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\IngredientNutritionDAO.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\IngredientPriceDAO.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\KitchenStockDAO.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\RecipeDAO.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\RecipeIngredientDAO.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\Main.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\Akun.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\Ingredient.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\IngredientNutrition.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\IngredientPrice.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\KitchenStock.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\Notification.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\Recipe.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\RecipeIngredient.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\service\IngredientService.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\service\KitchenStockService.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\util\PasswordUtil.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\util\UnitOptions.java
-C:\Users\Tyara\Downloads\Nasi Bergizi Pajak Final\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\util\ValidationUtil.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\app\AppNavigator.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\config\DatabaseConnection.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\config\DatabaseInitializer.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\AdminDashboardController.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\DashboardController.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\IngredientController.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\KitchenStockController.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\KitchenStockViewController.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\LoginController.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\RecipeFormController.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\controller\RegistrasiController.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\AkunDAO.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\IngredientDAO.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\IngredientNutritionDAO.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\IngredientPriceDAO.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\KitchenStockDAO.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\RecipeDAO.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\dao\RecipeIngredientDAO.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\Main.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\Akun.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\Ingredient.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\IngredientNutrition.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\IngredientPrice.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\KitchenStock.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\Notification.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\Recipe.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\model\RecipeIngredient.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\service\IngredientService.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\service\KitchenStockService.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\util\PasswordUtil.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\util\UnitOptions.java
+C:\Users\ibrahim\Desktop\College\Semester 4\DRPL\IF2050-2026-K02-G03-Nasi-Bergizi-Pajak\src\main\java\nasi_bergizi_pajak\util\ValidationUtil.java

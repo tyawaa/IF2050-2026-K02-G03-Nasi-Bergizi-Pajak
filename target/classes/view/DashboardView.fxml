@@ -41,7 +41,7 @@
                 <Button text="Profil Keluarga" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Budget" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Parameter Planner" maxWidth="Infinity" styleClass="userdash-nav-button"/>
-                <Button text="Stok Dapur" maxWidth="Infinity" styleClass="userdash-nav-button"/>
+                <Button text="Stok Dapur" maxWidth="Infinity" onAction="#handleStokDapur" styleClass="userdash-nav-button"/>
                 <Button text="Menu Mingguan" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Rekomendasi Menu" maxWidth="Infinity" styleClass="userdash-nav-button"/>
                 <Button text="Shopping Planner" maxWidth="Infinity" styleClass="userdash-nav-button"/>
