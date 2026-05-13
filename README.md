@@ -194,4 +194,3 @@ Jika test belum tersedia, perintah ini tetap berguna untuk mengecek apakah proje
 - Pastikan MySQL berjalan sebelum aplikasi dijalankan.
 - Pastikan konfigurasi username dan password database sesuai dengan perangkat lokal.
 - Jika terdapat perubahan skema database, jalankan ulang file SQL pada folder `database`.
-- Modul Shopping Planner masih dapat dilengkapi setelah controller, model, dan tampilan final tersedia.
