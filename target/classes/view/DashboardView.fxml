@@ -590,7 +590,11 @@
                                         <Label text="Per minggu (total)" styleClass="userdash-section-subtitle"/>
                                     </VBox>
                                     <VBox spacing="8">
-                                        <HBox alignment="CENTER_LEFT" styleClass="weekly-nutrition-row weekly-nutrition-highlight">
+                                        <HBox alignment="CENTER_LEFT">
+                                            <styleClass>
+                                                <String fx:value="weekly-nutrition-row"/>
+                                                <String fx:value="weekly-nutrition-highlight"/>
+                                            </styleClass>
                                             <Label text="Kalori" styleClass="weekly-summary-label"/>
                                             <Region HBox.hgrow="ALWAYS"/>
                                             <Label fx:id="weeklyCaloriesLabel" text="-" styleClass="weekly-nutrition-value"/>
@@ -610,7 +614,11 @@
                                             <Region HBox.hgrow="ALWAYS"/>
                                             <Label fx:id="weeklyFatLabel" text="-" styleClass="weekly-nutrition-value"/>
                                         </HBox>
-                                        <HBox alignment="CENTER_LEFT" styleClass="weekly-nutrition-row weekly-nutrition-green">
+                                        <HBox alignment="CENTER_LEFT">
+                                            <styleClass>
+                                                <String fx:value="weekly-nutrition-row"/>
+                                                <String fx:value="weekly-nutrition-green"/>
+                                            </styleClass>
                                             <Label text="Serat" styleClass="weekly-summary-label"/>
                                             <Region HBox.hgrow="ALWAYS"/>
                                             <Label fx:id="weeklyFiberLabel" text="-" styleClass="weekly-nutrition-value"/>
